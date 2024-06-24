@@ -41,7 +41,7 @@ FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
     button1->setIconSize(QSize(32, 32));
 
     // QPushButton *button1 = new QPushButton("Button 1", this);
-    QPushButton *button2 = new QPushButton("Button 2", this);
+    button2 = new QPushButton("Button 2", this);
 
     topLeftLayout->addItem(topLeftSpacerLeft1);
     topLeftLayout->addItem(topLeftSpacerLeft2);
@@ -75,6 +75,7 @@ FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
     globalLayout->addWidget(vScrollBar);
 
     setLayout(globalLayout);
+    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
 }
 
 void FictionViewTab::setupTextEdit(const QString &content) {
@@ -139,4 +140,18 @@ void FictionViewTab::syncScrollBar() {
     vScrollBar->setPageStep(internalScrollBar->pageStep());
     vScrollBar->setValue(internalScrollBar->value());
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
+}
+
+void FictionViewTab::activateHighlightMode() {
+    textEdit->activateHighlightMode();
+    qDebug() << "activateHighlightMode";
+    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
+    connect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateHighlightMode);
+}
+
+void FictionViewTab::deactivateHighlightMode() {
+    textEdit->deactivateHighlightMode();
+    qDebug() << "DEactivateHighlightMode";
+    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateHighlightMode);
+    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
 }

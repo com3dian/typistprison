@@ -10,6 +10,7 @@
 #include <QIcon>
 #include <QPixmap>
 #include <QLabel>
+#include <QDebug>
 #include "fictiontextedit.h"
 
 class FictionViewTab : public QWidget {
@@ -22,9 +23,12 @@ private:
     void setupTextEdit(const QString &content);
     void setupScrollBar();
     void syncScrollBar();
+    void activateHighlightMode();
+    void deactivateHighlightMode();
 
     FictionTextEdit *textEdit;
     QScrollBar *vScrollBar;
+    QPushButton *button2;
 
     QHBoxLayout *globalLayout;
     QVBoxLayout *leftLayout;
