@@ -84,7 +84,7 @@ MainWindow::~MainWindow()
 void MainWindow::setupUntitledTab()
 {
     // Create the default untitled tab
-    customTabWidget->createNewTab("", "untitled-" + QString::number(untitledCount++));
+    customTabWidget->createNewTab("", "untitled-" + QString::number(untitledCount++), true);
 }
 
 void MainWindow::openFile()

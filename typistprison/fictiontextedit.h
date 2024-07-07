@@ -5,6 +5,7 @@
 #include <QList>
 #include <QTextBlock>
 #include <string>
+#include "searchHighlighter.h"
 
 class FictionTextEdit : public QTextEdit
 {
@@ -16,10 +17,16 @@ public:
     void setTopMargin(int margin);
     void activateHighlightMode();
     void deactivateHighlightMode();
+    void search(const QString &searchString);
+    void clearSearch();
+
+signals:
+    void onFictionEditSearch(const QString &text);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void insertFromMimeData(const QMimeData *source) override;
+    SearchHighlighter *highlighter;
 
 private:
     void applyBlockFormatting(QTextBlock &block, bool isCheck = true);

@@ -1,8 +1,8 @@
-#include "fictionviewtab.h"
+#include "plaintextviewtab.h"
 
 
-FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
-    : QWidget(parent), textEdit(new FictionTextEdit(this)), vScrollBar(new QScrollBar(Qt::Vertical, this))
+PlaintextViewTab::PlaintextViewTab(const QString &content, QWidget *parent)
+    : QWidget(parent), textEdit(new PlaintextEdit(this)), vScrollBar(new QScrollBar(Qt::Vertical, this))
 {
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
@@ -38,14 +38,10 @@ FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
         );
     button1->setIconSize(QSize(32, 32));
 
-    // QPushButton *button1 = new QPushButton("Button 1", this);
-    button2 = new QPushButton("Button 2", this);
-
     topLeftLayout->addItem(topLeftSpacerLeft1);
     topLeftLayout->addItem(topLeftSpacerLeft2);
     topLeftLayout->addWidget(searchWidget);
     topLeftLayout->addWidget(button1);
-    topLeftLayout->addWidget(button2);
     topLeftLayout->addItem(topLeftSpacerRight);
 
     QWidget *topLeftWidget = new QWidget(this);
@@ -59,12 +55,7 @@ FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
     setupScrollBar();
     syncScrollBar();
 
-    QSpacerItem *bottomLeftSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
-    QSpacerItem *bottomRightSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
-
-    bottomLeftLayout->addItem(bottomLeftSpacer);
     bottomLeftLayout->addWidget(textEdit);
-    bottomLeftLayout->addItem(bottomRightSpacer);
 
     leftLayout->addWidget(topLeftWidget);
     leftLayout->addLayout(bottomLeftLayout);
@@ -73,13 +64,12 @@ FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
     globalLayout->addWidget(vScrollBar);
 
     setLayout(globalLayout);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
-    connect(textEdit, &FictionTextEdit::onFictionEditSearch, searchWidget, &SearchWidget::handleSearch);
-    connect(searchWidget, &SearchWidget::onSearch, textEdit, &FictionTextEdit::search);
-    connect(searchWidget, &SearchWidget::onClear, textEdit, &FictionTextEdit::clearSearch);
+    connect(textEdit, &PlaintextEdit::onPlaintextSearch, searchWidget, &SearchWidget::handleSearch);
+    connect(searchWidget, &SearchWidget::onSearch, textEdit, &PlaintextEdit::search);
+    connect(searchWidget, &SearchWidget::onClear, textEdit, &PlaintextEdit::clearSearch);
 }
 
-void FictionViewTab::setupTextEdit(const QString &content) {
+void PlaintextViewTab::setupTextEdit(const QString &content) {
     textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     textEdit->load(content);
     textEdit->setStyleSheet(
@@ -94,14 +84,14 @@ void FictionViewTab::setupTextEdit(const QString &content) {
     QTextDocument *doc = textEdit->document();
     QTextFrame *rootFrame = doc->rootFrame();
     QTextFrameFormat format = rootFrame->frameFormat();
-    format.setTopMargin(128);
-    format.setBottomMargin(256);
+    format.setTopMargin(16);
+    format.setBottomMargin(16);
     format.setLeftMargin(16);
     format.setRightMargin(16);
     rootFrame->setFrameFormat(format);
 }
 
-void FictionViewTab::setupScrollBar() {
+void PlaintextViewTab::setupScrollBar() {
     vScrollBar->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
     vScrollBar->setStyleSheet(
         "QScrollBar:vertical {"
@@ -132,27 +122,13 @@ void FictionViewTab::setupScrollBar() {
 
     connect(vScrollBar, &QScrollBar::valueChanged, textEdit->verticalScrollBar(), &QScrollBar::setValue);
     connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, vScrollBar, &QScrollBar::setValue);
-    connect(textEdit->verticalScrollBar(), &QScrollBar::rangeChanged, this, &FictionViewTab::syncScrollBar);
+    connect(textEdit->verticalScrollBar(), &QScrollBar::rangeChanged, this, &PlaintextViewTab::syncScrollBar);
 }
 
-void FictionViewTab::syncScrollBar() {
+void PlaintextViewTab::syncScrollBar() {
     QScrollBar* internalScrollBar = textEdit->verticalScrollBar();
     vScrollBar->setRange(internalScrollBar->minimum(), internalScrollBar->maximum());
     vScrollBar->setPageStep(internalScrollBar->pageStep());
     vScrollBar->setValue(internalScrollBar->value());
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
-}
-
-void FictionViewTab::activateHighlightMode() {
-    textEdit->activateHighlightMode();
-    qDebug() << "activateHighlightMode";
-    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateHighlightMode);
-}
-
-void FictionViewTab::deactivateHighlightMode() {
-    textEdit->deactivateHighlightMode();
-    qDebug() << "DeactivateHighlightMode";
-    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateHighlightMode);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
 }

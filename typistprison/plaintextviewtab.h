@@ -1,5 +1,5 @@
-#ifndef FICTIONVIEWTAB_H
-#define FICTIONVIEWTAB_H
+#ifndef PLAINTEXTVIEWTAB_H
+#define PLAINTEXTVIEWTAB_H
 
 #include <QWidget>
 #include <QGridLayout>
@@ -11,14 +11,14 @@
 #include <QPixmap>
 #include <QLabel>
 #include <QDebug>
-#include "fictiontextedit.h"
+#include "plaintextedit.h"
 #include "searchWidget.h"
 
-class FictionViewTab : public QWidget {
+class PlaintextViewTab : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FictionViewTab(const QString &content, QWidget *parent = nullptr);
+    explicit PlaintextViewTab(const QString &content, QWidget *parent = nullptr);
 
 private:
     void setupTextEdit(const QString &content);
@@ -27,9 +27,8 @@ private:
     void activateHighlightMode();
     void deactivateHighlightMode();
 
-    FictionTextEdit *textEdit;
+    PlaintextEdit *textEdit;
     QScrollBar *vScrollBar;
-    QPushButton *button2;
 
     QHBoxLayout *globalLayout;
     QVBoxLayout *leftLayout;
@@ -38,4 +37,4 @@ private:
 
 };
 
-#endif // FICTIONVIEWTAB_H
+#endif // PLIANTEXTVIEWTAB_H

@@ -23,8 +23,16 @@ set(PROJECT_SOURCES
         fictiontextedit.h
         fictionviewtab.cpp
         fictionviewtab.h
+        plaintextedit.cpp
+        plaintextedit.h
+        plaintextviewtab.cpp
+        plaintextviewtab.h
         customtabwidget.cpp
         customtabwidget.h
+        searchWidget.cpp
+        searchWidget.h
+        searchHighlighter.cpp
+        searchHighlighter.h
         ${TS_FILES}
 )
 

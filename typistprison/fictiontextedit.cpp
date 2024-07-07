@@ -1,4 +1,5 @@
 #include "fictiontextedit.h"
+#include "searchWidget.h"
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QTextBlockFormat>
@@ -15,7 +16,7 @@
 #include <QtConcurrent/QtConcurrent>
 
 FictionTextEdit::FictionTextEdit(QWidget *parent)
-    : QTextEdit(parent), globalFontSize(12)
+    : QTextEdit(parent), globalFontSize(12), highlighter(new SearchHighlighter(document()))
 {
     setTopMargin(256);
 
@@ -70,7 +71,8 @@ void FictionTextEdit::applyBlockFormatting(QTextBlock &block, bool isCheck)
             charFormat.setForeground(Qt::white);
             previousCenteredBlock = block;
         } else {
-            charFormat.setForeground(Qt::gray);
+            QColor customColor("#454f61");
+            charFormat.setForeground(customColor);
         }
     } else {
         charFormat.setForeground(Qt::white);
@@ -95,9 +97,14 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
         } else if (event->key() == Qt::Key_Minus) {
             changeFontSize(-1);
             return; // Return early to avoid further processing
+        } else if (event->key() == Qt::Key_F) {
+            QString selectedText = textCursor().selectedText();
+            emit onFictionEditSearch(selectedText);
+            return; // Return early to avoid further processing
         }
     }
 
+    // If the handler is at bottom and user hit enter, attach handler to bottom
     QTextCursor textCursor = this->textCursor();
     QTextBlock firstBlock = document()->firstBlock();
     bool isAtBottom = false;
@@ -185,6 +192,10 @@ void FictionTextEdit::insertFromMimeData(const QMimeData *source)
 }
 
 void FictionTextEdit::changeFontSize(int delta) {
+    QScrollBar *vScrollBar = verticalScrollBar();
+    int scrollBarPosition = vScrollBar->value();
+    float positionRatio = static_cast<float>(scrollBarPosition)/vScrollBar->maximum();
+
     globalFontSize += delta;
     if (globalFontSize < 1) {
         globalFontSize = 1; // Prevent font size from becoming too small
@@ -209,6 +220,10 @@ void FictionTextEdit::changeFontSize(int delta) {
     if (isHighlightMode) {
         updateFocusBlock();
     }
+
+    int updatedPosition = static_cast<int>(positionRatio * vScrollBar->maximum());
+    qDebug() << updatedPosition << vScrollBar->maximum();
+    vScrollBar->setValue(updatedPosition);
 }
 
 
@@ -235,6 +250,7 @@ std::string FictionTextEdit::checkVisibleCenterBlock(const QTextBlock &block) {
 
 // Function to find the block closest to the center of the visible area
 QTextBlock FictionTextEdit::findBlockClosestToCenter() {
+    qDebug() << "binary";
     QTextDocument *doc = document();
     int centerY = getVisibleCenterY();
 
@@ -293,7 +309,7 @@ void FictionTextEdit::updateFocusBlock() {
     if (previousCenteredBlock.isValid()) {
 
         std::string position = checkVisibleCenterBlock(previousCenteredBlock);
-        if (position == "On") {
+        if (position == "In") {
             return; // The previous centered block is still close enough, no need to update
         }
     }
@@ -306,16 +322,20 @@ void FictionTextEdit::updateFocusBlock() {
 
     // check the prevous & next blocks
     std::string positionPrevious = checkVisibleCenterBlock(previousCenteredBlock.previous());
-    if (positionPrevious == "On") {
+    if (positionPrevious == "In") {
+        qDebug() << "Previous";
         newCenteredBlock = previousCenteredBlock.previous();
         applyBlockFormatting(newCenteredBlock);
         previousCenteredBlock = newCenteredBlock;
+        return;
     }
     std::string positionNext = checkVisibleCenterBlock(previousCenteredBlock.next());
-    if (positionNext == "On") {
+    if (positionNext == "In") {
+        qDebug() << "Next";
         newCenteredBlock = previousCenteredBlock.next();
         applyBlockFormatting(newCenteredBlock);
         previousCenteredBlock = newCenteredBlock;
+        return;
     }
 
     // Find the new centered block
@@ -349,7 +369,8 @@ void FictionTextEdit::changeGlobalTextColor(const QColor &color) {
 
 void FictionTextEdit::activateHighlightMode() {
     isHighlightMode = true;
-    changeGlobalTextColor(Qt::gray); // Change all text to gray
+    QColor customColor("#454f61");
+    changeGlobalTextColor(customColor); // Change all text to gray
 
     // Update the previously centered block to the new highlight color
     updateFocusBlock();
@@ -363,4 +384,12 @@ void FictionTextEdit::deactivateHighlightMode() {
     changeGlobalTextColor(Qt::white); // Change all text to white
 
     disconnect(verticalScrollBar(), &QScrollBar::valueChanged, this, &FictionTextEdit::updateFocusBlock);
+}
+
+void FictionTextEdit::search(const QString &searchString) {
+    highlighter->setSearchString(searchString);
+}
+
+void FictionTextEdit::clearSearch() {
+    highlighter->setSearchString("");
 }

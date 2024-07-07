@@ -43,7 +43,7 @@ class CustomTabWidget : public QTabWidget {
 
 public:
     CustomTabWidget(QWidget *parent = nullptr);
-    void createNewTab(const QString &content, const QString &tabName);
+    void createNewTab(const QString &content, const QString &tabName, bool isUntitled = false);
     void switchToFictionView();
     // void switchToEditorView();
 

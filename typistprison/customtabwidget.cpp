@@ -1,6 +1,8 @@
 #include "customtabwidget.h"
 #include "fictiontextedit.h"
 #include "fictionviewtab.h"
+#include "plaintextedit.h"
+#include "plaintextviewtab.h"
 #include <QVBoxLayout>
 #include <QMainWindow>
 #include <QStylePainter>
@@ -34,7 +36,7 @@ void CustomTabWidget::setupTabWidget() {
 void CustomTabWidget::setupStyles() {
     setStyleSheet(
         "QTabWidget::pane {"
-                            "    border: 2px;"
+                            "    border: 0px;"
                             "    background-color: #31363F;"
                             "    margin: 0px;"
                             "}"
@@ -55,8 +57,13 @@ void CustomTabWidget::setupStyles() {
     );
 }
 
-void CustomTabWidget::createNewTab(const QString &content, const QString &tabName) {
-    FictionViewTab *newTab = new FictionViewTab(content, this);
+void CustomTabWidget::createNewTab(const QString &content, const QString &tabName, bool isUntitled) {
+    QWidget *newTab;
+    if (tabName.endsWith(".cell.txt") || isUntitled) {
+        newTab = new FictionViewTab(content, this);
+    } else {
+        newTab = new PlaintextViewTab(content, this);
+    }
     addTab(newTab, tabName);
     setCurrentWidget(newTab);
 }
