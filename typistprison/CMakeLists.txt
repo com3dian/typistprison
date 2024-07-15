@@ -33,6 +33,8 @@ set(PROJECT_SOURCES
         searchWidget.h
         searchHighlighter.cpp
         searchHighlighter.h
+        textedithelper.cpp
+        textedithelper.h
         ${TS_FILES}
 )
 

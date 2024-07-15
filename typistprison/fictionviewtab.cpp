@@ -75,8 +75,10 @@ FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
     setLayout(globalLayout);
     connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
     connect(textEdit, &FictionTextEdit::onFictionEditSearch, searchWidget, &SearchWidget::handleSearch);
+    connect(textEdit, &FictionTextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &FictionTextEdit::search);
     connect(searchWidget, &SearchWidget::onClear, textEdit, &FictionTextEdit::clearSearch);
+    connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &FictionTextEdit::searchPrev);
 }
 
 void FictionViewTab::setupTextEdit(const QString &content) {

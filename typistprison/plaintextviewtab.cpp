@@ -65,8 +65,10 @@ PlaintextViewTab::PlaintextViewTab(const QString &content, QWidget *parent)
 
     setLayout(globalLayout);
     connect(textEdit, &PlaintextEdit::onPlaintextSearch, searchWidget, &SearchWidget::handleSearch);
+    connect(textEdit, &PlaintextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &PlaintextEdit::search);
     connect(searchWidget, &SearchWidget::onClear, textEdit, &PlaintextEdit::clearSearch);
+    connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &PlaintextEdit::searchPrev);
 }
 
 void PlaintextViewTab::setupTextEdit(const QString &content) {

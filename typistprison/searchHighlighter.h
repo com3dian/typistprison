@@ -12,6 +12,7 @@ public:
     explicit SearchHighlighter(QTextDocument *parent = nullptr);
 
     void setSearchString(const QString &searchString);
+    QString getSearchString() const;
 
 protected:
     void highlightBlock(const QString &text) override;

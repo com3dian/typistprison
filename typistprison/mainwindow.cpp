@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     , untitledCount(1)
 {
     ui->setupUi(this);
+
     ui->menubar->setStyle(new CustomStyle());
     ui->menubar->setStyleSheet(
         "QMenuBar {"
@@ -23,7 +24,11 @@ MainWindow::MainWindow(QWidget *parent)
         "}"
         "QMenuBar::item {"
         "    background-color: transparent;"
-        "    padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 4px;"
+        "    margin: 0px;"
+        "    padding-left: 8px;"
+        "    padding-right: 8px;"
+        "    padding-top: 2px;"
+        "    padding-bottom: 4px;"
         "    border: none;"
         "}"
         "QMenuBar::item:selected {"
@@ -49,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
         "QMenu::separator {"
         "    height: 1px;"  // Adjust the height of the separator
         "    background-color: #555555;"  // Set the color of the separator
-        "    margin: 4px 0;"  // Adjust the margin around the separator
+        "    margin: 0px 0px;"  // Adjust the margin around the separator
         "}"
         );
 

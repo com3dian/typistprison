@@ -2,31 +2,31 @@
 #define PLAINTEXTEDIT_H
 
 #include <QTextEdit>
-#include <QList>
-#include <QTextBlock>
-#include <string>
-#include "searchHighlighter.h"
+#include "textedithelper.h"
 
-class PlaintextEdit : public QTextEdit
-{
+class PlaintextEdit : public QTextEdit {
     Q_OBJECT
 
 public:
-    explicit PlaintextEdit(QWidget *parent = nullptr);
-    void load(const QString& text);
-    void search(const QString &searchString);
-    void clearSearch();
+    PlaintextEdit(QWidget *parent = nullptr);
 
-signals:
-    void onPlaintextSearch(const QString &text);
+    void load(const QString& text);
+    void changeFontSize(int delta);
+    void insertFromMimeData(const QMimeData *source);
+    void search(const QString &searchString);
+    void searchPrev(const QString &searchString);
+    void clearSearch();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
-    SearchHighlighter *highlighter;
+    void focusInEvent(QFocusEvent *e) override;
 
 private:
-    void changeFontSize(int delta);
-    int globalFontSize;
+    TextEditHelper* helper;
+
+signals:
+    void onPlaintextSearch(const QString &text);
+    void focusGained();
 };
 
 #endif // PLAINTEXTEDIT_H

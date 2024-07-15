@@ -15,6 +15,7 @@ public:
 
 signals:
     void onSearch(const QString &text);
+    void onSearchPrev(const QString &text);
     void onClear();
 
 public slots:
@@ -22,6 +23,7 @@ public slots:
     void handleClear();
     void handleReSearch();
     void updateBottomLine();
+    void loseAttention();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
@@ -34,6 +36,8 @@ private:
     QVBoxLayout *vLayout;
     bool isHovered;
     bool isOnSearch;
+    bool isSearchPrev;
+    bool isSearchLatter;
 };
 
 #endif // SEARCHWIDGET_H
