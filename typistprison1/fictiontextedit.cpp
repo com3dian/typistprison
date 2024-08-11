@@ -1,4 +1,5 @@
 #include "fictiontextedit.h"
+#include "searchWidget.h"
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QTextBlockFormat>
@@ -12,12 +13,11 @@
 #include <QList>
 #include <string>
 #include <QPalette>
-#include <QStringMatcher>
+
 #include <QtConcurrent/QtConcurrent>
 
-
 FictionTextEdit::FictionTextEdit(QWidget *parent)
-    : QTextEdit(parent), globalFontSize(12), matchStringIndex(-1)
+    : QTextEdit(parent), helper(new TextEditHelper(this)), globalFontSize(12)
 {
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
@@ -28,10 +28,8 @@ FictionTextEdit::FictionTextEdit(QWidget *parent)
     setTopMargin(256);
 
     // connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &FictionTextEdit::updateTextColor);
-    isSniperMode = false;
+    isHighlightMode = false;
     setUndoRedoEnabled(true);
-
-    highlighter = new FictionHighlighter(this->document());
 }
 
 void FictionTextEdit::setTopMargin(int margin)
@@ -77,7 +75,7 @@ QTextCursor FictionTextEdit::applyCharFormatting(QTextCursor &cursor, bool inser
     font.setPointSize((isFirstBlock && insertLargeFont) ? (1.6 * globalFontSize) : globalFontSize);  // Adjust font size
     charFormat.setFont(font);
 
-    if (isSniperMode) {
+    if (isHighlightMode) {
         int centerY = getVisibleCenterY();
         QRectF blockRect = document()->documentLayout()->blockBoundingRect(cursor.block());
 
@@ -111,16 +109,6 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
             QString selectedText = textCursor().selectedText();
             emit onFictionEditSearch(selectedText);
             return; // Return early to avoid further processing
-        } else if (event->key() == Qt::Key_Z) {
-            qDebug() << "ctrl + Z";
-            qDebug() << this->toPlainText().isEmpty();
-            if (this->toPlainText().isEmpty()) {
-                qDebug() << "empty";
-                return;
-            } else {
-                undo();
-                return;
-            }
         }
         // // QTextEdit::keyPressEvent(event);
         // return;
@@ -146,16 +134,24 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
         qDebug() << "key press ENTER";
         QTextCursor textCursorSmall = applyCharFormatting(textCursor, false);
         textCursorSmall.insertBlock();
+        QTextBlock newBlock = textCursorSmall.block();
         if (isAtBottom) {
             // Attach handler to bottom
             vScrollBar->setValue(vScrollBar->maximum());
         }
+        qDebug() << "FictionTextEdit::keyPressEvent";
+        applyBlockFormatting(newBlock);
     } else {
+        QTextBlock newBlock = textCursor.block();
         QTextEdit::keyPressEvent(event);
+
+        if (newBlock.blockNumber() == 0) {
+            applyBlockFormatting(newBlock);
+        }
     }
 
     // Update the text color for the centered block
-    if (isSniperMode) {
+    if (isHighlightMode) {
         updateFocusBlock();
     }
 }
@@ -167,12 +163,14 @@ void FictionTextEdit::load(const QString &text)
 
     // Set font format
     QTextCursor cursor = this->textCursor();
-    QFont font("Noto Sans CJK SC Light", 1.6 * globalFontSize); // If we need special font
+    QFont font("Noto Sans CJK SC", 1.6 * globalFontSize); // If we need special font
+    this->setFont(font);
 
     // Set cursor format
-    QTextCharFormat charFormat = cursor.charFormat();
+    QTextCharFormat charFormat = cursor.charFormat();    
     charFormat.setFont(font);
     cursor.setCharFormat(charFormat);
+    this->setTextCursor(cursor);
 
     if (text.isEmpty()) {
         // Set the modified cursor back to the text edit
@@ -261,7 +259,6 @@ void FictionTextEdit::insertFromMimeData(const QMimeData *source)
 }
 
 void FictionTextEdit::changeFontSize(int delta) {
-    highlighter->changeFontSize(delta);
     // set default font
     QFont font = this->font();
     font.setPointSize(1.6 * globalFontSize); // Set default font size
@@ -292,9 +289,9 @@ void FictionTextEdit::changeFontSize(int delta) {
     applyBlockFormatting(firstBlock);
 
     // Update the text color for the centered block
-    if (isSniperMode) {
-        updateFocusBlock();
-    }
+    // if (isHighlightMode) {
+    //     updateFocusBlock();
+    // }
 
     int updatedPosition = static_cast<int>(positionRatio * static_cast<float>(vScrollBar->maximum()));
     qDebug() << updatedPosition << vScrollBar->maximum();
@@ -307,16 +304,22 @@ void FictionTextEdit::changeFontSize(int delta) {
 
 int FictionTextEdit::getVisibleCenterY() {
     QRect visibleRect = viewport()->rect();
-    int centerY = visibleRect.top() * 0.55 + visibleRect.bottom() * 0.45;
-    // int centerY = visibleRect.center().y();
+    int centerY = visibleRect.center().y();
     int scrollValue = verticalScrollBar()->value();
     centerY += scrollValue;
     return centerY;
+    return 0;
 }
 
 std::string FictionTextEdit::checkVisibleCenterBlock(const QTextBlock &block) {
     QRectF blockRect = document()->documentLayout()->blockBoundingRect(block);
     int centerY = getVisibleCenterY();
+    qDebug() << "-------------------------";
+    qDebug() << "block content is: " << block.text();
+    qDebug() << "blockRect.top() is: " << blockRect.top();
+    qDebug() << "centerY is: " << centerY;
+    qDebug() << "blockRect.bottom() is: " << blockRect.bottom();
+    qDebug() << "-------------------------";
 
     if ((blockRect.top() - 16 <= centerY) && (blockRect.bottom() + 16 >= centerY)) {
         return "In";
@@ -445,8 +448,8 @@ void FictionTextEdit::changeGlobalTextColor(const QColor &color)
     previousCenteredBlock = newCenteredBlock;
 }
 
-void FictionTextEdit::activateSniperMode() {
-    isSniperMode = true;
+void FictionTextEdit::activateHighlightMode() {
+    isHighlightMode = true;
     QColor customColor("#454F61"); // gray color
     changeGlobalTextColor(customColor); // Change all text to gray
 
@@ -457,8 +460,8 @@ void FictionTextEdit::activateSniperMode() {
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &FictionTextEdit::updateFocusBlock);
 }
 
-void FictionTextEdit::deactivateSniperMode() {
-    isSniperMode = false;
+void FictionTextEdit::deactivateHighlightMode() {
+    isHighlightMode = false;
     changeGlobalTextColor(Qt::white); // Change all text to white
 
     disconnect(verticalScrollBar(), &QScrollBar::valueChanged, this, &FictionTextEdit::updateFocusBlock);
@@ -470,64 +473,13 @@ void FictionTextEdit::focusInEvent(QFocusEvent *e) {
 }
 
 void FictionTextEdit::search(const QString &searchString) {
-    // Reset matchStringIndex if searchString has changed
-    if (searchString != highlighter->getSearchString()) {
-        matchStringIndex = -1;
-    }
-
-    QString documentText = this->document()->toPlainText();
-
-    // Convert both document text and search string to lower case for case-insensitive comparison
-    QString lowerDocumentText = documentText.toLower();
-    QString lowerSearchString = searchString.toLower();
-
-    // Perform the case-insensitive search
-    matchStringIndex = lowerDocumentText.indexOf(lowerSearchString, matchStringIndex + 1);
-    if (matchStringIndex == -1) {
-        // Try searching again if the first search didn't find any match
-        matchStringIndex = lowerDocumentText.indexOf(lowerSearchString, matchStringIndex + 1);
-        if (matchStringIndex == -1) {
-            return; // No match found
-        }
-    }
-
-    // Update matchStringIndex to account for the position in the original document text
-    QTextCursor cursor = this->textCursor();
-    cursor.setPosition(matchStringIndex);
-    cursor.setPosition(matchStringIndex + searchString.length(), QTextCursor::KeepAnchor);
-    this->setTextCursor(cursor);
-
-    highlighter->setSearchString(searchString);
+    helper->search(searchString);
 }
 
 void FictionTextEdit::searchPrev(const QString &searchString) {
-    QString documentText = this->document()->toPlainText();
-
-    // Convert both document text and search string to lower case for case-insensitive comparison
-    QString lowerDocumentText = documentText.toLower();
-    QString lowerSearchString = searchString.toLower();
-
-    // Find the last index of the search string in the document text, case-insensitively
-    int searchStartIndex = (matchStringIndex == -1) ? documentText.length() - 1 : matchStringIndex - 1;
-    matchStringIndex = lowerDocumentText.lastIndexOf(lowerSearchString, searchStartIndex);
-
-    if (matchStringIndex == -1) {
-        // First time search not found, search the entire document
-        matchStringIndex = lowerDocumentText.lastIndexOf(lowerSearchString);
-        if (matchStringIndex == -1) {
-            // Second time search not found
-            return;
-        }
-    }
-
-    // Set the cursor to the position of the match
-    QTextCursor cursor = this->textCursor();
-    cursor.setPosition(matchStringIndex);
-    cursor.setPosition(matchStringIndex + searchString.length(), QTextCursor::KeepAnchor);
-    this->setTextCursor(cursor);
+    helper->searchPrev(searchString);
 }
 
 void FictionTextEdit::clearSearch() {
-    highlighter->setSearchString("");
-    matchStringIndex = -1;
+    helper->clearSearch();
 }

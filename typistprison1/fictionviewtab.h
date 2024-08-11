@@ -24,8 +24,8 @@ private:
     void setupTextEdit(const QString &content);
     void setupScrollBar();
     void syncScrollBar();
-    void activateSniperMode();
-    void deactivateSniperMode();
+    void activateHighlightMode();
+    void deactivateHighlightMode();
 
     FictionTextEdit *textEdit;
     QScrollBar *vScrollBar;

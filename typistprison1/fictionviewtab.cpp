@@ -73,7 +73,7 @@ FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
     globalLayout->addWidget(vScrollBar);
 
     setLayout(globalLayout);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
+    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
     connect(textEdit, &FictionTextEdit::onFictionEditSearch, searchWidget, &SearchWidget::handleSearch);
     connect(textEdit, &FictionTextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &FictionTextEdit::search);
@@ -145,16 +145,16 @@ void FictionViewTab::syncScrollBar() {
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
 }
 
-void FictionViewTab::activateSniperMode() {
-    textEdit->activateSniperMode();
+void FictionViewTab::activateHighlightMode() {
+    textEdit->activateHighlightMode();
     qDebug() << "activateHighlightMode";
-    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
+    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
+    connect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateHighlightMode);
 }
 
-void FictionViewTab::deactivateSniperMode() {
-    textEdit->deactivateSniperMode();
+void FictionViewTab::deactivateHighlightMode() {
+    textEdit->deactivateHighlightMode();
     qDebug() << "DeactivateHighlightMode";
-    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
+    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateHighlightMode);
+    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateHighlightMode);
 }

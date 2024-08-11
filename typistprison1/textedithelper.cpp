@@ -1,7 +1,8 @@
 #include "textedithelper.h"
 
 TextEditHelper::TextEditHelper(QTextEdit* parent)
-    : parentEdit(parent), globalFontSize(12), matchStringIndex(-1) {
+    : parentEdit(parent), globalFontSize(12), matchStringIndex(-1)
+{
     highlighter = new SearchHighlighter(parentEdit->document());
 }
 

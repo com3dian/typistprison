@@ -1,5 +1,5 @@
-#ifndef FICTIONVIEWTAB_H
-#define FICTIONVIEWTAB_H
+#ifndef MARKDOWNVIEWTAB_H
+#define MARKDOWNVIEWTAB_H
 
 #include <QWidget>
 #include <QGridLayout>
@@ -11,25 +11,24 @@
 #include <QPixmap>
 #include <QLabel>
 #include <QDebug>
-#include "fictiontextedit.h"
+#include "qmarkdowntextedit.h"
 #include "searchWidget.h"
 
-class FictionViewTab : public QWidget {
+class MarkdownViewTab : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FictionViewTab(const QString &content, QWidget *parent = nullptr);
+    explicit MarkdownViewTab(const QString &content, QWidget *parent = nullptr);
 
 private:
     void setupTextEdit(const QString &content);
     void setupScrollBar();
     void syncScrollBar();
-    void activateSniperMode();
-    void deactivateSniperMode();
+    void activateHighlightMode();
+    void deactivateHighlightMode();
 
-    FictionTextEdit *textEdit;
+    QMarkdownTextEdit *textEdit;
     QScrollBar *vScrollBar;
-    QPushButton *button2;
 
     QHBoxLayout *globalLayout;
     QVBoxLayout *leftLayout;
@@ -38,4 +37,4 @@ private:
 
 };
 
-#endif // FICTIONVIEWTAB_H
+#endif // MARKDOWNVIEWTAB_H

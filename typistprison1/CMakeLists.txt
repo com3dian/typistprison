@@ -23,24 +23,24 @@ set(PROJECT_SOURCES
     fictiontextedit.h
     fictionviewtab.cpp
     fictionviewtab.h
-    fictionhighlighter.cpp
-    fictionhighlighter.h
     plaintextedit.cpp
     plaintextedit.h
     plaintextviewtab.cpp
     plaintextviewtab.h
-    plaintexthighlighter.cpp
-    plaintexthighlighter.h
-    qmarkdowntextedit.cpp
-    qmarkdowntextedit.h
     markdownviewtab.cpp
     markdownviewtab.h
-    markdownhighlighter.cpp
-    markdownhighlighter.h
     customtabwidget.cpp
     customtabwidget.h
     searchWidget.cpp
     searchWidget.h
+    searchHighlighter.cpp
+    searchHighlighter.h
+    textedithelper.cpp
+    textedithelper.h
+    markdownhighlighter.cpp
+    markdownhighlighter.h
+    qmarkdowntextedit.cpp
+    qmarkdowntextedit.h
     qownlanguagedata.cpp
     qownlanguagedata.h
     ${TS_FILES}

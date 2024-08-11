@@ -67,7 +67,6 @@ void CustomTabWidget::createNewTab(const QString &content, const QString &tabNam
     } else {
         newTab = new PlaintextViewTab(content, this);
     }
-    // newTab = new FictionViewTab(content, this);
     addTab(newTab, tabName);
     setCurrentWidget(newTab);
 }

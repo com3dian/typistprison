@@ -25,17 +25,14 @@ int main(int argc, char *argv[])
     MainWindow w;
     #if defined(Q_OS_WIN)
         qDebug() << "Running on Windows";
-        QString styleSheet = "QWidget { font-family: 'Noto Sans CJK SC Light';}"
-                             "PlaintextEdit { font-family: 'Noto Mono'; }"
-                             "QMarkdownTextEdit { font-family: 'Noto Mono'; }"
-                             "FictionTextEdit { font-family: 'Noto Sans CJK SC'; }" ;
+        QString styleSheet = "QWidget { font-family: 'Noto Sans CJK SC Light';}";
+        
     #elif defined(Q_OS_MAC)
         qDebug() << "Running on macOS";
     #elif defined(Q_OS_LINUX)
         QString styleSheet = "QWidget { font-family: 'Noto Sans CJK SC Light';}"
                              "PlaintextEdit { font-family: 'Noto Mono'; }"
-                             "QMarkdownTextEdit { font-family: 'Noto Sans CJK SC Light'; }"
-                             "FictionTextEdit { font-family: 'Noto Sans CJK SC Light'; }" ;
+                             "FictionTextEdit { font-family: 'Noto Sans CJK SC'; }" ;
         
     #else
         qDebug() << "Unknown Operating System";

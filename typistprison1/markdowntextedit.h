@@ -1,17 +1,18 @@
-#ifndef PLAINTEXTEDIT_H
-#define PLAINTEXTEDIT_H
+#ifndef MARKDOWNTEXTEDIT_H
+#define MARKDOWNTEXTEDIT_H
 
 #include <QTextEdit>
 #include <QFont>
-#include <QMimeData>
 #include <QScrollBar>
-#include "plaintexthighlighter.h"
+#include <QMimeData>
+#include "qmarkdowntextedit.h"
+#include "searchHighlighter.h"
 
-class PlaintextEdit : public QTextEdit {
+class MarkdownTextEdit : public QMarkdownTextEdit {
     Q_OBJECT
 
 public:
-    PlaintextEdit(QWidget *parent = nullptr);
+    MarkdownTextEdit(QWidget *parent = nullptr);
 
     void load(const QString& text);
     void changeFontSize(int delta);
@@ -25,13 +26,13 @@ protected:
     void focusInEvent(QFocusEvent *e) override;
 
 private:
-    PlaintextHighlighter* highlighter;
     int globalFontSize;
     int matchStringIndex;
+    SearchHighlighter* highlighter;
 
 signals:
     void onPlaintextSearch(const QString &text);
     void focusGained();
 };
 
-#endif // PLAINTEXTEDIT_H
+#endif // MARKDOWNTEXTEDIT_H

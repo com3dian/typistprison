@@ -16,30 +16,13 @@ QString SearchHighlighter::getSearchString() const {
     return searchString;
 }
 
-// void SearchHighlighter::highlightBlock(const QString &text) {
-//     if (searchString.isEmpty()) {
-//         return;
-//     }
-
-//     QTextCharFormat highlightFormat;
-//     QColor customColor("#F17C67");
-//     highlightFormat.setBackground(QBrush(customColor));
-
-//     QRegularExpression expression(QRegularExpression::escape(searchString));
-//     QRegularExpressionMatchIterator i = expression.globalMatch(text);
-
-//     while (i.hasNext()) {
-//         QRegularExpressionMatch match = i.next();
-//         setFormat(match.capturedStart(), match.capturedLength(), highlightFormat);
-//     }
-// }
 void SearchHighlighter::highlightBlock(const QString &text) {
     if (searchString.isEmpty()) {
         return;
     }
 
     QTextCharFormat highlightFormat;
-    QColor customColor("#F17C67");
+    QColor customColor("#4F726C"); // #20604F
     highlightFormat.setBackground(QBrush(customColor));
 
     QString escapedSearchString = QRegularExpression::escape(searchString);

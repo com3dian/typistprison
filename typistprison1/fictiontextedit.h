@@ -5,9 +5,7 @@
 #include <QList>
 #include <QTextBlock>
 #include <string>
-#include "searchWidget.h"
-#include "fictionhighlighter.h"
-
+#include "textedithelper.h"
 
 class FictionTextEdit : public QTextEdit
 {
@@ -18,8 +16,8 @@ public:
 
     void load(const QString& text);
     void setTopMargin(int margin);
-    void activateSniperMode();
-    void deactivateSniperMode();
+    void activateHighlightMode();
+    void deactivateHighlightMode();
     void search(const QString &searchString);
     void searchPrev(const QString &searchString);
     void clearSearch();
@@ -34,6 +32,8 @@ protected:
     void focusInEvent(QFocusEvent *e) override;
 
 private:
+    TextEditHelper* helper;
+
     void applyBlockFormatting(QTextBlock &block);
     QTextCursor applyCharFormatting(QTextCursor &cursor, bool insertLargeFont = true);
     void updateFocusBlock();
@@ -43,12 +43,10 @@ private:
     QTextBlock findBlockClosestToCenter();
 
     void changeFontSize(int delta);
-    int globalFontSize;
     QTextBlock previousCenteredBlock;
     QTextBlock newCenteredBlock;
-    bool isSniperMode;
-    FictionHighlighter* highlighter;
-    int matchStringIndex;
+    bool isHighlightMode;
+    int globalFontSize;
 };
 
 #endif // FICTIONTEXTEDIT_H

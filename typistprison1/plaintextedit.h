@@ -3,9 +3,7 @@
 
 #include <QTextEdit>
 #include <QFont>
-#include <QMimeData>
-#include <QScrollBar>
-#include "plaintexthighlighter.h"
+#include "textedithelper.h"
 
 class PlaintextEdit : public QTextEdit {
     Q_OBJECT
@@ -25,9 +23,8 @@ protected:
     void focusInEvent(QFocusEvent *e) override;
 
 private:
-    PlaintextHighlighter* highlighter;
+    TextEditHelper* helper;
     int globalFontSize;
-    int matchStringIndex;
 
 signals:
     void onPlaintextSearch(const QString &text);
