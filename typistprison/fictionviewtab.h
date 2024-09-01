@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QGridLayout>
 #include <QScrollBar>
+#include <QString>
+#include <QFile>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QMargins>
@@ -11,6 +13,8 @@
 #include <QPixmap>
 #include <QLabel>
 #include <QDebug>
+#include <QFileDialog>
+#include <QMessageBox>
 #include "fictiontextedit.h"
 #include "searchWidget.h"
 
@@ -18,7 +22,8 @@ class FictionViewTab : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FictionViewTab(const QString &content, QWidget *parent = nullptr);
+    explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
+    bool saveContent();
 
 private:
     void setupTextEdit(const QString &content);
@@ -26,6 +31,7 @@ private:
     void syncScrollBar();
     void activateSniperMode();
     void deactivateSniperMode();
+    void editContent();
 
     FictionTextEdit *textEdit;
     QScrollBar *vScrollBar;
@@ -35,7 +41,10 @@ private:
     QVBoxLayout *leftLayout;
     QHBoxLayout *topLeftLayout;
     QHBoxLayout *bottomLeftLayout;
+    QString currentFilePath;
 
+signals:
+    void onChangeTabName(const QString &fileName);
 };
 
 #endif // FICTIONVIEWTAB_H

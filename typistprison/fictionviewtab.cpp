@@ -1,8 +1,8 @@
 #include "fictionviewtab.h"
 
 
-FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
-    : QWidget(parent), textEdit(new FictionTextEdit(this)), vScrollBar(new QScrollBar(Qt::Vertical, this))
+FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent)
+    : QWidget(parent), textEdit(new FictionTextEdit(this)), vScrollBar(new QScrollBar(Qt::Vertical, this)), currentFilePath(filePath)
 {
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
@@ -74,11 +74,14 @@ FictionViewTab::FictionViewTab(const QString &content, QWidget *parent)
 
     setLayout(globalLayout);
     connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
+    connect(textEdit, &FictionTextEdit::onSave, this, &FictionViewTab::saveContent);
+    connect(textEdit, &FictionTextEdit::textChanged, this, &FictionViewTab::editContent);
     connect(textEdit, &FictionTextEdit::onFictionEditSearch, searchWidget, &SearchWidget::handleSearch);
     connect(textEdit, &FictionTextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &FictionTextEdit::search);
     connect(searchWidget, &SearchWidget::onClear, textEdit, &FictionTextEdit::clearSearch);
     connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &FictionTextEdit::searchPrev);
+
 }
 
 void FictionViewTab::setupTextEdit(const QString &content) {
@@ -157,4 +160,33 @@ void FictionViewTab::deactivateSniperMode() {
     qDebug() << "DeactivateHighlightMode";
     disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
     connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
+}
+
+bool FictionViewTab::saveContent() {
+    if (currentFilePath.isEmpty()) {
+        // If no file path is provided, prompt the user to select a save location
+        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
+        if (fileName.isEmpty()) {
+            // If the user cancels the save dialog, do nothing
+            return false;
+        }
+        currentFilePath = fileName;
+    }
+
+    QFile file(currentFilePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << textEdit->toPlainText();
+    file.close();
+
+    emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+    return true;
+}
+
+void FictionViewTab::editContent() {
+    emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");
 }

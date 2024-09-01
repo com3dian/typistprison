@@ -43,9 +43,11 @@ class CustomTabWidget : public QTabWidget {
 
 public:
     CustomTabWidget(QWidget *parent = nullptr);
-    void createNewTab(const QString &content, const QString &tabName, bool isUntitled = false);
+    void createNewTab(const QString &content, const QString &tabName, const QString &filePath, bool isUntitled = false);
     void switchToFictionView();
-    // void switchToEditorView();
+
+public slots:
+    void updateTabTitle(const QString &fileName);
 
 private:
     void setupTabWidget();
@@ -54,6 +56,10 @@ private:
     void closeWindowIfNoTabs(int index);
     void applyFictionViewStyles(QTextEdit *textEdit);
     void applyEditorViewStyles(QTextEdit *textEdit);
+
+private slots:
+    void onTabCloseRequested(int index);
+    
 
 signals:
     void lastTabClosed();

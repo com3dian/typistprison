@@ -27,6 +27,7 @@ public:
 signals:
     void onFictionEditSearch(const QString &text);
     void focusGained();
+    void onSave();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

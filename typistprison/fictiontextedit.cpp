@@ -121,6 +121,8 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
                 undo();
                 return;
             }
+        } else if (event->key() == Qt::Key_S) {
+            emit onSave();
         }
         // // QTextEdit::keyPressEvent(event);
         // return;

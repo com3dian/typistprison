@@ -32,6 +32,7 @@ private:
 signals:
     void onPlaintextSearch(const QString &text);
     void focusGained();
+    void onSave();
 };
 
 #endif // PLAINTEXTEDIT_H

@@ -211,6 +211,9 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             QString selectedText = textCursor().selectedText();
             emit onMarkdownSearch(selectedText);
             return true;
+        } else if ((keyEvent->key() == Qt::Key_S) &&
+                   keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
+            emit onSave();
         } else if ((keyEvent->key() == Qt::Key_R) &&
                    keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             // _searchWidget->activateReplace();

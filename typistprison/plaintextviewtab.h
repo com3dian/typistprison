@@ -9,6 +9,9 @@
 #include <QMargins>
 #include <QIcon>
 #include <QPixmap>
+#include <QFile>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QLabel>
 #include <QDebug>
 #include "plaintextedit.h"
@@ -18,7 +21,8 @@ class PlaintextViewTab : public QWidget {
     Q_OBJECT
 
 public:
-    explicit PlaintextViewTab(const QString &content, QWidget *parent = nullptr);
+    explicit PlaintextViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
+    bool saveContent();
 
 private:
     void setupTextEdit(const QString &content);
@@ -26,14 +30,18 @@ private:
     void syncScrollBar();
     void activateHighlightMode();
     void deactivateHighlightMode();
+    void editContent();
 
     PlaintextEdit *textEdit;
     QScrollBar *vScrollBar;
-
     QHBoxLayout *globalLayout;
     QVBoxLayout *leftLayout;
     QHBoxLayout *topLeftLayout;
     QHBoxLayout *bottomLeftLayout;
+    QString currentFilePath;
+
+signals:
+    void onChangeTabName(const QString &fileName);
 
 };
 

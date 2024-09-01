@@ -36,6 +36,8 @@ void PlaintextEdit::keyPressEvent(QKeyEvent *event) {
             QString selectedText = textCursor().selectedText();
             emit onPlaintextSearch(selectedText);
             return;
+        } else if (event->key() == Qt::Key_S) {
+            emit onSave();
         }
     }
     QTextEdit::keyPressEvent(event);

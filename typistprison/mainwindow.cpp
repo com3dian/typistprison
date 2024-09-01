@@ -89,7 +89,7 @@ MainWindow::~MainWindow()
 void MainWindow::setupUntitledTab()
 {
     // Create the default untitled tab
-    customTabWidget->createNewTab("", "untitled-" + QString::number(untitledCount++), true);
+    customTabWidget->createNewTab("", "untitled-" + QString::number(untitledCount++), "", true);
 }
 
 void MainWindow::openFile()
@@ -106,7 +106,7 @@ void MainWindow::openFile()
             file.close();
 
             // Create a new tab with the file name as the tab text
-            customTabWidget->createNewTab(fileContents, QFileInfo(filePath).fileName());
+            customTabWidget->createNewTab(fileContents, QFileInfo(filePath).fileName(), filePath);
         }
     }
 }

@@ -1,8 +1,8 @@
 #include "plaintextviewtab.h"
 
 
-PlaintextViewTab::PlaintextViewTab(const QString &content, QWidget *parent)
-    : QWidget(parent), textEdit(new PlaintextEdit(this)), vScrollBar(new QScrollBar(Qt::Vertical, this))
+PlaintextViewTab::PlaintextViewTab(const QString &content, const QString &filePath, QWidget *parent)
+    : QWidget(parent), textEdit(new PlaintextEdit(this)), vScrollBar(new QScrollBar(Qt::Vertical, this)), currentFilePath(filePath)
 {
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
@@ -57,6 +57,10 @@ PlaintextViewTab::PlaintextViewTab(const QString &content, QWidget *parent)
 
     bottomLeftLayout->addWidget(textEdit);
 
+    // add word count
+    // some word counter classes or methods?
+    // bottomLeftLayout->addWidget(wordCountwidgets)
+
     leftLayout->addWidget(topLeftWidget);
     leftLayout->addLayout(bottomLeftLayout);
 
@@ -66,6 +70,8 @@ PlaintextViewTab::PlaintextViewTab(const QString &content, QWidget *parent)
     setLayout(globalLayout);
     connect(textEdit, &PlaintextEdit::onPlaintextSearch, searchWidget, &SearchWidget::handleSearch);
     connect(textEdit, &PlaintextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
+    connect(textEdit, &PlaintextEdit::onSave, this, &PlaintextViewTab::saveContent);
+    connect(textEdit, &PlaintextEdit::textChanged, this, &PlaintextViewTab::editContent);
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &PlaintextEdit::search);
     connect(searchWidget, &SearchWidget::onClear, textEdit, &PlaintextEdit::clearSearch);
     connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &PlaintextEdit::searchPrev);
@@ -133,4 +139,37 @@ void PlaintextViewTab::syncScrollBar() {
     vScrollBar->setPageStep(internalScrollBar->pageStep());
     vScrollBar->setValue(internalScrollBar->value());
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
+}
+
+bool PlaintextViewTab::saveContent() {
+    if (currentFilePath.isEmpty()) {
+        // If no file path is provided, prompt the user to select a save location
+        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
+        if (fileName.isEmpty()) {
+            // If the user cancels the save dialog, do nothing
+            return false;
+        }
+        currentFilePath = fileName;
+    }
+
+    QFile file(currentFilePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << textEdit->toPlainText();
+    file.close();
+
+    // QMessageBox::information(this, "Save", "Content saved successfully.");
+    emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+    qDebug() << "save content";
+    qDebug() << QFileInfo(currentFilePath).fileName();
+
+    return true;
+}
+
+void PlaintextViewTab::editContent() {
+    emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");
 }

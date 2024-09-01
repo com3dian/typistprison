@@ -125,6 +125,7 @@ Q_SIGNALS:
     // extended for typist prison
     void onMarkdownSearch(const QString &text);
     void focusGained();
+    void onSave();
 
 private:
     int globalFontSize;

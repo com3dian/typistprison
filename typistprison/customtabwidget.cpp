@@ -3,6 +3,7 @@
 #include "fictionviewtab.h"
 #include "plaintextedit.h"
 #include "plaintextviewtab.h"
+#include "savemessagebox.h"
 #include "markdownviewtab.h"
 #include <QVBoxLayout>
 #include <QMainWindow>
@@ -12,6 +13,7 @@
 #include <QPainterPath>
 #include <QSpacerItem>
 #include <QScrollBar>
+#include <QRegularExpression>
 
 
 CustomTabWidget::CustomTabWidget(QWidget *parent)
@@ -58,22 +60,28 @@ void CustomTabWidget::setupStyles() {
     );
 }
 
-void CustomTabWidget::createNewTab(const QString &content, const QString &tabName, bool isUntitled) {
+void CustomTabWidget::createNewTab(const QString &content,
+                                   const QString &tabName,
+                                   const QString &filePath,
+                                   bool isUntitled) {
     QWidget *newTab;
     if (tabName.endsWith(".cell.txt") || isUntitled) {
-        newTab = new FictionViewTab(content, this);
+        newTab = new FictionViewTab(content, filePath, this);
+        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     } else if (tabName.endsWith(".md")) {
-        newTab = new MarkdownViewTab(content, this);
+        newTab = new MarkdownViewTab(content, filePath, this);
+        connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     } else {
-        newTab = new PlaintextViewTab(content, this);
+        newTab = new PlaintextViewTab(content, filePath, this);
+        connect(static_cast<PlaintextViewTab*>(newTab), &PlaintextViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     }
-    // newTab = new FictionViewTab(content, this);
+
     addTab(newTab, tabName);
     setCurrentWidget(newTab);
 }
 
 void CustomTabWidget::closeWindowIfNoTabs(int index) {
-    removeTab(index);
+    onTabCloseRequested(index);
     if (count() == 0) {
         emit lastTabClosed();
     }
@@ -88,5 +96,71 @@ void CustomTabWidget::switchToFictionView() {
     if (textEdit) {
         // Apply desired styles or actions
 
+    }
+}
+
+void CustomTabWidget::updateTabTitle(const QString &fileName) {
+    int currentIndex = this->currentIndex();
+    QString currentTitle = this->tabText(currentIndex);
+
+    QString newTitle;
+    if (currentTitle.endsWith("*") and fileName.endsWith("*")) {
+        return;
+    } else if (fileName == "*") {
+        newTitle = currentTitle + fileName;
+    } else {
+        newTitle = fileName;
+    }
+    this->setTabText(currentIndex, newTitle);
+}
+
+void CustomTabWidget::onTabCloseRequested(int index) {
+    QString currentTitle = this->tabText(index);
+    if (currentTitle.endsWith("*")) {
+        SaveMessageBox msgBox;
+        int ret = msgBox.exec();
+        qDebug() << ret;
+
+        QWidget *newTab = nullptr;
+        QString title;
+        QRegularExpression regex("untitled-\\d+\\*");
+        bool isSuccessful;
+
+        switch (ret) {
+            case QMessageBox::Save:
+                // Save the document
+                qDebug() << "Saving the document at index" << index;
+
+                newTab = this->widget(index);
+                title = this->tabText(index);
+                qDebug() << regex.match(title).hasMatch();
+
+                if (title.endsWith("cell.txt*") | regex.match(title).hasMatch()) {
+                    isSuccessful = static_cast<FictionViewTab*>(newTab)->saveContent();
+                } else if (title.endsWith(".md*")) {
+                    isSuccessful = static_cast<MarkdownViewTab*>(newTab)->saveContent();
+                } else {
+                    isSuccessful = static_cast<PlaintextViewTab*>(newTab)->saveContent();
+                }
+                if (isSuccessful) {
+                    removeTab(index);
+                }
+                break;
+            case QMessageBox::Discard:
+                // Discard changes and close the tab
+                qDebug() << "Discarding changes and closing the tab at index" << index;
+                removeTab(index);
+                break;
+            case QMessageBox::Cancel:
+                // Cancel the close operation
+                qDebug() << "Canceling the close operation for tab at index" << index;
+                // Do nothing to cancel the close operation
+                break;
+            default:
+                // Should never be reached
+                break;
+        }
+    } else {
+        removeTab(index);
     }
 }

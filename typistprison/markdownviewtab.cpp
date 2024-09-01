@@ -2,10 +2,11 @@
 #include <QTextBlock>
 
 
-MarkdownViewTab::MarkdownViewTab(const QString &content, QWidget *parent)
+MarkdownViewTab::MarkdownViewTab(const QString &content, const QString &filePath, QWidget *parent)
     : QWidget(parent),
       textEdit(new QMarkdownTextEdit(this)), 
-      vScrollBar(new QScrollBar(Qt::Vertical, this))
+      vScrollBar(new QScrollBar(Qt::Vertical, this)),
+      currentFilePath(filePath)
 {
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
@@ -69,6 +70,8 @@ MarkdownViewTab::MarkdownViewTab(const QString &content, QWidget *parent)
     setLayout(globalLayout);
     connect(textEdit, &QMarkdownTextEdit::onMarkdownSearch, searchWidget, &SearchWidget::handleSearch);
     connect(textEdit, &QMarkdownTextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
+    connect(textEdit, &QMarkdownTextEdit::onSave, this, &MarkdownViewTab::saveContent);
+    connect(textEdit, &QMarkdownTextEdit::textChanged, this, &MarkdownViewTab::editContent);
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &QMarkdownTextEdit::search);
     connect(searchWidget, &SearchWidget::onClear, textEdit, &QMarkdownTextEdit::clearSearch);
     connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &QMarkdownTextEdit::searchPrev);
@@ -136,4 +139,33 @@ void MarkdownViewTab::syncScrollBar() {
     vScrollBar->setPageStep(internalScrollBar->pageStep());
     vScrollBar->setValue(internalScrollBar->value());
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
+}
+
+bool MarkdownViewTab::saveContent() {
+    if (currentFilePath.isEmpty()) {
+        // If no file path is provided, prompt the user to select a save location
+        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
+        if (fileName.isEmpty()) {
+            // If the user cancels the save dialog, do nothing
+            return false;
+        }
+        currentFilePath = fileName;
+    }
+
+    QFile file(currentFilePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+        return false;
+    }
+
+    QTextStream out(&file);
+    out << textEdit->toPlainText();
+    file.close();
+
+    emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+    return true;
+}
+
+void MarkdownViewTab::editContent() {
+    emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");
 }

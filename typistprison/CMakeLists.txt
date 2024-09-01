@@ -43,6 +43,8 @@ set(PROJECT_SOURCES
     searchWidget.h
     qownlanguagedata.cpp
     qownlanguagedata.h
+    savemessagebox.cpp
+    savemessagebox.h
     ${TS_FILES}
 )
 
