@@ -15,8 +15,10 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include "fictiontextedit.h"
 #include "searchWidget.h"
+
 
 class FictionViewTab : public QWidget {
     Q_OBJECT
@@ -32,6 +34,7 @@ private:
     void activateSniperMode();
     void deactivateSniperMode();
     void editContent();
+    void updateWordcount();
 
     FictionTextEdit *textEdit;
     QScrollBar *vScrollBar;
@@ -42,6 +45,8 @@ private:
     QHBoxLayout *topLeftLayout;
     QHBoxLayout *bottomLeftLayout;
     QString currentFilePath;
+    QLabel *wordCountLabel;
+    QString oldTextContent;
 
 signals:
     void onChangeTabName(const QString &fileName);

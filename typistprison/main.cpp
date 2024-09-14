@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
     #elif defined(Q_OS_LINUX)
         QString styleSheet = "QWidget { font-family: 'Noto Sans CJK SC Light';}"
                              "PlaintextEdit { font-family: 'Noto Mono'; }"
-                             "QMarkdownTextEdit { font-family: 'Noto Sans CJK SC Light'; }"
-                             "FictionTextEdit { font-family: 'Noto Sans CJK SC Light'; }" ;
+                             "QMarkdownTextEdit { font-family: 'Noto Sans CJK SC'; }"
+                             "FictionTextEdit { font-family: 'Noto Sans CJK SC'; }" ;
         
     #else
         qDebug() << "Unknown Operating System";

@@ -28,6 +28,7 @@ signals:
     void onFictionEditSearch(const QString &text);
     void focusGained();
     void onSave();
+    void keyboardInput();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -50,6 +51,7 @@ private:
     bool isSniperMode;
     FictionHighlighter* highlighter;
     int matchStringIndex;
+
 };
 
 #endif // FICTIONTEXTEDIT_H

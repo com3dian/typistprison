@@ -2,12 +2,27 @@
 
 
 FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent)
-    : QWidget(parent), textEdit(new FictionTextEdit(this)), vScrollBar(new QScrollBar(Qt::Vertical, this)), currentFilePath(filePath)
+    : QWidget(parent), 
+      textEdit(new FictionTextEdit(this)), 
+      vScrollBar(new QScrollBar(Qt::Vertical, this)), 
+      currentFilePath(filePath),
+      oldTextContent("")
 {
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
     topLeftLayout = new QHBoxLayout();
     bottomLeftLayout = new QHBoxLayout();
+
+    // Add wordcount label
+    wordCountLabel = new QLabel(this);
+    wordCountLabel->setAlignment(Qt::AlignRight | Qt::AlignBottom);
+    wordCountLabel->setStyleSheet("QLabel { color : #454F61; }"); // #989A9C
+    QFont font = wordCountLabel->font();  // Get the current font of the QLabel
+    font.setBold(true);                   // Set the font to bold
+    // Apply the font to the QLabel
+    wordCountLabel->setFont(font);
+    wordCountLabel->setContentsMargins(0, 0, 0, 1);
+
 
     globalLayout->setContentsMargins(0, 0, 0, 0);
     globalLayout->setSpacing(0);
@@ -60,11 +75,24 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     syncScrollBar();
 
     QSpacerItem *bottomLeftSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+    // add stupid fucking word count
+    QLayout *spaceAndCounterLayout = new QVBoxLayout();
+    QWidget *spaceAndCounterWidget = new QWidget(this);
+
+    spaceAndCounterLayout->setSpacing(0);
+    spaceAndCounterWidget->setContentsMargins(0, 0, 0, 0);
+
     QSpacerItem *bottomRightSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
+    spaceAndCounterLayout->addItem(bottomRightSpacer);
+    // QSpacerItem *verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    // spaceAndCounterLayout->addItem(verticalSpacer);
+    spaceAndCounterLayout->addWidget(wordCountLabel);
+    spaceAndCounterWidget->setLayout(spaceAndCounterLayout);
 
     bottomLeftLayout->addItem(bottomLeftSpacer);
     bottomLeftLayout->addWidget(textEdit);
-    bottomLeftLayout->addItem(bottomRightSpacer);
+    bottomLeftLayout->addWidget(spaceAndCounterWidget);
 
     leftLayout->addWidget(topLeftWidget);
     leftLayout->addLayout(bottomLeftLayout);
@@ -81,7 +109,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &FictionTextEdit::search);
     connect(searchWidget, &SearchWidget::onClear, textEdit, &FictionTextEdit::clearSearch);
     connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &FictionTextEdit::searchPrev);
-
+    connect(textEdit, &FictionTextEdit::textChanged, this, &FictionViewTab::updateWordcount);
 }
 
 void FictionViewTab::setupTextEdit(const QString &content) {
@@ -150,6 +178,7 @@ void FictionViewTab::syncScrollBar() {
 
 void FictionViewTab::activateSniperMode() {
     textEdit->activateSniperMode();
+    disconnect(textEdit, &QTextEdit::textChanged, this, &FictionViewTab::updateWordcount);
     qDebug() << "activateHighlightMode";
     disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
     connect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
@@ -189,4 +218,34 @@ bool FictionViewTab::saveContent() {
 
 void FictionViewTab::editContent() {
     emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");
+}
+
+void FictionViewTab::updateWordcount() {
+    // prevent lagging in snipper mode
+    QString newTextContent = textEdit->toPlainText();
+    if (newTextContent == oldTextContent) {
+        return;
+    }
+
+    QString text = textEdit->toPlainText();
+    int wordCount = 0;
+
+    // Regular expression for alphabetic languages (English, etc.)
+    QRegularExpression alphabeticRegex("\\b\\w+\\b");
+
+    // Regular expression for CJK (Chinese, Japanese, Korean) characters
+    QRegularExpression cjkRegex("[\\p{Han}\\p{Hiragana}\\p{Katakana}]");
+
+    QRegularExpressionMatchIterator i = alphabeticRegex.globalMatch(text);
+    while (i.hasNext()) {
+        i.next();
+        wordCount++;
+    }
+
+    i = cjkRegex.globalMatch(text);
+    while (i.hasNext()) {
+        i.next();
+        wordCount++;
+    }
+    wordCountLabel->setText(QString::number(wordCount) + " words  ");
 }

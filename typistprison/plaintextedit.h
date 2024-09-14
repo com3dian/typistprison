@@ -33,6 +33,7 @@ signals:
     void onPlaintextSearch(const QString &text);
     void focusGained();
     void onSave();
+    void keyboardInput();
 };
 
 #endif // PLAINTEXTEDIT_H

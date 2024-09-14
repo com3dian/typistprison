@@ -24,6 +24,7 @@ void PlaintextEdit::load(const QString &text)
 }
 
 void PlaintextEdit::keyPressEvent(QKeyEvent *event) {
+    emit keyboardInput();
     if (event->modifiers() & Qt::ControlModifier) {
         if (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal) {
             // If user key press "Ctrl" + "+", increase fontsize

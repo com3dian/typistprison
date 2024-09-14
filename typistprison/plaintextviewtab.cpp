@@ -57,10 +57,6 @@ PlaintextViewTab::PlaintextViewTab(const QString &content, const QString &filePa
 
     bottomLeftLayout->addWidget(textEdit);
 
-    // add word count
-    // some word counter classes or methods?
-    // bottomLeftLayout->addWidget(wordCountwidgets)
-
     leftLayout->addWidget(topLeftWidget);
     leftLayout->addLayout(bottomLeftLayout);
 

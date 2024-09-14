@@ -100,6 +100,7 @@ QTextCursor FictionTextEdit::applyCharFormatting(QTextCursor &cursor, bool inser
 
 void FictionTextEdit::keyPressEvent(QKeyEvent *event)
 {
+    emit keyboardInput();
     if (event->modifiers() & Qt::ControlModifier) {
         if (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal) {
             changeFontSize(1);
@@ -145,7 +146,6 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
     //            Otherwise in empty line hitting ENTER wno't insert new line
     // *** Need Fix ***
     if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)) {
-        qDebug() << "key press ENTER";
         QTextCursor textCursorSmall = applyCharFormatting(textCursor, false);
         textCursorSmall.insertBlock();
         if (isAtBottom) {
@@ -169,7 +169,8 @@ void FictionTextEdit::load(const QString &text)
 
     // Set font format
     QTextCursor cursor = this->textCursor();
-    QFont font("Noto Sans CJK SC Light", 1.6 * globalFontSize); // If we need special font
+    // QFont font("Noto Sans CJK SC Light", 1.6 * globalFontSize); // If we need special font
+    QFont font("Noto Sans CJK SC", 1.6 * globalFontSize); // If we need special font
 
     // Set cursor format
     QTextCharFormat charFormat = cursor.charFormat();
@@ -298,11 +299,16 @@ void FictionTextEdit::changeFontSize(int delta) {
         updateFocusBlock();
     }
 
+    // **** **** **** **** **** ****
+    // NEED FIX: get the centered block
+    // 
+    // this->
     int updatedPosition = static_cast<int>(positionRatio * static_cast<float>(vScrollBar->maximum()));
     qDebug() << updatedPosition << vScrollBar->maximum();
 
     // TODO: use findBlockClosestToCenter to find the most centered block->first token, 
     // TODO: then set that token to the same position on the screen.
+
     vScrollBar->setValue(updatedPosition);
 }
 
