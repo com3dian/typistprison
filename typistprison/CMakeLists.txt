@@ -45,31 +45,47 @@ set(PROJECT_SOURCES
     qownlanguagedata.h
     savemessagebox.cpp
     savemessagebox.h
+    fontmanager.cpp
+    fontmanager.h
+    foldertreeviewwidget.cpp
+    foldertreeviewwidget.h
+    customtreestyle.cpp
+    customtreestyle.h
+    customtabbar.cpp
+    customtabbar.h
     ${TS_FILES}
 )
+
+# Add the resource files
+set(RESOURCE_FILES
+    fonts.qrc
+    icons.qrc
+)
+
+# Generate the resource file from the qrc files
+qt_add_resources(RESOURCES "${RESOURCE_FILES}")
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(typistprison
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        ${RESOURCES}
     )
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
     if(ANDROID)
         add_library(typistprison SHARED
             ${PROJECT_SOURCES}
+            ${RESOURCES}
         )
     else()
         add_executable(typistprison
             ${PROJECT_SOURCES}
+            ${RESOURCES}
         )
     endif()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
-
-# Add qmarkdowntextedit
-# add_subdirectory(3rdparty/qmarkdowntextedit)
-# include_directories(3rdparty/qmarkdowntextedit)
 
 # Link QMarkdownTextEdit library
 target_link_libraries(typistprison PRIVATE

@@ -61,10 +61,10 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
         _highlighter = new MarkdownHighlighter(document());
     }
 
-    QFont font("Noto Mono", globalFontSize); // Set the font to Something, size 12
+    // set `Noto Sans Regular` as default font for fictiontextedit 
+    QString notoSansRegularFamily = FontManager::instance().getNotoSansRegularFamily();
+    QFont font(notoSansRegularFamily, globalFontSize);
     this->setFont(font);
-
-    // QFont font = this->font();
 
     // set the tab stop to the width of 4 spaces in the editor
     constexpr int tabStop = 4;

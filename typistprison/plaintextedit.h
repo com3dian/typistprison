@@ -4,8 +4,11 @@
 #include <QTextEdit>
 #include <QFont>
 #include <QMimeData>
+#include <QPainter>
 #include <QScrollBar>
+#include <QTimer>
 #include "plaintexthighlighter.h"
+#include "fontmanager.h"
 
 class PlaintextEdit : public QTextEdit {
     Q_OBJECT
@@ -15,25 +18,31 @@ public:
 
     void load(const QString& text);
     void changeFontSize(int delta);
-    void insertFromMimeData(const QMimeData *source);
     void search(const QString &searchString);
     void searchPrev(const QString &searchString);
     void clearSearch();
-
-protected:
-    void keyPressEvent(QKeyEvent *event) override;
-    void focusInEvent(QFocusEvent *e) override;
-
-private:
-    PlaintextHighlighter* highlighter;
-    int globalFontSize;
-    int matchStringIndex;
 
 signals:
     void onPlaintextSearch(const QString &text);
     void focusGained();
     void onSave();
     void keyboardInput();
+
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    void insertFromMimeData(const QMimeData *source) override;
+    void focusInEvent(QFocusEvent *e) override;
+    // void paintEvent(QPaintEvent *event) override;
+    // void focusOutEvent(QFocusEvent *event) override;
+
+private:
+    // void toggleCursorVisibility();
+
+    PlaintextHighlighter* highlighter;
+    int globalFontSize;
+    int matchStringIndex;
+    // QTimer *cursorTimer;
+    // bool cursorVisible;
 };
 
 #endif // PLAINTEXTEDIT_H

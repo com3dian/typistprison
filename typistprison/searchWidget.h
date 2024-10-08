@@ -34,10 +34,13 @@ private:
     QWidget *bottomLine;
     QHBoxLayout *hLayout;
     QVBoxLayout *vLayout;
+
     bool isHovered;
     bool isOnSearch;
     bool isSearchPrev;
     bool isSearchLatter;
+
+    qreal scalingFactor;
 };
 
 #endif // SEARCHWIDGET_H

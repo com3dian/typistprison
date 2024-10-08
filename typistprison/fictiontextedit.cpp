@@ -1,35 +1,35 @@
 #include "fictiontextedit.h"
-#include <QTextDocument>
-#include <QTextCursor>
-#include <QTextBlockFormat>
-#include <QTextCharFormat>
-#include <QTextBlock>
-#include <QMimeData>
-#include <QKeyEvent>
-#include <QScrollBar>
-#include <QAbstractTextDocumentLayout>
-#include <QDebug>
-#include <QList>
-#include <string>
-#include <QPalette>
-#include <QStringMatcher>
-#include <QtConcurrent/QtConcurrent>
-
 
 FictionTextEdit::FictionTextEdit(QWidget *parent)
-    : QTextEdit(parent), globalFontSize(12), matchStringIndex(-1)
+    : QTextEdit(parent), 
+    globalFontSize(12), 
+    matchStringIndex(-1)
+    // cursorVisible(true)
 {
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
     palette.setColor(QPalette::HighlightedText, QColor("#31363F"));
     this->setPalette(palette);
 
-    setUndoRedoEnabled(false);
-    setTopMargin(256);
+    setUndoRedoEnabled(false); // forbid undo
+                               // do our settings
+    setTopMargin(256);         // set top margin as 256
 
-    // connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &FictionTextEdit::updateTextColor);
-    isSniperMode = false;
-    setUndoRedoEnabled(true);
+    isSniperMode = false;      // default not sniperMode
+
+    // set `Noto Sans Regular` as default font for fictiontextedit 
+    QString notoSansRegularFamily = FontManager::instance().getNotoSansRegularFamily();
+    QFont font(notoSansRegularFamily, globalFontSize);
+    this->setFont(font);
+    this->setCursorWidth(2);
+
+    // To be discussed (Between me and me):
+    // Do we want a colored blinking cursor (carent)?
+    // cursorTimer = new QTimer(this);
+    // connect(cursorTimer, &QTimer::timeout, this, &FictionTextEdit::toggleCursorVisibility);
+    // cursorTimer->setInterval(750); // Blink every 750 milliseconds
+    // cursorTimer->start();
+    setUndoRedoEnabled(true); // allow undo
 
     highlighter = new FictionHighlighter(this->document());
 }
@@ -97,6 +97,102 @@ QTextCursor FictionTextEdit::applyCharFormatting(QTextCursor &cursor, bool inser
     return cursor;
 }
 
+QTextCursor FictionTextEdit::applyCharFormatting4NextBlock(QTextCursor &cursor)
+{
+    bool isFirstBlock = cursor.blockNumber() == 0;
+
+    QTextCharFormat charFormat = cursor.charFormat();  // Get current char format
+
+    QFont font = charFormat.font();
+    font.setPointSize(globalFontSize);  // Adjust font size
+    charFormat.setFont(font);
+
+
+    // Check if scrollbar exists and if it is at the bottom
+    // If yes then this is a special case
+    QScrollBar *vScrollBar = verticalScrollBar();
+    bool isAtBottom;
+    if (vScrollBar) {
+        isAtBottom = vScrollBar->value() == vScrollBar->maximum();
+    } else {
+        isAtBottom = false;
+    }
+
+    if (isSniperMode) {
+        int centerY = getVisibleCenterY();
+
+        QFontMetricsF fontMetrics(font);
+
+        // Calculate the height of the text (ascent + descent)
+        qreal fontHeight = fontMetrics.height();
+        qreal totalHeight = fontHeight + 32;
+
+        QRectF blockRect = document()->documentLayout()->blockBoundingRect(cursor.block());
+        
+        if (isAtBottom) {
+            if ((blockRect.bottom() + 16 - totalHeight <= centerY) && (centerY <= blockRect.bottom() + 16)) {
+                qDebug() << "@@@@@@@@@@@@@@@@@@@@1111111111111";
+                charFormat.setForeground(Qt::white);
+            } else {
+                qDebug() << "@@@@@@@@@@@@@@@@@@@@2222222222222";
+                QColor customColor("#454F61");
+                charFormat.setForeground(customColor);
+            }
+        } else {
+            if ((blockRect.bottom() + 16 <= centerY) && (centerY <= blockRect.bottom() + totalHeight + 16)) {
+                qDebug() << "@@@@@@@@@@@@@@@@@@@@3333333333333";
+                charFormat.setForeground(Qt::white);
+                // previousCenteredBlock = cursor.block();  // Update previous centered block
+            } else {
+                qDebug() << "@@@@@@@@@@@@@@@@@@@@4444444444444";
+                QColor customColor("#454F61");
+                charFormat.setForeground(customColor);
+            }
+        }
+    } else {
+        charFormat.setForeground(Qt::white);
+    }
+
+    cursor.setCharFormat(charFormat);  // Apply the new char format to the cursor
+
+    return cursor;
+}
+
+// void FictionTextEdit::paintEvent(QPaintEvent *event) {
+//     QTextEdit::paintEvent(event);
+
+//     // Drawing a custom cursor
+//     if (hasFocus()) {
+//         QPainter painter(viewport());
+//         QTextCursor cursor = textCursor();
+        
+//         // Get the rectangle representing the cursor's position
+//         QRect cursorRect = this->cursorRect();
+
+//         // Adjust the cursor width as desired
+//         int cursorWidth = 2;
+//         cursorRect.setWidth(cursorWidth);
+//         QColor cursorColor;
+//         if (cursorVisible) {
+//             cursorColor = QColor("#84e0a5");  // Cursor color when visible
+//         } else {
+//             cursorColor = QColor("#31363F");
+//         }
+//         painter.fillRect(cursorRect, cursorColor);
+//     }
+// }
+
+// void FictionTextEdit::toggleCursorVisibility() {
+//     cursorVisible = !cursorVisible;  // Toggle cursor visibility
+//     update();  // Trigger a repaint
+// }
+
+// void FictionTextEdit::focusOutEvent(QFocusEvent *event) {
+//     QTextEdit::focusOutEvent(event);
+//     cursorTimer->stop();  // Stop blinking when focus is lost
+//     cursorVisible = true; // Ensure cursor is visible when focus is lost
+//     update(); // Trigger a repaint to hide the cursor
+// }
 
 void FictionTextEdit::keyPressEvent(QKeyEvent *event)
 {
@@ -146,8 +242,11 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
     //            Otherwise in empty line hitting ENTER wno't insert new line
     // *** Need Fix ***
     if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)) {
-        QTextCursor textCursorSmall = applyCharFormatting(textCursor, false);
+        QTextCursor textCursorSmall = applyCharFormatting4NextBlock(textCursor);
+
         textCursorSmall.insertBlock();
+        QTextBlock newBlock = textCursorSmall.block();
+        applyBlockFormatting(newBlock);
         if (isAtBottom) {
             // Attach handler to bottom
             vScrollBar->setValue(vScrollBar->maximum());
@@ -169,8 +268,8 @@ void FictionTextEdit::load(const QString &text)
 
     // Set font format
     QTextCursor cursor = this->textCursor();
-    // QFont font("Noto Sans CJK SC Light", 1.6 * globalFontSize); // If we need special font
-    QFont font("Noto Sans CJK SC", 1.6 * globalFontSize); // If we need special font
+    QFont font  = this->font();
+    font.setPointSize(globalFontSize);
 
     // Set cursor format
     QTextCharFormat charFormat = cursor.charFormat();
@@ -264,15 +363,25 @@ void FictionTextEdit::insertFromMimeData(const QMimeData *source)
 }
 
 void FictionTextEdit::changeFontSize(int delta) {
+    // Find the most centered block
+    QTextBlock centerBlock = findBlockClosestToCenter();
+    QRectF centerBlockRect = document()->documentLayout()->blockBoundingRect(centerBlock);
+    int centerBlockTop = centerBlockRect.top();
+    int centerBlockBottom = centerBlockRect.bottom();
+    int centerBlockMiddle = static_cast<int>(centerBlockTop + (centerBlockBottom - centerBlockTop) / 2);
+    // // Get the scroll position to calculate the distance from the top of the document
+    // int scrollPosition = verticalScrollBar()->value();
+
+    // // Calculate the relative position of the center block
+    // int relativePosition = centerBlockMiddle + scrollPosition;
+    // qDebug() << "relativePosition" << relativePosition;
+
+
     highlighter->changeFontSize(delta);
     // set default font
     QFont font = this->font();
-    font.setPointSize(1.6 * globalFontSize); // Set default font size
+    font.setPointSize(globalFontSize); // Set default font size
     this->setFont(font);
-
-    QScrollBar *vScrollBar = verticalScrollBar();
-    int scrollBarPosition = vScrollBar->value();
-    float positionRatio = static_cast<float>(scrollBarPosition)/static_cast<float>(vScrollBar->maximum());
 
     globalFontSize += delta;
     if (globalFontSize < 1) {
@@ -299,46 +408,47 @@ void FictionTextEdit::changeFontSize(int delta) {
         updateFocusBlock();
     }
 
-    // **** **** **** **** **** ****
-    // NEED FIX: get the centered block
-    // 
-    // this->
-    int updatedPosition = static_cast<int>(positionRatio * static_cast<float>(vScrollBar->maximum()));
-    qDebug() << updatedPosition << vScrollBar->maximum();
+    // After changing the font size, scroll to keep the old center block in view
+    QRectF newCenterBlockRect = document()->documentLayout()->blockBoundingRect(centerBlock);
+    int newCenterBlockTop = newCenterBlockRect.top();
+    int newCenterBlockBottom = newCenterBlockRect.bottom();
+    int newCenterBlockMiddle = static_cast<int>(newCenterBlockTop + (newCenterBlockBottom - newCenterBlockTop) / 2);
 
-    // TODO: use findBlockClosestToCenter to find the most centered block->first token, 
-    // TODO: then set that token to the same position on the screen.
-
-    vScrollBar->setValue(updatedPosition);
+    // Calculate the relative position of the center block
+    int halfViewportHeight = (viewport()->height() - 256) / 2;
+    verticalScrollBar()->setValue(newCenterBlockMiddle - halfViewportHeight);
 }
 
 
 int FictionTextEdit::getVisibleCenterY() {
     QRect visibleRect = viewport()->rect();
-    int centerY = visibleRect.top() * 0.55 + visibleRect.bottom() * 0.45;
+    int centerY = visibleRect.top() * 0.58 + visibleRect.bottom() * 0.42;
     // int centerY = visibleRect.center().y();
     int scrollValue = verticalScrollBar()->value();
     centerY += scrollValue;
     return centerY;
 }
 
-std::string FictionTextEdit::checkVisibleCenterBlock(const QTextBlock &block) {
+int FictionTextEdit::checkVisibleCenterBlock(const QTextBlock &block) {
     QRectF blockRect = document()->documentLayout()->blockBoundingRect(block);
     int centerY = getVisibleCenterY();
 
     if ((blockRect.top() - 16 <= centerY) && (blockRect.bottom() + 16 >= centerY)) {
-        return "In";
+        return 0;
+
     } else if (blockRect.top() - 16 > centerY) {
-        return "On top";
+        return centerY - blockRect.top(); // positive value
+        // current block is below the middleline
+
     } else if (blockRect.bottom() + 16 < centerY) {
-        return "On bottom";
+        return centerY - blockRect.bottom(); // negative value
     }
-    return "make gcc happy";
+    return 0; // make compiler happy
 }
 
 // Function to find the block closest to the center of the visible area
 QTextBlock FictionTextEdit::findBlockClosestToCenter() {
-    qDebug() << "binary";
+
     QTextDocument *doc = document();
     int centerY = getVisibleCenterY();
 
@@ -349,17 +459,30 @@ QTextBlock FictionTextEdit::findBlockClosestToCenter() {
         return QTextBlock(); // Return an invalid block if there are no blocks
     }
 
+    QRectF lowBlockRect = document()->documentLayout()->blockBoundingRect(low);
+    QRectF highBlockRect = document()->documentLayout()->blockBoundingRect(high);
+
     // Ensure the binary search terminates properly
     while (low.blockNumber() < high.blockNumber()) {
-        int midBlockNumber = (low.blockNumber() + high.blockNumber()) / 2;
+        int midBlockNumber;
+
         QTextBlock midBlock = doc->findBlockByNumber(midBlockNumber);
-        std::string position = checkVisibleCenterBlock(midBlock);
-        if (position == "In") {
+        int position = checkVisibleCenterBlock(midBlock);
+        if (position == 0) {
             return midBlock;
-        } else if (position == "On top") {
+        } else if (position < 0) {
             high = midBlock;
-        } else if (position == "On bottom") {
+            highBlockRect = document()->documentLayout()->blockBoundingRect(high);
+            midBlockNumber = 
+                high.blockNumber() +  (high.blockNumber() - low.blockNumber()) * position / (highBlockRect.top() - lowBlockRect.top());
+
+
+        } else if (position > 0) {
             low = midBlock.next();
+            lowBlockRect = document()->documentLayout()->blockBoundingRect(low);
+
+            midBlockNumber = 
+                low.blockNumber() +  (high.blockNumber() - low.blockNumber()) * position / (highBlockRect.top() - lowBlockRect.top());
         }
 
         // Break condition to prevent infinite loop
@@ -371,17 +494,17 @@ QTextBlock FictionTextEdit::findBlockClosestToCenter() {
     // Now low is the closest block below or at the center
     // Check the block before and after to find the closest one
     QTextBlock closestBlock = low;
-    std::string position = checkVisibleCenterBlock(closestBlock);
-    if (position == "In") {
+    int position = checkVisibleCenterBlock(closestBlock);
+    if (position == 0) {
         return closestBlock;
-    } else if (position == "On top") {
+    } else if (position < 0) {
         if (closestBlock.previous().isValid()) {
             return  closestBlock.previous();
         } else {
             return closestBlock;
         }
         
-    } else if (position == "On bottom") {
+    } else if (position > 0) {
         if (closestBlock.next().isValid()) {
             return closestBlock.next();
         } else {
@@ -391,13 +514,14 @@ QTextBlock FictionTextEdit::findBlockClosestToCenter() {
 }
 
 void FictionTextEdit::updateFocusBlock() {
+    qDebug() << "updateFocusBlock";
     int centerY = getVisibleCenterY();
 
     // Check if the previously centered block is still close to the center
     if (previousCenteredBlock.isValid()) {
-        std::string position = checkVisibleCenterBlock(previousCenteredBlock);
-        qDebug() << position;
-        if (position == "In") {
+        qDebug() << "++++++++++++++++++++++ 11111";
+        int position = checkVisibleCenterBlock(previousCenteredBlock);
+        if (position == 0) {
 
             return; // The previous centered block is still close enough, no need to update
         }
@@ -405,19 +529,22 @@ void FictionTextEdit::updateFocusBlock() {
 
     // If there was a previously centered block, set it to grey
     if (previousCenteredBlock.isValid()) {
+        qDebug() << "++++++++++++++++++++++ 22222";
         applyBlockFormatting(previousCenteredBlock);
     }
 
     // check the prevous & next blocks
-    std::string positionPrevious = checkVisibleCenterBlock(previousCenteredBlock.previous());
-    if (positionPrevious == "In") {
+    int positionPrevious = checkVisibleCenterBlock(previousCenteredBlock.previous());
+    if (positionPrevious == 0) {
+        qDebug() << "++++++++++++++++++++++ 33333";
         newCenteredBlock = previousCenteredBlock.previous();
         applyBlockFormatting(newCenteredBlock);
         previousCenteredBlock = newCenteredBlock;
         return;
     }
-    std::string positionNext = checkVisibleCenterBlock(previousCenteredBlock.next());
-    if (positionNext == "In") {
+    int positionNext = checkVisibleCenterBlock(previousCenteredBlock.next());
+    if (positionNext == 0) {
+        qDebug() << "++++++++++++++++++++++ 44444";
         newCenteredBlock = previousCenteredBlock.next();
         applyBlockFormatting(newCenteredBlock);
         previousCenteredBlock = newCenteredBlock;
@@ -475,6 +602,7 @@ void FictionTextEdit::deactivateSniperMode() {
 void FictionTextEdit::focusInEvent(QFocusEvent *e) {
     QTextEdit::focusInEvent(e); // Call base class implementation
     emit focusGained(); // Emit the signal
+    // cursorTimer->start(); // Start cursor timer
 }
 
 void FictionTextEdit::search(const QString &searchString) {

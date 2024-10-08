@@ -1,13 +1,24 @@
 #include "plaintextedit.h"
 
 PlaintextEdit::PlaintextEdit(QWidget *parent)
-    : QTextEdit(parent), globalFontSize(12), matchStringIndex(-1)
-
+    : QTextEdit(parent), 
+      globalFontSize(12), 
+      matchStringIndex(-1)
 {
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
     palette.setColor(QPalette::HighlightedText, QColor("#31363F"));
     this->setPalette(palette);
+
+    // set `Noto Sans Regular` as default font for fictiontextedit 
+    QString notoSansRegularFamily = FontManager::instance().getNotoSansMonoFamily();
+    QFont font(notoSansRegularFamily, globalFontSize);
+    this->setFont(font);
+    this->setCursorWidth(2);
+    // cursorTimer = new QTimer(this);
+    // connect(cursorTimer, &QTimer::timeout, this, &PlaintextEdit::toggleCursorVisibility);
+    // cursorTimer->setInterval(750); // Blink every 750 milliseconds
+    // cursorTimer->start();
 
     highlighter = new PlaintextHighlighter(this->document());
 }
@@ -16,7 +27,8 @@ void PlaintextEdit::load(const QString &text)
 {
     // Clear existing content
     clear();
-    QFont font("Noto Mono", globalFontSize); // Set the font to Something, size 12
+    QFont font  = this->font();
+    font.setPointSize(globalFontSize);
     this->setFont(font);
 
     // Load plain text
@@ -24,7 +36,7 @@ void PlaintextEdit::load(const QString &text)
 }
 
 void PlaintextEdit::keyPressEvent(QKeyEvent *event) {
-    emit keyboardInput();
+    // emit keyboardInput();
     if (event->modifiers() & Qt::ControlModifier) {
         if (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal) {
             // If user key press "Ctrl" + "+", increase fontsize
@@ -49,6 +61,42 @@ void PlaintextEdit::insertFromMimeData(const QMimeData *source) {
     QTextCursor cursor = this->textCursor();
     cursor.insertText(plainText);
 }
+
+// void PlaintextEdit::paintEvent(QPaintEvent *event) {
+//     QTextEdit::paintEvent(event);
+
+//     // Drawing a custom cursor
+//     if (hasFocus()) {
+//         QPainter painter(viewport());
+//         QTextCursor cursor = textCursor();
+        
+//         // Get the rectangle representing the cursor's position
+//         QRect cursorRect = this->cursorRect();
+
+//         // Adjust the cursor width as desired
+//         int cursorWidth = 2;
+//         cursorRect.setWidth(cursorWidth);
+//         QColor cursorColor;
+//         if (cursorVisible) {
+//             cursorColor = QColor("#84e0a5");  // Cursor color when visible
+//         } else {
+//             cursorColor = QColor("#31363F");  // Background color
+//         }
+//         painter.fillRect(cursorRect, cursorColor);
+//     }
+// }
+
+// void PlaintextEdit::toggleCursorVisibility() {
+//     cursorVisible = !cursorVisible;  // Toggle cursor visibility
+//     update();  // Trigger a repaint
+// }
+
+// void PlaintextEdit::focusOutEvent(QFocusEvent *event) {
+//     QTextEdit::focusOutEvent(event);
+//     cursorTimer->stop();  // Stop blinking when focus is lost
+//     cursorVisible = true; // Ensure cursor is visible when focus is lost
+//     update(); // Trigger a repaint to hide the cursor
+// }
 
 void PlaintextEdit::changeFontSize(int delta) {
     QScrollBar *vScrollBar = this->verticalScrollBar();
@@ -75,6 +123,7 @@ void PlaintextEdit::changeFontSize(int delta) {
 void PlaintextEdit::focusInEvent(QFocusEvent *e) {
     QTextEdit::focusInEvent(e); // Call base class implementation
     emit focusGained(); // Emit the signal
+    // cursorTimer->start(); // Start cursor timer
 }
 
 void PlaintextEdit::search(const QString &searchString) {

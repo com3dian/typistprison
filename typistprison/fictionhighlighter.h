@@ -26,6 +26,7 @@ private:
     QTextCharFormat searchHighlightFormat;
     QTextCharFormat searchFirstlineHighlightFormat;
     QTextCharFormat firstLineFormat;
+    QTextCharFormat otherLineFormat;
 };
 
 #endif // SEARCHHIGHLIGHTER_H

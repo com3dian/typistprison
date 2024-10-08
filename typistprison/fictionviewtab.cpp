@@ -228,6 +228,10 @@ void FictionViewTab::updateWordcount() {
     }
 
     QString text = textEdit->toPlainText();
+    if (text.isEmpty()) {
+        wordCountLabel->setText(QString::number(0) + " words  ");
+        return;
+    }
     int wordCount = 0;
 
     // Regular expression for alphabetic languages (English, etc.)

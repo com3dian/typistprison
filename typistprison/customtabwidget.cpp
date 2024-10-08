@@ -5,6 +5,8 @@
 #include "plaintextviewtab.h"
 #include "savemessagebox.h"
 #include "markdownviewtab.h"
+#include "customtabbar.h"
+
 #include <QVBoxLayout>
 #include <QMainWindow>
 #include <QStylePainter>
@@ -25,7 +27,8 @@ CustomTabWidget::CustomTabWidget(QWidget *parent)
 }
 
 void CustomTabWidget::setupTabBar() {
-    setTabBar(new CustomTabBar());
+    CustomTabBar *customTabBar = new CustomTabBar();
+    setTabBar(customTabBar);
 }
 
 void CustomTabWidget::setupTabWidget() {
@@ -56,6 +59,21 @@ void CustomTabWidget::setupStyles() {
                         "border: 0px;"
                         "margin-right: -1px;"
                         "margin-bottom: -1px;"
+        "}"
+
+        "QTabBar::close-button {"
+        "   image: url(:/icons/tab_close.png); "
+        "   margin-right:8px;"
+        "}"
+
+        "QTabBar::close-button:hover {"
+        "    image: url(:/icons/tab_hover.png);"
+        "   margin-right:8px;"
+        "}"
+
+        "QTabBar::close-button:pressed {"
+        "    image: url(:/icons/tab_clicked.png);"
+        "   margin-right:8px;"
         "}"
     );
 }

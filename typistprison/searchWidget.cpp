@@ -1,15 +1,27 @@
 #include "searchWidget.h"
 #include <QPalette>
 #include <QKeyEvent>
+#include <QScreen>
 
 SearchWidget::SearchWidget(QWidget *parent)
     : QWidget(parent), isHovered(false), isOnSearch(false), isSearchPrev(false), isSearchLatter(false)
 {
+    QScreen *screen = QGuiApplication::primaryScreen(); // Use QGuiApplication to get the primary screen
+    scalingFactor = screen->devicePixelRatio(); // Correctly call devicePixelRatio()
+
+
     lineEdit = new QLineEdit(this);
     lineEdit->setMinimumWidth(256);
     lineEdit->setStyleSheet("background-color: transparent; border: none;");
 
-    button = new QPushButton("Search", this);
+    button = new QPushButton(this);
+    button->setStyleSheet(
+            "QPushButton {"
+            "border: none;"
+            "border-image: url(:/icons/emptyicon.png) 0 0 0 0 stretch stretch;"
+            "}"
+    );
+
     bottomLine = new QWidget(this);
     bottomLine->setFixedHeight(1);
     bottomLine->setStyleSheet("background-color: transparent;");
@@ -59,7 +71,20 @@ void SearchWidget::handleSearch(const QString &text)
         lineEdit->setPalette(palette);
         lineEdit->selectAll();
 
-        button->setText("Clear");
+        button->setStyleSheet(
+            "QPushButton {"
+            "border: none;"
+            "border-image: url(:/icons/clearsearch_silent.png) 0 0 0 0 stretch stretch;"
+            "}"
+            "QPushButton:hover {"
+            "border-image: url(:/icons/clearsearch_hover.png) 0 0 0 0 stretch stretch;"
+            "}"
+            "QPushButton:pressed {"
+            "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
+            "}"
+        );
+        button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+
         disconnect(button, &QPushButton::clicked, this, nullptr);
         connect(button, &QPushButton::clicked, this, &SearchWidget::handleClear);
         qDebug() << "SearchWidget::handleSearch!" ;
@@ -78,7 +103,20 @@ void SearchWidget::handleClear()
     lineEdit->clear();
     qDebug() << "SearchWidget::handleClear()";
     emit onClear();
-    button->setText("Search");
+    button->setStyleSheet(
+            "QPushButton {"
+            "border: none;"
+            "border-image: url(:/icons/search_silent.png) 0 0 0 0 stretch stretch;"
+            "}"
+            "QPushButton:hover {"
+            "border-image: url(:/icons/search_hover.png) 0 0 0 0 stretch stretch;"
+            "}"
+            "QPushButton:pressed {"
+            "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
+            "}"
+    );
+    button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+
     disconnect(button, &QPushButton::clicked, this, nullptr);
     connect(button, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
     disconnect(lineEdit, &QLineEdit::textChanged, this, nullptr);
@@ -88,8 +126,21 @@ void SearchWidget::handleClear()
 
 void SearchWidget::handleReSearch()
 {
-    button->setText("Search");
-    qDebug() << "SearchWidget::handleReSearch()";
+
+    button->setStyleSheet(
+            "QPushButton {"
+            "border: none;"
+            "border-image: url(:/icons/search_silent.png) 0 0 0 0 stretch stretch;"
+            "}"
+            "QPushButton:hover {"
+            "border-image: url(:/icons/search_hover.png) 0 0 0 0 stretch stretch;"
+            "}"
+            "QPushButton:pressed {"
+            "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
+            "}"
+    );
+    button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+
     emit onClear();
     disconnect(button, &QPushButton::clicked, this, nullptr);
     connect(button, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
@@ -154,10 +205,45 @@ void SearchWidget::updateBottomLine()
 {
     if (isOnSearch) {
         bottomLine->setStyleSheet("background-color: #A8D8B9;");
+
+        button->setStyleSheet(
+                "QPushButton {"
+                "border: none;"
+                "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
+                "}"
+                "QPushButton:hover {"
+                "border-image: url(:/icons/clearsearch_hover.png) 0 0 0 0 stretch stretch;"
+                "}"
+                "QPushButton:pressed {"
+                "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
+                "}"
+        );
+        button->setFixedSize(16*scalingFactor, 16*scalingFactor);
     }
     else if (isHovered || !lineEdit->text().isEmpty() || lineEdit->hasFocus()) {
         bottomLine->setStyleSheet("background-color: #454F61;");
+
+        button->setStyleSheet(
+                "QPushButton {"
+                "border: none;"
+                "border-image: url(:/icons/search_silent.png) 0 0 0 0 stretch stretch;"
+                "}"
+                "QPushButton:hover {"
+                "border-image: url(:/icons/search_hover.png) 0 0 0 0 stretch stretch;"
+                "}"
+                "QPushButton:pressed {"
+                "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
+                "}"
+        );
+        button->setFixedSize(16*scalingFactor, 16*scalingFactor);
     } else {
+        button->setStyleSheet(
+            "QPushButton {"
+            "border: none;"
+            "border-image: url(:/icons/emptyicon.png) 0 0 0 0 stretch stretch;"
+            "}"
+        );
+        button->setFixedSize(16*scalingFactor, 16*scalingFactor);
         bottomLine->setStyleSheet("background-color: transparent;");
     }
 }

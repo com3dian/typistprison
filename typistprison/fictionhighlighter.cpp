@@ -15,15 +15,14 @@ FictionHighlighter::FictionHighlighter(QTextDocument *parent)
 
     // Define the format for the first line
     firstLineFormat.setFontPointSize(1.6 * globalFontSize); // Larger font size for the first line
+    otherLineFormat.setFontPointSize(globalFontSize);
     searchFirstlineHighlightFormat.setFontPointSize(1.6 * globalFontSize); // Larger font size for the first line
 }
 
 /* Change font size 
  */
 void FictionHighlighter::changeFontSize(int delta)
-{
-    qDebug() << "change font size";
-    
+{   
     // define global font size and 
     // Prevent font size from becoming <= 0
     globalFontSize += delta;
@@ -33,6 +32,7 @@ void FictionHighlighter::changeFontSize(int delta)
 
     // Define the format for the first line & other lines
     firstLineFormat.setFontPointSize(1.6 * globalFontSize);
+    otherLineFormat.setFontPointSize(globalFontSize);
 
     searchFirstlineHighlightFormat.setBackground(QBrush(QColor("#4F726C")));
     searchFirstlineHighlightFormat.setFontPointSize(1.6 * globalFontSize); // Larger font size for the first line
@@ -57,6 +57,8 @@ void FictionHighlighter::highlightBlock(const QString &text) {
     if (lineNumber == 0) {
         // Apply the format only for the first line
         setFormat(0, text.length(), firstLineFormat);
+    } else if (lineNumber == 1) {
+        setFormat(0, text.length(), otherLineFormat);
     }
 
     if (searchString.isEmpty()) {
