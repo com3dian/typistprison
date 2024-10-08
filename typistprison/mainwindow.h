@@ -3,7 +3,22 @@
 
 #include <QMainWindow>
 #include <QAction>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QFileInfo>
+#include <QPushButton>
+#include <QSplitter>
+#include <QFileSystemModel>
+#include <QTreeView>
+#include <QHeaderView>
+#include <QScreen>
+
 #include "customtabwidget.h"
+#include "ui_mainwindow.h"
+#include "customtabwidget.h"
+#include "customstyle.h"
+#include "foldertreeviewwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,9 +41,13 @@ private:
     Ui::MainWindow *ui;
     int untitledCount;
     CustomTabWidget *customTabWidget;
+    FolderTreeViewWidget *folderTreeView;
+    QSplitter *centralSplitter;
+    float previousSplitterPosition;
 
     void setupUntitledTab();
     void createNewTab(const QString &tabName);
     void onLastTabClosed();
+    void toggleFileTreeView();
 };
 #endif // MAINWINDOW_H
