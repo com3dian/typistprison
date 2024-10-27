@@ -8,11 +8,15 @@
 #include <QPainterPath>
 #include <QStyleOptionTab>
 
+#include "customtabbar.h"
+
 
 class CustomTabWidget : public QTabWidget {
     Q_OBJECT
 
 public:
+    CustomTabBar *customTabBar;
+
     CustomTabWidget(QWidget *parent = nullptr);
     void createNewTab(const QString &content, const QString &tabName, const QString &filePath, bool isUntitled = false);
     void switchToFictionView();

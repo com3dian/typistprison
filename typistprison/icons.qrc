@@ -24,5 +24,9 @@
         <file>icons/clearsearch_hover.png</file>
         <file>icons/clearsearch_clicked.png</file>
         <file>icons/emptyicon.png</file>
+        <file>icons/folder.png</file>
+        <file>icons/folder_clicked.png</file>
+        <file>icons/file.png</file>
+        <file>icons/file_clicked.png</file>
     </qresource>
 </RCC>

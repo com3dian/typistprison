@@ -7,6 +7,12 @@
 class FontManager
 {
 public:
+    QString notoSansLightFamily;
+    QString notoSansRegularFamily;
+    QString notoSansDemiLightFamily;
+    QString notoSansMonoFamily;
+    QString notoSansSerifFamily;
+    
     static FontManager& instance();
     
     QString getNotoSansLightFamily() const { return notoSansLightFamily; }
@@ -15,15 +21,11 @@ public:
     QString getNotoSansMonoFamily() const { return notoSansMonoFamily; }
     QString getNotoSansSerifFamily() const { return notoSansSerifFamily; }
 
+    QFont getFont(const QString& fontFamily, int pointSize, QFont::Weight weight, bool italic);
+
 private:
     FontManager();
     void loadFonts();
-
-    QString notoSansLightFamily;
-    QString notoSansRegularFamily;
-    QString notoSansDemiLightFamily;
-    QString notoSansMonoFamily;
-    QString notoSansSerifFamily;
 };
 
 #endif // FONTMANAGER_H

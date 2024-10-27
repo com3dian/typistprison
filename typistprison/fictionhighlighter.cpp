@@ -41,7 +41,11 @@ void FictionHighlighter::changeFontSize(int delta)
 }
 
 void FictionHighlighter::setSearchString(const QString &searchString) {
+    if (this->searchString == searchString) {
+        return;
+    }
     this->searchString = searchString;
+
     rehighlight(); // Trigger a rehighlight whenever the search string changes
 }
 

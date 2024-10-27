@@ -606,6 +606,7 @@ void FictionTextEdit::focusInEvent(QFocusEvent *e) {
 }
 
 void FictionTextEdit::search(const QString &searchString) {
+    qDebug() << "search;;;;;";
     // Reset matchStringIndex if searchString has changed
     if (searchString != highlighter->getSearchString()) {
         matchStringIndex = -1;
@@ -626,13 +627,13 @@ void FictionTextEdit::search(const QString &searchString) {
             return; // No match found
         }
     }
-
+    
     // Update matchStringIndex to account for the position in the original document text
     QTextCursor cursor = this->textCursor();
     cursor.setPosition(matchStringIndex);
     cursor.setPosition(matchStringIndex + searchString.length(), QTextCursor::KeepAnchor);
     this->setTextCursor(cursor);
-
+    
     highlighter->setSearchString(searchString);
 }
 

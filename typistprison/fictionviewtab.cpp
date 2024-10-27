@@ -53,7 +53,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
         );
     button1->setIconSize(QSize(32, 32));
 
-    // QPushButton *button1 = new QPushButton("Button 1", this);
+    
     button2 = new QPushButton("Button 2", this);
 
     topLeftLayout->addItem(topLeftSpacerLeft1);

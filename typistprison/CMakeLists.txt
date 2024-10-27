@@ -53,6 +53,8 @@ set(PROJECT_SOURCES
     customtreestyle.h
     customtabbar.cpp
     customtabbar.h
+    customfilesystemmodel.cpp
+    customfilesystemmodel.h
     ${TS_FILES}
 )
 

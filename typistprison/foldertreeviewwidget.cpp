@@ -1,12 +1,18 @@
 #include "foldertreeviewwidget.h"
 #include "customtreestyle.h"
+#include "customfilesystemmodel.h"
 #include <QTreeView>
 #include <QFileSystemModel>
 #include <QHeaderView>
 #include <QDir>
 #include <QScreen>
 #include <QPushButton>
+#include <QMenu>
+#include <QAction>
+#include <QInputDialog>
+#include <QMessageBox>
 #include <QTextBrowser>
+#include <QFileDialog>
 
 FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent)
     : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr)
@@ -14,8 +20,8 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent)
     QScreen *screen = QGuiApplication::primaryScreen();
     scalingFactor = screen->devicePixelRatio();
 
-    // Initialize fileModel and set the root path to user's home directory
-    fileModel = new QFileSystemModel(this);
+    // Initialize fileModel with the custom file system model
+    fileModel = new CustomFileSystemModel(this);
     fileModel->setRootPath(QDir::homePath());
 
     // Initialize layout and fileTreeView
@@ -56,6 +62,7 @@ void FolderTreeViewWidget::setupButton() {
             "   padding: 10px;"
     );
     newFileButton->setFixedSize(20*scalingFactor, 20*scalingFactor);
+    connect(newFileButton, &QPushButton::clicked, this, &FolderTreeViewWidget::addFile);
 
     QPushButton *newFolderButton = new QPushButton(this);
     newFolderButton->setStyleSheet(
@@ -92,7 +99,7 @@ void FolderTreeViewWidget::setupButton() {
     // Create a horizontal layout to add buttons
     QHBoxLayout *buttonWidgetLayout = new QHBoxLayout;
     buttonWidgetLayout->setContentsMargins(0, 0, 8*scalingFactor, 0);  // Remove margins to fit buttons neatly
-    buttonWidgetLayout->setSpacing(8);  // Optional: set spacing between buttons
+    buttonWidgetLayout->setSpacing(12);  // Optional: set spacing between buttons
     
     // Add text to the layout
     buttonWidgetLayout->addWidget(folderTextBrowser);
@@ -131,12 +138,45 @@ void FolderTreeViewWidget::setupFileTree() {
         "                        color: #C7C8CC; "
         "                        border: none;}"
         "QTreeView::item:selected { background-color: #3a424f; "
-        "                           color: #ffa896; "
+        "                           color: #ff9c87; "
         "                           border: none;}"
+        "QLineEdit { background-color: #3a424f;"
+        "            color: #ff9c87;"
+        "            selection-background-color: #ff9c87;"
+        "            selection-color: #3a424f;}"
+        "QScrollBar:vertical {"
+        "    border: none;"
+        "    background: transparent;"
+        "    width: 8px;"
+        "    margin: 0px 0px 0px 0px;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "    background: #4A515E;"
+        "    min-height: 16px;"
+        "    border-radius: 4px;"
+        "}"
+        "QScrollBar::handle:vertical:hover {"
+        "    background: #989A9C;"
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+        "    height: 0px;"
+        "}"
+        "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {"
+        "    height: 0px;"
+        "    width: 0px;"
+        "}"
+        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
+        "    background: none;"
+        "}"
     );
 
     // Add fileTreeView to the vertical layout
     layout->addWidget(fileTreeView);
+
+    fileTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    fileTreeView->setEditTriggers(QTreeView::NoEditTriggers);
+    connect(fileTreeView, &QTreeView::customContextMenuRequested, this, &FolderTreeViewWidget::onCustomContextMenu);
+    connect(fileTreeView, &QTreeView::doubleClicked, this, &FolderTreeViewWidget::onDoubleClicked);
 }
 
 // Toggle visibility of the file tree view
@@ -145,4 +185,138 @@ void FolderTreeViewWidget::toggleFileTreeView() {
     bool isVisible = fileTreeView->isVisible();
     fileTreeView->setVisible(!isVisible); // Toggle file tree view visibility
     buttonWidget->setVisible(!isVisible);   // Show buttons when tree view is hidden, and hide buttons when tree view is shown
+}
+
+void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
+    // Create a context menu
+    QMenu contextMenu(this);
+
+    // Get the index of the item that was clicked
+    QModelIndex index = fileTreeView->indexAt(point);
+
+    if (!index.isValid()) {
+        return;  // If no valid item was clicked, return
+    }
+
+    if (fileModel->isDir(fileTreeView->currentIndex())) {
+        // Add actions to the menu
+        QAction *openActionFolder = contextMenu.addAction("Open");
+        QAction *deleteActionFolder = contextMenu.addAction("Delete");
+        QAction *renameActionFolder = contextMenu.addAction("Rename", [=](){
+            fileTreeView->edit(index);
+        });
+        QAction *newFileActionFolder = contextMenu.addAction("New file");
+        QAction *copyPathActionFolder = contextMenu.addAction("Copy Path");
+
+        // Show the context menu at the cursor's global position
+        QAction *selectedAction = contextMenu.exec(QCursor::pos());
+
+
+        // Handle the action triggered
+        if (selectedAction == openActionFolder) {
+            // Open the file
+            qDebug() << "Open clicked on item:" << index.data().toString();
+        } else if (selectedAction == deleteActionFolder) {
+            // Delete the file
+            qDebug() << "Delete clicked on item:" << index.data().toString();
+        } else if (selectedAction == renameActionFolder) {
+            // Rename the file
+            qDebug() << "Rename clicked on item:" << index.data().toString();
+        } else if (selectedAction == renameActionFolder) {
+            // new file
+            qDebug() << "Rename clicked on item:" << index.data().toString();
+        } else if (selectedAction == renameActionFolder) {
+            // copy the path
+            qDebug() << "Rename clicked on item:" << index.data().toString();
+        }
+    } else {
+        QAction *openActionFile = contextMenu.addAction("Open");
+        QAction *deleteActionFile = contextMenu.addAction("Delete");
+        QAction *renameActionFile = contextMenu.addAction("Rename");
+        QAction *copyPathActionFile = contextMenu.addAction("Copy Path");
+
+        // Show the context menu at the cursor's global position
+        QAction *selectedAction = contextMenu.exec(QCursor::pos());
+
+
+        // Handle the action triggered
+        if (selectedAction == openActionFile) {
+            // Open the file
+            qDebug() << "Open clicked on item:" << index.data().toString();
+        } else if (selectedAction == deleteActionFile) {
+            // Delete the file
+            qDebug() << "Delete clicked on item:" << index.data().toString();
+        } else if (selectedAction == renameActionFile) {
+            // Rename the file
+            qDebug() << "Rename clicked on item:" << index.data().toString();
+        }
+    }
+}
+
+void FolderTreeViewWidget::addFile()
+{
+    // Get the currently selected index from the file tree
+    QModelIndex currentIndex = fileTreeView->currentIndex();
+
+    // Check if the selected index is valid and corresponds to a directory
+    QString currentDir;
+    if (currentIndex.isValid() && fileModel->isDir(currentIndex)) {
+        // If a directory is selected, get its absolute path
+        currentDir = fileModel->fileInfo(currentIndex).absoluteFilePath();
+    } else {
+        // If no directory is selected, default to the root directory of the file model
+        currentDir = fileModel->rootDirectory().absolutePath();
+    }
+
+    // Create a default new file name
+    QString defaultFileName = "newfile.txt";
+    QString newFilePath = QDir(currentDir).filePath(defaultFileName);
+
+    // Ensure the default file doesn't exist already
+    int fileCount = 1;
+    while (QFile::exists(newFilePath)) {
+        defaultFileName = QString("newfile_%1.txt").arg(fileCount++);
+        newFilePath = QDir(currentDir).filePath(defaultFileName);
+    }
+
+    // Create the file
+    QFile newFile(newFilePath);
+    if (newFile.open(QIODevice::WriteOnly)) {
+        newFile.close();  // Close after creating an empty file
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("Failed to create the file"));
+        return;
+    }
+
+    // Force the model to update to show the new file
+    fileModel->setRootPath(fileModel->rootPath());
+
+    // Get the index of the new file in the model
+    QModelIndex newFileIndex = fileModel->index(newFilePath);
+
+    // Make the new file name editable
+    fileTreeView->setCurrentIndex(newFileIndex);
+    fileTreeView->edit(newFileIndex);
+
+    // Connect to the editingFinished signal for automatic saving
+    connect(fileTreeView->itemDelegate(), &QAbstractItemDelegate::commitData, this, [this, newFilePath](QWidget *editor) {
+        QModelIndex currentIndex = fileTreeView->currentIndex();
+        QString newName = fileModel->data(currentIndex, Qt::EditRole).toString();
+
+        if (!newName.isEmpty() && newName != QFileInfo(newFilePath).fileName()) {
+            // Rename the file to the new name
+            QString newPath = QFileInfo(newFilePath).absolutePath() + "/" + newName;
+            QFile::rename(newFilePath, newPath);
+            fileModel->setRootPath(fileModel->rootPath());  // Refresh the view
+        }
+    });
+}
+
+void FolderTreeViewWidget::onDoubleClicked(const QModelIndex &index)
+{
+    if (fileModel->isDir(index)) {
+        return;
+    }
+    QString clickedfilePath = fileModel->filePath(index);
+    emit doubleClickedOnFile(clickedfilePath);
 }

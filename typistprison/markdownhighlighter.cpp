@@ -38,6 +38,7 @@
 #include <utility>
 
 #include "qownlanguagedata.h"
+#include "fontmanager.h"
 
 // We enable QStringView with Qt 5.15.1
 #if QT_VERSION < QT_VERSION_CHECK(5, 15, 1)
@@ -193,11 +194,14 @@ void MarkdownHighlighter::initHighlightingRules() {
 void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSize) {
     qDebug() << globalFontSize;
     QTextCharFormat format;
-    QFont monoFont("Noto Mono");
+
+    // Get instance of FontManager
+    FontManager& fontManager = FontManager::instance();
+    QFont monoFont = fontManager.getFont(fontManager.notoSansMonoFamily, globalFontSize, QFont::Normal, false);
 
     // set character formats for headlines
     format = QTextCharFormat();
-    QString colorString("#ff8670");
+    QString colorString("#FF8A8A"); //96E9C6 //#f58d6c
     format.setForeground(QColor(colorString));
     format.setFontWeight(QFont::Bold);
     format.setFontPointSize(defaultFontSize * 1.6);
@@ -247,15 +251,17 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character format for links
     format = QTextCharFormat();
-    QString colorLink("#9ffcc0");
+    QString colorLink("#feffbf");
     format.setForeground(QColor(colorLink));
     format.setFontUnderline(true);
     _formats[Link] = std::move(format);
 
     // set character format for images
     format = QTextCharFormat();
-    format.setForeground(QColor(0, 191, 0));
-    format.setBackground(QColor(228, 255, 228));
+    QString colorImageForeground("#feffbf");
+    format.setForeground(QColor(colorImageForeground));
+    QString colorImageBackground("#FF8A8A");
+    format.setBackground(QColor(colorImageBackground));
     _formats[Image] = std::move(format);
 
     // set character format for code blocks
@@ -264,7 +270,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     format.setFontPointSize(globalFontSize);
     QString colorCodeBackground("#2b303b");
     format.setBackground(QColor(colorCodeBackground));
-    QString colorCodeForeground("#d4d9d7");
+    QString colorCodeForeground("#C7C8CC");
     format.setForeground(QColor(colorCodeForeground));
     _formats[CodeBlock] = format;
     _formats[InlineCodeBlock] = format;
@@ -286,7 +292,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     // set character format for bold
     format = QTextCharFormat();
     format.setFontWeight(QFont::Bold);
-    QString colorBold("#fcda51");
+    QString colorBold("#96CEB4"); // #FABC3F #8E8FFA
     format.setForeground(QColor(colorBold));
     _formats[Bold] = std::move(format);
 
@@ -2687,7 +2693,9 @@ void MarkdownHighlighter::setHighlightingOptions(
 }
 
 void MarkdownHighlighter::setSearchString(const QString &searchString) {
-    qDebug() << "search text for SearchHighlighter::highlightBlock: " << searchString;
+    if (this->searchString == searchString) {
+        return;
+    }
     this->searchString = searchString;
     rehighlight(); // Trigger a rehighlight whenever the search string changes
 }

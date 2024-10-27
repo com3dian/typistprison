@@ -33,3 +33,11 @@ FontManager& FontManager::instance() {
     static FontManager instance;
     return instance;
 }
+
+QFont FontManager::getFont(const QString& fontFamily, int pointSize, QFont::Weight weight, bool italic) {
+    QFont font(fontFamily);
+    font.setPointSize(pointSize);
+    font.setWeight(weight);
+    font.setItalic(italic);
+    return font;
+}

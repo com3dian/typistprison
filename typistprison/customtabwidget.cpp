@@ -5,7 +5,6 @@
 #include "plaintextviewtab.h"
 #include "savemessagebox.h"
 #include "markdownviewtab.h"
-#include "customtabbar.h"
 
 #include <QVBoxLayout>
 #include <QMainWindow>
@@ -27,7 +26,7 @@ CustomTabWidget::CustomTabWidget(QWidget *parent)
 }
 
 void CustomTabWidget::setupTabBar() {
-    CustomTabBar *customTabBar = new CustomTabBar();
+    customTabBar = new CustomTabBar();
     setTabBar(customTabBar);
 }
 
@@ -135,9 +134,20 @@ void CustomTabWidget::updateTabTitle(const QString &fileName) {
 void CustomTabWidget::onTabCloseRequested(int index) {
     QString currentTitle = this->tabText(index);
     if (currentTitle.endsWith("*")) {
-        SaveMessageBox msgBox;
+        
+        // QRect tabBarRect = this->customTabBar->geometry();
+
+        SaveMessageBox msgBox(this);
+        // msgBox.adjustSize();
+        // int msgBoxWidth = msgBox.sizeHint().width();
+        // int msgBoxHeight = msgBox.sizeHint().height();
+
+        // int x = tabBarRect.x() + (tabBarRect .width() - msgBoxWidth) / 2;  // Horizontally center
+        // int y = tabBarRect.y()  + tabBarRect.height();  // Bottom of the tab bar
+
+        // qDebug() << "msgRect" << x << y;
+        // msgBox.move(x, y);  // Set the position and size
         int ret = msgBox.exec();
-        qDebug() << ret;
 
         QWidget *newTab = nullptr;
         QString title;

@@ -5,6 +5,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , untitledCount(1)
+    , previousSplitterPosition(0.166)
 {
     ui->setupUi(this);
 
@@ -130,7 +131,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Connect the action of opening a file to the creation of a new tab
     ui->actionOpen_File->setShortcut(QKeySequence(Qt::CTRL  |  Qt::Key_O));
-    connect(ui->actionOpen_File, &QAction::triggered, this, &MainWindow::openFile);
+    connect(ui->actionOpen_File, &QAction::triggered, this, [this]() {
+        // Call the openFile method with an empty string or a specific path
+        openFile("");  // Or provide a default path if needed
+    });
 
     // Connect the action of creating a new file to the creation of a new untitled tab
     ui->actionNew_File->setShortcut(QKeySequence(Qt::CTRL  |  Qt::Key_N));
@@ -144,7 +148,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(folderButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
 
+    connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
+
+
     setupUntitledTab();
+    // previousSplitterPosition = 0.166;
+    toggleFileTreeView();
+    toggleFileTreeView();
 }
 
 MainWindow::~MainWindow()
@@ -158,42 +168,51 @@ void MainWindow::setupUntitledTab()
     customTabWidget->createNewTab("", "untitled-" + QString::number(untitledCount++), "", true);
 }
 
-void MainWindow::openFile()
+void MainWindow::openFile(const QString &filePath)  // No default argument here
 {
-    // Open a file dialog to select a file
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("All Files (*)"));
+    QString selectedFilePath = filePath;
 
-    // If a file is selected, create a new tab and load the file
-    if (!filePath.isEmpty()) {
-        QFile file(filePath);
+    // If no filePath is provided, open a file dialog to select a file
+    if (selectedFilePath.isEmpty()) {
+        selectedFilePath = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("All Files (*)"));
+    }
+
+    // If a file is selected (either from the dialog or the provided path), load the file
+    if (!selectedFilePath.isEmpty()) {
+        QFile file(selectedFilePath);
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             QString fileContents = in.readAll();
             file.close();
 
             // Create a new tab with the file name as the tab text
-            customTabWidget->createNewTab(fileContents, QFileInfo(filePath).fileName(), filePath);
+            customTabWidget->createNewTab(fileContents, QFileInfo(selectedFilePath).fileName(), selectedFilePath);
         }
     }
 }
+
 
 void MainWindow::onLastTabClosed() {
     close();
 }
 
 void MainWindow::toggleFileTreeView() {
+    qDebug() << "void MainWindow::toggleFileTreeView()";
     QList<int> sizes = centralSplitter->sizes(); // Get current splitter sizes
     
     // Only calculate the previousSplitterPosition if sizes[0] is non-zero (i.e., left widget is visible)
     if (sizes[0] != 0) {
         // Save the current splitter position before hiding the left widget
         previousSplitterPosition = static_cast<float>(sizes[0]) / centralSplitter->size().width();
+        qDebug() << "splitter close";
+        qDebug() << "previousSplitterPosition" << previousSplitterPosition;
 
         // Hide the left widget and adjust the splitter size
-        folderTreeView->toggleFileTreeView();
+        // folderTreeView->toggleFileTreeView();
         centralSplitter->setSizes(QList<int>({0, centralSplitter->size().width()})); // Right widget takes over
     } else {
-        
+        qDebug() << "splitter open";
+        qDebug() << "previousSplitterPosition" << previousSplitterPosition;
         // Restore sizes based on the stored previousSplitterPosition
         centralSplitter->setSizes(
             QList<int>({static_cast<int>(centralSplitter->size().width() * previousSplitterPosition), 
@@ -202,6 +221,6 @@ void MainWindow::toggleFileTreeView() {
         // Reset previousSplitterPosition after restoring
         previousSplitterPosition = 0.0;
 
-        folderTreeView->toggleFileTreeView();
+        // folderTreeView->toggleFileTreeView();
     }
 }

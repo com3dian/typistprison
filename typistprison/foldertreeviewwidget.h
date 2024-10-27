@@ -13,9 +13,16 @@ public:
     explicit FolderTreeViewWidget(QWidget *parent = nullptr);  // Constructor
     void toggleFileTreeView();
 
+signals:
+    void doubleClickedOnFile(const QString &filePath);
+
 private:
     void setupFileTree();           // Function to set up the file tree
     void setupButton();
+    void onItemClicked(const QModelIndex &index);
+    void onCustomContextMenu(const QPoint &point);
+    void addFile();
+    void onDoubleClicked(const QModelIndex &index);
 
     QFileSystemModel *fileModel;    // Pointer to the file system model
     QTreeView *fileTreeView;        // Pointer to the QTreeView

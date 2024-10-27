@@ -34,8 +34,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    void openFile(); // Declaration of the openFile slot
+public slots:
+    void openFile(const QString &filePath = ""); // Declaration of the openFile slot
 
 private:
     Ui::MainWindow *ui;

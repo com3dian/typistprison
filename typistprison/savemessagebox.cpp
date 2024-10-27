@@ -1,6 +1,8 @@
 #include "savemessagebox.h"
 #include <QApplication>
 #include <QDebug>
+#include <QApplication>
+#include <QScreen>
 
 SaveMessageBox::SaveMessageBox(QWidget *parent)
     : QMessageBox(parent)
@@ -88,15 +90,49 @@ SaveMessageBox::SaveMessageBox(QWidget *parent)
     connect(cancelButton, &QPushButton::clicked, this, &SaveMessageBox::reject);
 }
 
+// void SaveMessageBox::showEvent(QShowEvent *event) {
+//     // Call base class method
+//     QMessageBox::showEvent(event);
+
+//     // Set custom position for the message box
+//     // For example, center it on the screen or place it at a specific point
+//     // Here, centering it on the primary screen
+//     QWidget *parentWnd = parentWidget();  // Use the parent widget for relative positioning if needed
+
+//     // Use QScreen to get the dimensions of the current screen
+//     QScreen *screen = QApplication::primaryScreen();
+//     QRect screenGeometry = screen->geometry();
+
+//     int x = (screenGeometry.width() - this->width()) / 2;  // center horizontally
+//     int y = (screenGeometry.height() - this->height()) / 2;  // center vertically
+
+//     move(x, y);  // Move the message box to the new position
+// }
+
 void SaveMessageBox::onSaveClicked() {
     // Custom save logic here
-    qDebug() << "Save clicked";
     setResult(QMessageBox::Save);  // Set the result to QMessageBox::Save
     done(QMessageBox::Save);
 }
 
 void SaveMessageBox::onDiscardClicked() {
-    qDebug() << "Discard clicked";
     setResult(QMessageBox::Discard);  // Set the result to QMessageBox::Save
     done(QMessageBox::Discard);
+}
+
+int SaveMessageBox::exec() {
+    // Show the message box first
+    int result = QMessageBox::exec();
+
+    // Get the screen geometry to calculate the center position
+    QScreen *screen = QApplication::primaryScreen();
+    QRect screenGeometry = screen->geometry();
+
+    int x = (screenGeometry.width() - this->width()) / 2;   // center horizontally
+    int y = (screenGeometry.height() - this->height()) / 2; // center vertically
+
+    // Move the message box to the calculated center position
+    this->move(x, y);
+
+    return result;
 }
