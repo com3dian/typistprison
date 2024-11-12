@@ -45,7 +45,7 @@ void FolderTreeViewWidget::setupButton() {
     buttonWidget->setStyleSheet("background-color: #31363F;");
     buttonWidget->setFixedHeight(38 * scalingFactor);
     QTextBrowser *folderTextBrowser = new QTextBrowser(this);
-    folderTextBrowser->setPlainText("Folder");
+    folderTextBrowser->setPlainText("Folder"); // TODO: to be changed
 
     QPushButton *newFileButton = new QPushButton(this);
     newFileButton->setStyleSheet(

@@ -35,6 +35,7 @@
 #include <QTextDocument>
 #include <QTimer>
 #include <QBrush>
+#include <QFontMetrics>
 #include <utility>
 
 #include "qownlanguagedata.h"
@@ -300,11 +301,13 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     format = QTextCharFormat();
     QString colorGrey("#62708a");
     format.setForeground(QColor(colorGrey));
+    format.setFontPointSize(globalFontSize);
     _formats[Comment] = std::move(format);
 
     // set character format for masked syntax
     format = QTextCharFormat();
-    format.setForeground(QColor(colorGrey));
+    QString colorTest("#96CEB4");
+    format.setForeground(QColor(colorTest));
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
     _formats[MaskedSyntax] = std::move(format);
@@ -319,6 +322,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     // set character format for block quotes
     format = QTextCharFormat();
     format.setForeground(QColor(colorGrey));
+    format.setFontPointSize(globalFontSize);
     _formats[BlockQuote] = std::move(format);
 
     format = QTextCharFormat();
@@ -564,7 +568,15 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
             // Set styling of the "#"s to "masked syntax", but with the size of
             // the heading
             auto maskedFormat = _formats[MaskedSyntax];
-            maskedFormat.setFontPointSize(_formats[state].fontPointSize());
+            if (_formats[state].fontPointSize() > 0) {
+                maskedFormat.setFontPointSize(_formats[state].fontPointSize());
+                qDebug() << "572: fontsize" << _formats[state].fontPointSize();
+            } else {
+                maskedFormat.setFontPointSize(globalFontSize);
+            }
+            
+            qDebug() << "_formats[state].fontPointSize() is " << _formats[state].fontPointSize();
+
             setFormat(0, headingLevel, maskedFormat);
 
             // Set the styling of the rest of the heading
@@ -643,7 +655,13 @@ void MarkdownHighlighter::highlightSubHeadline(const QString &text,
         previousBlockState() == NoState) {
         QTextCharFormat currentMaskedFormat = maskedFormat;
         // set the font size from the current rule's font format
-        currentMaskedFormat.setFontPointSize(_formats[state].fontPointSize());
+        if (_formats[state].fontPointSize() > 0) {
+            currentMaskedFormat.setFontPointSize(_formats[state].fontPointSize());
+            qDebug() << "660: format font size" << _formats[state].fontPointSize();
+        } else {
+            currentMaskedFormat.setFontPointSize(globalFontSize);
+        }
+        
 
         setFormat(0, text.length(), currentMaskedFormat);
         setCurrentBlockState(HeadlineEnd);
@@ -753,7 +771,12 @@ void MarkdownHighlighter::highlightCodeBlock(const QString &text,
 
         // set the font size from the current rule's font format
         QTextCharFormat &maskedFormat = _formats[MaskedSyntax];
-        maskedFormat.setFontPointSize(_formats[CodeBlock].fontPointSize());
+        if (_formats[CodeBlock].fontPointSize() > 0) {
+            maskedFormat.setFontPointSize(_formats[CodeBlock].fontPointSize());
+            qDebug() << "769: fontsize" << _formats[CodeBlock].fontPointSize();
+        } else {
+            maskedFormat.setFontPointSize(globalFontSize);
+        }
 
         setFormat(0, text.length(), maskedFormat);
     } else if (isCodeBlock(previousBlockState())) {
@@ -1899,7 +1922,12 @@ void MarkdownHighlighter::setHeadingStyles(HighlighterState rule,
 
     if (rule == HighlighterState::Link) {
         auto linkFmt = _formats[Link];
-        linkFmt.setFontPointSize(f.fontPointSize());
+        if (f.fontPointSize() > 0) {
+            linkFmt.setFontPointSize(f.fontPointSize());
+        } else {
+            linkFmt.setFontPointSize(globalFontSize);
+        }
+
         if (capturedGroup == 1) {
             setFormat(match.capturedStart(capturedGroup),
                       match.capturedLength(capturedGroup), linkFmt);
@@ -1943,6 +1971,8 @@ void MarkdownHighlighter::highlightAdditionalRules(
                 if (format.fontPointSize() > 0) {
                     currentMaskedFormat.setFontPointSize(
                         format.fontPointSize());
+                } else {
+                    currentMaskedFormat.setFontPointSize(globalFontSize);
                 }
 
                 if (isHeading(currentBlockState())) {
@@ -2063,8 +2093,13 @@ void MarkdownHighlighter::formatAndMaskRemaining(
     int afterFormat = formatBegin + formatLength;
 
     auto maskedSyntax = _formats[MaskedSyntax];
-    maskedSyntax.setFontPointSize(
-        QSyntaxHighlighter::format(beginningText).fontPointSize());
+    if (QSyntaxHighlighter::format(beginningText).fontPointSize() > 0){
+        maskedSyntax.setFontPointSize(
+            QSyntaxHighlighter::format(beginningText).fontPointSize());
+        qDebug() << "2090: fontsize" << QSyntaxHighlighter::format(beginningText).fontPointSize();
+    } else {
+        maskedSyntax.setFontPointSize(globalFontSize);
+    }
 
     // highlight before the link
     setFormat(beginningText, formatBegin - beginningText, maskedSyntax);
@@ -2075,8 +2110,12 @@ void MarkdownHighlighter::formatAndMaskRemaining(
     }
 
     // highlight after the link
-    maskedSyntax.setFontPointSize(
-        QSyntaxHighlighter::format(afterFormat).fontPointSize());
+    if (QSyntaxHighlighter::format(afterFormat).fontPointSize() > 0) {
+        maskedSyntax.setFontPointSize(
+            QSyntaxHighlighter::format(afterFormat).fontPointSize());
+    } else {
+        maskedSyntax.setFontPointSize(globalFontSize);
+    }
     setFormat(afterFormat, endText - afterFormat, maskedSyntax);
 
     _ranges[currentBlock().blockNumber()].append(
@@ -2324,8 +2363,11 @@ int MarkdownHighlighter::highlightInlineSpans(const QString &text,
     if (c != QLatin1Char('~')) inlineFmt = _formats[InlineCodeBlock];
 
     // make sure we don't change font size / existing formatting
-    if (fmt.fontPointSize() > 0)
+    if (fmt.fontPointSize() > 0){
         inlineFmt.setFontPointSize(fmt.fontPointSize());
+    } else {
+        inlineFmt.setFontPointSize(globalFontSize);
+    }
 
     if (c == QLatin1Char('~')) {
         inlineFmt.setFontStrikeOut(true);
@@ -2611,8 +2653,11 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
                 if (!fontFamilies.isEmpty()) fmt.setFontFamilies(fontFamilies);
 #endif
 
-                if (_formats[state].fontPointSize() > 0)
+                if (_formats[state].fontPointSize() > 0) {
                     fmt.setFontPointSize(_formats[state].fontPointSize());
+                } else {
+                    fmt.setFontPointSize(globalFontSize);
+                }
 
                 // if we are in plain text, use the format's specified color
                 if (fmt.foreground() == QTextCharFormat().foreground())
@@ -2681,8 +2726,11 @@ void MarkdownHighlighter::highlightEmAndStrong(const QString &text,
     for (int i = 0; i < masked.length(); ++i) {
         QTextCharFormat maskedFmt = _formats[MaskedSyntax];
         auto state = static_cast<HighlighterState>(currentBlockState());
-        if (_formats[state].fontPointSize() > 0)
+        if (_formats[state].fontPointSize() > 0) {
             maskedFmt.setFontPointSize(_formats[state].fontPointSize());
+        } else {
+            maskedFmt.setFontPointSize(globalFontSize);
+        }
         setFormat(masked.at(i).first, masked.at(i).second, maskedFmt);
     }
 }

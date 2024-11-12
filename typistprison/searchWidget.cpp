@@ -12,7 +12,11 @@ SearchWidget::SearchWidget(QWidget *parent)
 
     lineEdit = new QLineEdit(this);
     lineEdit->setMinimumWidth(256);
-    lineEdit->setStyleSheet("background-color: transparent; border: none;");
+    lineEdit->setStyleSheet(
+            "background-color: transparent; "
+            "border: none;"
+            "color: #C7C8CC;"
+    );
 
     button = new QPushButton(this);
     button->setStyleSheet(
@@ -45,7 +49,7 @@ SearchWidget::SearchWidget(QWidget *parent)
 
     // Install event filter to detect hover events
     installEventFilter(this);
-    // Install event filter to detect 
+    // Install event filter to detect line edit changes
     lineEdit->installEventFilter(this);
 
     connect(lineEdit, &QLineEdit::editingFinished, this, &SearchWidget::updateBottomLine);
@@ -55,9 +59,8 @@ void SearchWidget::handleSearch(const QString &text)
 {
     if (!text.isEmpty()) {
         emit onSearch(text);
-        qDebug() << "onsearch 1";
 
-        // avoid textchanged signal to be triggered when
+        // avoid handleReSearch method to be triggered when search for next match
         QString prevSearchText = lineEdit->text();
 
         if (prevSearchText != text) {
