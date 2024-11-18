@@ -306,7 +306,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character format for masked syntax
     format = QTextCharFormat();
-    QString colorTest("#96CEB4");
+    QString colorTest("#62708a");
     format.setForeground(QColor(colorTest));
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
