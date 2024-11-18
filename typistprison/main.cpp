@@ -97,6 +97,16 @@ int main(int argc, char *argv[])
                              "FictionTextEdit { font-family: %1; }" ;
     #elif defined(Q_OS_MAC)
         qDebug() << "Running on macOS";
+        QString styleSheet = QString(
+                             "QWidget { font-family: '%1'; font-size: %2px;}"
+                             "PlaintextEdit { font-family: '%3'; }"
+                             "QMarkdownTextEdit { font-family: '%4'; }"
+                             "FictionTextEdit { font-family: '%5'; }"
+                             ).arg(notoSansLightFamily)
+                              .arg(16 * scalingFactor)
+                              .arg(notoSansMonoFamily)
+                              .arg(notoSansLightFamily)
+                              .arg(notoSansLightFamily);
 
     #elif defined(Q_OS_LINUX)
         qDebug() << "Running on Linux";
