@@ -23,11 +23,14 @@ CustomTabWidget::CustomTabWidget(QWidget *parent)
     setupTabBar();
     setupTabWidget();
     setupStyles();
+
+    setTabPosition(QTabWidget::North);
 }
 
 void CustomTabWidget::setupTabBar() {
-    customTabBar = new CustomTabBar();
-    setTabBar(customTabBar);
+    // customTabBar = new CustomTabBar();
+    // setTabBar(customTabBar);
+    setTabPosition(QTabWidget::North); // Options: North, South, East, West
 }
 
 void CustomTabWidget::setupTabWidget() {
@@ -45,6 +48,7 @@ void CustomTabWidget::setupStyles() {
                             "    background-color: #31363F;"
                             "    margin: 0px;"
                             "}"
+        "QTabBar { alignment: left; }"
         "QTabBar::tab:selected { background-color: #31363F; color: #ffa896; border-top: 1px solid #ffa896;}"
         "QTabBar::tab:hover { background-color: #3a424f; color: #ffffff}"
         "QTabBar::tab {"
@@ -61,6 +65,7 @@ void CustomTabWidget::setupStyles() {
         "}"
 
         "QTabBar::close-button {"
+        "   subcontrol-position: right;"
         "   image: url(:/icons/tab_close.png); "
         "   margin-right:8px;"
         "}"

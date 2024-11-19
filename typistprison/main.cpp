@@ -8,14 +8,16 @@
 #include <QFontDatabase>
 #include <QDebug>
 #include <QScreen>
+#include <QStyleFactory>
 
 int main(int argc, char *argv[])
 {
     // Warning: ‘Qt::AA_EnableHighDpiScaling’ is deprecated: High-DPI scaling is always enabled. 
     // This attribute no longer has any effect.
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); 
+    // QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    // QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication app(argc, argv);
+    app.setStyle(QStyleFactory::create("Fusion"));
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -29,6 +31,7 @@ int main(int argc, char *argv[])
 
     QScreen *screen = QGuiApplication::primaryScreen(); // Use QGuiApplication to get the primary screen
     qreal scalingFactor = screen->devicePixelRatio(); // Correctly call devicePixelRatio()
+    qDebug() << "scalingFactor: " << scalingFactor;
 
     MainWindow w;
 
@@ -98,6 +101,7 @@ int main(int argc, char *argv[])
     #elif defined(Q_OS_MAC)
         qDebug() << "Running on macOS";
         QString styleSheet = QString(
+<<<<<<< Updated upstream
                              "QWidget { font-family: '%1'; font-size: %2px;}"
                              "PlaintextEdit { font-family: '%3'; }"
                              "QMarkdownTextEdit { font-family: '%4'; }"
@@ -107,6 +111,17 @@ int main(int argc, char *argv[])
                               .arg(notoSansMonoFamily)
                               .arg(notoSansLightFamily)
                               .arg(notoSansLightFamily);
+=======
+                                 "QWidget { font-family: '%1'; font-size: %2px;}"
+                                 "PlaintextEdit { font-family: '%3'; }"
+                                 "QMarkdownTextEdit { font-family: '%4'; }"
+                                 "FictionTextEdit { font-family: '%5'; }"
+                                 ).arg(notoSansLightFamily)
+                                 .arg(12)
+                                 .arg(notoSansMonoFamily)
+                                 .arg(notoSansLightFamily)
+                                 .arg(notoSansLightFamily);
+>>>>>>> Stashed changes
 
     #elif defined(Q_OS_LINUX)
         qDebug() << "Running on Linux";
