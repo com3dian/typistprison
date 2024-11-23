@@ -83,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
             "border-image: url(:/icons/sidebar_clicked.png) 0 0 0 0 stretch stretch;"
             "}"
     );
-    folderButton->setFixedSize(16*scalingFactor, 16*scalingFactor);
+    folderButton->setFixedSize(16, 16);
 
     // Add the button to the status bar
     ui->statusbar->addWidget(folderButton);

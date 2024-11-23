@@ -1,3 +1,5 @@
+set(CMAKE_PREFIX_PATH "/Users/com3dian/Qt/6.8.0/macos")
+
 cmake_minimum_required(VERSION 3.5)
 
 project(typistprison VERSION 0.1 LANGUAGES CXX)

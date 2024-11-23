@@ -99,29 +99,17 @@ int main(int argc, char *argv[])
                              "QMarkdownTextEdit { font-family: %1; }"
                              "FictionTextEdit { font-family: %1; }" ;
     #elif defined(Q_OS_MAC)
-        qDebug() << "Running on macOS";
+        qDebug() << "Running on MacOS";
         QString styleSheet = QString(
-<<<<<<< Updated upstream
                              "QWidget { font-family: '%1'; font-size: %2px;}"
                              "PlaintextEdit { font-family: '%3'; }"
                              "QMarkdownTextEdit { font-family: '%4'; }"
                              "FictionTextEdit { font-family: '%5'; }"
                              ).arg(notoSansLightFamily)
-                              .arg(16 * scalingFactor)
+                              .arg(16)
                               .arg(notoSansMonoFamily)
                               .arg(notoSansLightFamily)
                               .arg(notoSansLightFamily);
-=======
-                                 "QWidget { font-family: '%1'; font-size: %2px;}"
-                                 "PlaintextEdit { font-family: '%3'; }"
-                                 "QMarkdownTextEdit { font-family: '%4'; }"
-                                 "FictionTextEdit { font-family: '%5'; }"
-                                 ).arg(notoSansLightFamily)
-                                 .arg(12)
-                                 .arg(notoSansMonoFamily)
-                                 .arg(notoSansLightFamily)
-                                 .arg(notoSansLightFamily);
->>>>>>> Stashed changes
 
     #elif defined(Q_OS_LINUX)
         qDebug() << "Running on Linux";
@@ -131,7 +119,7 @@ int main(int argc, char *argv[])
                              "QMarkdownTextEdit { font-family: '%4'; }"
                              "FictionTextEdit { font-family: '%5'; }"
                              ).arg(notoSansLightFamily)
-                              .arg(16 * scalingFactor)
+                              .arg(16)
                               .arg(notoSansMonoFamily)
                               .arg(notoSansLightFamily)
                               .arg(notoSansLightFamily);
