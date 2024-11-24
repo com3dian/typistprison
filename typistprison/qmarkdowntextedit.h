@@ -28,7 +28,6 @@
 #include <QPlainTextEdit>
 
 #include "markdownhighlighter.h"
-// #include "qplaintexteditsearchwidget.h"
 #include "fontmanager.h"
 
 

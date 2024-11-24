@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
                              "QMarkdownTextEdit { font-family: '%4'; }"
                              "FictionTextEdit { font-family: '%5'; }"
                              ).arg(notoSansLightFamily)
-                              .arg(16)
+                              .arg(12)
                               .arg(notoSansMonoFamily)
                               .arg(notoSansLightFamily)
                               .arg(notoSansLightFamily);
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
                              "QMarkdownTextEdit { font-family: '%4'; }"
                              "FictionTextEdit { font-family: '%5'; }"
                              ).arg(notoSansLightFamily)
-                              .arg(16)
+                              .arg(12)
                               .arg(notoSansMonoFamily)
                               .arg(notoSansLightFamily)
                               .arg(notoSansLightFamily);

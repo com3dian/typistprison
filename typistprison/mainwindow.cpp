@@ -70,6 +70,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menubar->setStyleSheet(menubarStyleSheet);
 
     ui->statusbar->setStyleSheet("QStatusBar { background-color: #2c2f30;}");
+    QWidget *spacer = new QWidget(this);
+    spacer->setFixedSize(2, 16); // Width is the desired margin, height is arbitrary
+    ui->statusbar->addWidget(spacer);
+
     QPushButton *folderButton = new QPushButton(this);
     folderButton->setStyleSheet(
             "QPushButton {"
