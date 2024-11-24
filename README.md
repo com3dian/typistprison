@@ -12,7 +12,7 @@
 
 
 ## 📥 Installation
-1. Download the latest release from the [Releases Page](https://github.com/yourusername/typrison/releases).
+1. Download the latest release from the [Releases Page](https://github.com/com3dian/typrison/releases).
 2. Install the application:
    - **Windows**: Run the `.exe` installer.
    - **macOS**: Drag the `.app` file to your Applications folder.
