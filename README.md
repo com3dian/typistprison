@@ -23,7 +23,7 @@
 ## 🛠️ Usage
 1. Open Typrison and create a new document.
 2. Use the toolbar or keyboard shortcuts to format text.
-3. Save your work locally or export as `.txt`, `.md`, or `.pdf`.
+3. Save your work locally or export as `.txt`, `.md`, or `.cell.txt`.
 
 ## 💻 Development
 Want to contribute? Follow these steps to get started:
