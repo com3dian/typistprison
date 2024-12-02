@@ -4,7 +4,7 @@
 ## 🚀 Features
 - **Intuitive Editor**: Clean and distraction-free interface for focused writing.
 - **Rich Text Support**: Effortlessly format text with bold, italics, lists, and more.
-- **Cross-Platform**: Runs smoothly on Windows, macOS, and Linux.
+- **Cross-Platform**: Runs smoothly on Linux, Windows, and macOS.
 - **Customization**: Tailor the editor to match your writing style.
 - **Offline Ready**: No internet? No problem. Write anywhere, anytime.
 
