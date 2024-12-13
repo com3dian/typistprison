@@ -86,7 +86,7 @@ void SearchWidget::handleSearch(const QString &text)
             "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
             "}"
         );
-        button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+        button->setFixedSize(16, 16);
 
         disconnect(button, &QPushButton::clicked, this, nullptr);
         connect(button, &QPushButton::clicked, this, &SearchWidget::handleClear);
@@ -118,7 +118,7 @@ void SearchWidget::handleClear()
             "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
             "}"
     );
-    button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+    button->setFixedSize(16, 16);
 
     disconnect(button, &QPushButton::clicked, this, nullptr);
     connect(button, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
@@ -142,7 +142,7 @@ void SearchWidget::handleReSearch()
             "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
             "}"
     );
-    button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+    button->setFixedSize(16, 16);
 
     emit onClear();
     disconnect(button, &QPushButton::clicked, this, nullptr);
@@ -221,7 +221,7 @@ void SearchWidget::updateBottomLine()
                 "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
                 "}"
         );
-        button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+        button->setFixedSize(16, 16);
     }
     else if (isHovered || !lineEdit->text().isEmpty() || lineEdit->hasFocus()) {
         bottomLine->setStyleSheet("background-color: #454F61;");
@@ -238,7 +238,7 @@ void SearchWidget::updateBottomLine()
                 "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
                 "}"
         );
-        button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+        button->setFixedSize(16, 16);
     } else {
         button->setStyleSheet(
             "QPushButton {"
@@ -246,7 +246,7 @@ void SearchWidget::updateBottomLine()
             "border-image: url(:/icons/emptyicon.png) 0 0 0 0 stretch stretch;"
             "}"
         );
-        button->setFixedSize(16*scalingFactor, 16*scalingFactor);
+        button->setFixedSize(16, 16);
         bottomLine->setStyleSheet("background-color: transparent;");
     }
 }

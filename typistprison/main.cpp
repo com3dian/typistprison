@@ -29,9 +29,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    QScreen *screen = QGuiApplication::primaryScreen(); // Use QGuiApplication to get the primary screen
-    qreal scalingFactor = screen->devicePixelRatio(); // Correctly call devicePixelRatio()
-    qDebug() << "scalingFactor: " << scalingFactor;
+    // QScreen *screen = QGuiApplication::primaryScreen(); // Use QGuiApplication to get the primary screen
+    // qreal scalingFactor = screen->devicePixelRatio(); // Correctly call devicePixelRatio()
+    // qDebug() << "scalingFactor: " << scalingFactor;
+
+    app.setWindowIcon(QIcon(":/icons/typrison_icon.png"));
 
     MainWindow w;
 
@@ -101,7 +103,7 @@ int main(int argc, char *argv[])
     #elif defined(Q_OS_MAC)
         qDebug() << "Running on MacOS";
         QString styleSheet = QString(
-                             "QWidget { font-family: '%1'; font-size: %2px;}"
+                             "QWidget { font-family: '%1';}"
                              "PlaintextEdit { font-family: '%3'; }"
                              "QMarkdownTextEdit { font-family: '%4'; }"
                              "FictionTextEdit { font-family: '%5'; }"

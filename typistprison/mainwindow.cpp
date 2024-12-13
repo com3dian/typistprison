@@ -57,25 +57,23 @@ MainWindow::MainWindow(QWidget *parent)
         "    background-color: #555555;"  // Set the color of the separator
         "    margin: 0px 0px;"  // Adjust the margin around the separator
         "}"
-        ).arg(8 * scalingFactor)
-         .arg(8 * scalingFactor)
-         .arg(1 * scalingFactor)
-         .arg(4 * scalingFactor)
-         .arg(180 * scalingFactor)
-         .arg(2 * scalingFactor)
-         .arg(32 * scalingFactor)
-         .arg(4 * scalingFactor)
-         .arg(8 * scalingFactor);
+        ).arg(8)
+         .arg(8)
+         .arg(1)
+         .arg(4)
+         .arg(180)
+         .arg(2)
+         .arg(32)
+         .arg(4)
+         .arg(8);
 
     ui->menubar->setStyleSheet(menubarStyleSheet);
 
     ui->statusbar->setStyleSheet("QStatusBar { background-color: #2c2f30;}");
-    QWidget *spacer = new QWidget(this);
-    spacer->setFixedSize(2, 16); // Width is the desired margin, height is arbitrary
-    ui->statusbar->addWidget(spacer);
+    ui->statusbar->setContentsMargins(2.8, 0, 2.8, 0);
 
-    QPushButton *folderButton = new QPushButton(this);
-    folderButton->setStyleSheet(
+    QPushButton *sidePanelButton = new QPushButton(this);
+    sidePanelButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
             "border-image: url(:/icons/sidebar_silent.png) 0 0 0 0 stretch stretch;"
@@ -87,10 +85,10 @@ MainWindow::MainWindow(QWidget *parent)
             "border-image: url(:/icons/sidebar_clicked.png) 0 0 0 0 stretch stretch;"
             "}"
     );
-    folderButton->setFixedSize(16, 16);
+    sidePanelButton->setFixedSize(14, 14);
 
     // Add the button to the status bar
-    ui->statusbar->addWidget(folderButton);
+    ui->statusbar->addWidget(sidePanelButton);
 
     folderTreeView = new FolderTreeViewWidget;
     folderTreeView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -129,6 +127,8 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->setStyleSheet("QSplitter { background-color: #2c2f30; }");
     centralSplitter->addWidget(folderTreeView);  // Left pane: file explorer
     centralSplitter->addWidget(customTabWidget);     // Right pane: tab widget
+    centralSplitter->setCollapsible(1, false); // Disable collapsing for the right widget
+
 
     // Set the central widget to the custom tab widget
     setCentralWidget(centralSplitter);
@@ -150,7 +150,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Connect actionFiction_View to
     // connect(ui->actionFiction_View, &QAction::triggered, customTabWidget, &CustomTabWidget::switchToFictionView);
 
-    connect(folderButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
+    connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
 
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
 

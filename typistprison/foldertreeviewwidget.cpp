@@ -17,8 +17,8 @@
 FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent)
     : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr)
 {
-    QScreen *screen = QGuiApplication::primaryScreen();
-    scalingFactor = screen->devicePixelRatio();
+    // QScreen *screen = QGuiApplication::primaryScreen();
+    // scalingFactor = screen->devicePixelRatio();
 
     // Initialize fileModel with the custom file system model
     fileModel = new CustomFileSystemModel(this);
@@ -43,7 +43,7 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent)
 void FolderTreeViewWidget::setupButton() {
     buttonWidget = new QWidget;
     buttonWidget->setStyleSheet("background-color: #31363F;");
-    buttonWidget->setFixedHeight(38 * scalingFactor);
+    buttonWidget->setFixedHeight(38);
     QTextBrowser *folderTextBrowser = new QTextBrowser(this);
     folderTextBrowser->setPlainText("Folder"); // TODO: to be changed
 
@@ -61,7 +61,7 @@ void FolderTreeViewWidget::setupButton() {
             "}"
             "   padding: 10px;"
     );
-    newFileButton->setFixedSize(20*scalingFactor, 20*scalingFactor);
+    newFileButton->setFixedSize(16, 16);
     connect(newFileButton, &QPushButton::clicked, this, &FolderTreeViewWidget::addFile);
 
     QPushButton *newFolderButton = new QPushButton(this);
@@ -78,7 +78,7 @@ void FolderTreeViewWidget::setupButton() {
             "}"
             "   padding: 10px;"
     );
-    newFolderButton->setFixedSize(20*scalingFactor, 20*scalingFactor);
+    newFolderButton->setFixedSize(16, 16);
 
     QPushButton *refreshButton = new QPushButton(this);
     refreshButton->setStyleSheet(
@@ -94,11 +94,11 @@ void FolderTreeViewWidget::setupButton() {
             "}"
             "   padding: 10px;"
     );
-    refreshButton->setFixedSize(20*scalingFactor, 20*scalingFactor);
+    refreshButton->setFixedSize(16, 16);
 
     // Create a horizontal layout to add buttons
     QHBoxLayout *buttonWidgetLayout = new QHBoxLayout;
-    buttonWidgetLayout->setContentsMargins(0, 0, 8*scalingFactor, 0);  // Remove margins to fit buttons neatly
+    buttonWidgetLayout->setContentsMargins(0, 0, 8, 0);  // Remove margins to fit buttons neatly
     buttonWidgetLayout->setSpacing(12);  // Optional: set spacing between buttons
     
     // Add text to the layout

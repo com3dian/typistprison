@@ -74,23 +74,35 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     setupScrollBar();
     syncScrollBar();
 
-    QSpacerItem *bottomLeftSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
+    // QSpacerItem *bottomLeftSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
+    // bottomLeftSpacer->setMaxWidth(160);
+    QWidget *spacerWidgetLeft = new QWidget();
+    spacerWidgetLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+    spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
 
     // add stupid fucking word count
     QLayout *spaceAndCounterLayout = new QVBoxLayout();
     QWidget *spaceAndCounterWidget = new QWidget(this);
+    spaceAndCounterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    spaceAndCounterWidget->setMaximumWidth(320);
 
     spaceAndCounterLayout->setSpacing(0);
     spaceAndCounterWidget->setContentsMargins(0, 0, 0, 0);
 
-    QSpacerItem *bottomRightSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
-    spaceAndCounterLayout->addItem(bottomRightSpacer);
-    // QSpacerItem *verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    // spaceAndCounterLayout->addItem(verticalSpacer);
+    // QSpacerItem *bottomRightSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
+    // bottomRightSpacer->setMaxWidth(150);
+    // spaceAndCounterLayout->addItem(bottomRightSpacer);
+    QWidget *spacerWidgetRight = new QWidget();
+    spacerWidgetRight->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    spacerWidgetRight->setMaximumWidth(320); // Limit the max width of the spacer widget
+
+    spaceAndCounterLayout->addWidget(spacerWidgetRight);
+    QSpacerItem *verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    spaceAndCounterLayout->addItem(verticalSpacer);
     spaceAndCounterLayout->addWidget(wordCountLabel);
     spaceAndCounterWidget->setLayout(spaceAndCounterLayout);
 
-    bottomLeftLayout->addItem(bottomLeftSpacer);
+    bottomLeftLayout->addWidget(spacerWidgetLeft);
     bottomLeftLayout->addWidget(textEdit);
     bottomLeftLayout->addWidget(spaceAndCounterWidget);
 
@@ -121,8 +133,8 @@ void FictionViewTab::setupTextEdit(const QString &content) {
         "   border: none;"
         "}"
         );
-    textEdit->setMinimumWidth(800); // Adjust the minimum width as needed
-    textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    textEdit->setMinimumWidth(480); // Adjust the minimum width as needed
+    textEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
 
     QTextDocument *doc = textEdit->document();
     QTextFrame *rootFrame = doc->rootFrame();

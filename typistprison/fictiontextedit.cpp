@@ -1,8 +1,8 @@
 #include "fictiontextedit.h"
 
 FictionTextEdit::FictionTextEdit(QWidget *parent)
-    : QTextEdit(parent), 
-    globalFontSize(12), 
+    : QTextEdit(parent),
+    globalFontSize(12),
     matchStringIndex(-1)
     // cursorVisible(true)
 {

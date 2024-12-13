@@ -72,12 +72,12 @@ void CustomTabWidget::setupStyles() {
 
         "QTabBar::close-button:hover {"
         "    image: url(:/icons/tab_hover.png);"
-        "   margin-right:8px;"
+        "    margin-right:8px;"
         "}"
 
         "QTabBar::close-button:pressed {"
         "    image: url(:/icons/tab_clicked.png);"
-        "   margin-right:8px;"
+        "    margin-right:8px;"
         "}"
     );
 }

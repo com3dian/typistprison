@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>icons/typrison_icon.png</file>
         <file>icons/angle_down.png</file>
         <file>icons/angle_right.png</file>
         <file>icons/sidebar_silent.png</file>
