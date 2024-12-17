@@ -74,8 +74,7 @@ private:
     bool isSniperMode;
     FictionHighlighter* highlighter;
     int matchStringIndex;
-    // QTimer *cursorTimer;
-    // bool cursorVisible;
+    bool isPrisoner;
 
 };
 

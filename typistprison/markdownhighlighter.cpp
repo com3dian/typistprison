@@ -65,7 +65,7 @@ MarkdownHighlighter::MarkdownHighlighter(
     : QSyntaxHighlighter(parent),
       _highlightingOptions(highlightingOptions),
       searchString(""),
-      globalFontSize(12)
+      globalFontSize(14)
 {
     // _highlightingOptions = highlightingOptions;
     _timer = new QTimer(this);

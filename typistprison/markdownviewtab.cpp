@@ -141,6 +141,10 @@ void MarkdownViewTab::syncScrollBar() {
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
 }
 
+QString MarkdownViewTab::getCurrentFilePath() const {
+    return currentFilePath;
+}
+
 bool MarkdownViewTab::saveContent() {
     if (currentFilePath.isEmpty()) {
         // If no file path is provided, prompt the user to select a save location

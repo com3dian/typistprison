@@ -2,7 +2,7 @@
 
 PlaintextEdit::PlaintextEdit(QWidget *parent)
     : QTextEdit(parent), 
-      globalFontSize(12), 
+      globalFontSize(14), 
       matchStringIndex(-1)
 {
     QPalette palette = this->palette();

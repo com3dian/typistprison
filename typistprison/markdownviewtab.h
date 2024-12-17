@@ -23,23 +23,23 @@ class MarkdownViewTab : public QWidget {
 public:
     explicit MarkdownViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
     bool saveContent();
+    QString getCurrentFilePath() const;
 
 private:
+    QMarkdownTextEdit *textEdit;
+    QString currentFilePath;
+    QScrollBar *vScrollBar;
+    QHBoxLayout *globalLayout;
+    QVBoxLayout *leftLayout;
+    QHBoxLayout *topLeftLayout;
+    QHBoxLayout *bottomLeftLayout;
+
     void setupTextEdit(const QString &content);
     void setupScrollBar();
     void syncScrollBar();
     void activateHighlightMode();
     void deactivateHighlightMode();
     void editContent();
-
-    QMarkdownTextEdit *textEdit;
-    QScrollBar *vScrollBar;
-
-    QHBoxLayout *globalLayout;
-    QVBoxLayout *leftLayout;
-    QHBoxLayout *topLeftLayout;
-    QHBoxLayout *bottomLeftLayout;
-    QString currentFilePath;
 
 signals:
     void onChangeTabName(const QString &fileName);

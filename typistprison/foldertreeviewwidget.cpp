@@ -202,6 +202,9 @@ void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
         // Add actions to the menu
         QAction *openActionFolder = contextMenu.addAction("Open");
         QAction *deleteActionFolder = contextMenu.addAction("Delete");
+        // rename folder action
+        // TODO: maybe remove this for now?
+        // no file refresh method yet
         QAction *renameActionFolder = contextMenu.addAction("Rename", [=](){
             fileTreeView->edit(index);
         });

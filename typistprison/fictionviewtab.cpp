@@ -39,28 +39,44 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
 
     SearchWidget *searchWidget = new SearchWidget();
 
-    QPushButton *button1 = new QPushButton();
-    QPixmap normalPixmap("/home/com3dian/Downloads/background.png");
-    button1->setIcon(QIcon(normalPixmap));
-    button1->setStyleSheet(
-        "QPushButton {"
-        "   background-color: transparent;"
-        "   border: none;"
-        "}"
-        "QPushButton:hover {"
-        "   border-image: url(/home/com3dian/Downloads/noun-remove-1075149.svg);"
-        "}"
-        );
-    button1->setIconSize(QSize(32, 32));
+    // QPushButton *button1 = new QPushButton();
+    // QPixmap normalPixmap("/home/com3dian/Downloads/background.png");
+    // button1->setIcon(QIcon(normalPixmap));
+    // button1->setStyleSheet(
+    //     "QPushButton {"
+    //     "   background-color: transparent;"
+    //     "   border: none;"
+    //     "}"
+    //     "QPushButton:hover {"
+    //     "   border-image: url(/home/com3dian/Downloads/noun-remove-1075149.svg);"
+    //     "}"
+    //     );
+    // 
 
-    
-    button2 = new QPushButton("Button 2", this);
+    // prisoner button
+    QPushButton *prisonerButton = new QPushButton(this);
+    prisonerButton->setStyleSheet(
+            "QPushButton {"
+            "border: none;"
+            "border-image: url(:/icons/newfile_silent.png) 0 0 0 0 stretch stretch;"
+            "}"
+            "QPushButton:hover {"
+            "border-image: url(:/icons/newfile_hover.png) 0 0 0 0 stretch stretch;"
+            "}"
+            "QPushButton:pressed {"
+            "border-image: url(:/icons/newfile_clicked.png) 0 0 0 0 stretch stretch;"
+            "}"
+    );
+    prisonerButton->setFixedSize(16, 16);
+
+    // sniper button
+    sniperButton = new QPushButton("Sniper Button", this);
 
     topLeftLayout->addItem(topLeftSpacerLeft1);
     topLeftLayout->addItem(topLeftSpacerLeft2);
     topLeftLayout->addWidget(searchWidget);
-    topLeftLayout->addWidget(button1);
-    topLeftLayout->addWidget(button2);
+    topLeftLayout->addWidget(prisonerButton);
+    topLeftLayout->addWidget(sniperButton);
     topLeftLayout->addItem(topLeftSpacerRight);
 
     QWidget *topLeftWidget = new QWidget(this);
@@ -113,7 +129,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     globalLayout->addWidget(vScrollBar);
 
     setLayout(globalLayout);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
+    connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
     connect(textEdit, &FictionTextEdit::onSave, this, &FictionViewTab::saveContent);
     connect(textEdit, &FictionTextEdit::textChanged, this, &FictionViewTab::editContent);
     connect(textEdit, &FictionTextEdit::onFictionEditSearch, searchWidget, &SearchWidget::handleSearch);
@@ -192,15 +208,19 @@ void FictionViewTab::activateSniperMode() {
     textEdit->activateSniperMode();
     disconnect(textEdit, &QTextEdit::textChanged, this, &FictionViewTab::updateWordcount);
     qDebug() << "activateHighlightMode";
-    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
+    disconnect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
+    connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
 }
 
 void FictionViewTab::deactivateSniperMode() {
     textEdit->deactivateSniperMode();
     qDebug() << "DeactivateHighlightMode";
-    disconnect(button2, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
-    connect(button2, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
+    disconnect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
+    connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
+}
+
+QString FictionViewTab::getCurrentFilePath() const {
+    return currentFilePath;
 }
 
 bool FictionViewTab::saveContent() {
@@ -212,6 +232,20 @@ bool FictionViewTab::saveContent() {
             return false;
         }
         currentFilePath = fileName;
+        
+        QFile file(currentFilePath);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+            return false;
+        }
+
+        QTextStream out(&file);
+        out << textEdit->toPlainText();
+        file.close();
+
+        emit onChangeFileType(fileName);
+
+        return true;
     }
 
     QFile file(currentFilePath);
@@ -265,3 +299,31 @@ void FictionViewTab::updateWordcount() {
     }
     wordCountLabel->setText(QString::number(wordCount) + " words  ");
 }
+
+void FictionTextTab::activatePrisonerMode() {
+    
+}
+
+void FictionViewTab::deactivatePrisonerMode() {
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

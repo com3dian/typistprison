@@ -23,22 +23,23 @@ class PlaintextViewTab : public QWidget {
 public:
     explicit PlaintextViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
     bool saveContent();
+    QString getCurrentFilePath() const;
 
 private:
+    PlaintextEdit *textEdit;
+    QString currentFilePath;
+    QScrollBar *vScrollBar;
+    QHBoxLayout *globalLayout;
+    QVBoxLayout *leftLayout;
+    QHBoxLayout *topLeftLayout;
+    QHBoxLayout *bottomLeftLayout;
+
     void setupTextEdit(const QString &content);
     void setupScrollBar();
     void syncScrollBar();
     void activateHighlightMode();
     void deactivateHighlightMode();
     void editContent();
-
-    PlaintextEdit *textEdit;
-    QScrollBar *vScrollBar;
-    QHBoxLayout *globalLayout;
-    QVBoxLayout *leftLayout;
-    QHBoxLayout *topLeftLayout;
-    QHBoxLayout *bottomLeftLayout;
-    QString currentFilePath;
 
 signals:
     void onChangeTabName(const QString &fileName);

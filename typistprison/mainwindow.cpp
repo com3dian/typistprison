@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menubar->setStyleSheet(menubarStyleSheet);
 
     ui->statusbar->setStyleSheet("QStatusBar { background-color: #2c2f30;}");
-    ui->statusbar->setContentsMargins(2.8, 0, 2.8, 0);
+    ui->statusbar->setContentsMargins(2, 0, 2, 0);
 
     QPushButton *sidePanelButton = new QPushButton(this);
     sidePanelButton->setStyleSheet(
@@ -128,6 +128,7 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->addWidget(folderTreeView);  // Left pane: file explorer
     centralSplitter->addWidget(customTabWidget);     // Right pane: tab widget
     centralSplitter->setCollapsible(1, false); // Disable collapsing for the right widget
+    centralSplitter->setSizes(QList<int>({0, centralSplitter->size().width()})); // Right widget takes over
 
 
     // Set the central widget to the custom tab widget
@@ -157,8 +158,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupUntitledTab();
     // previousSplitterPosition = 0.166;
-    toggleFileTreeView();
-    toggleFileTreeView();
+    // toggleFileTreeView();
+    // toggleFileTreeView();
 }
 
 MainWindow::~MainWindow()
@@ -169,7 +170,7 @@ MainWindow::~MainWindow()
 void MainWindow::setupUntitledTab()
 {
     // Create the default untitled tab
-    customTabWidget->createNewTab("", "untitled-" + QString::number(untitledCount++), "", true);
+    customTabWidget->createNewTab("", true);
 }
 
 void MainWindow::openFile(const QString &filePath)  // No default argument here
@@ -183,15 +184,8 @@ void MainWindow::openFile(const QString &filePath)  // No default argument here
 
     // If a file is selected (either from the dialog or the provided path), load the file
     if (!selectedFilePath.isEmpty()) {
-        QFile file(selectedFilePath);
-        if (file.open(QIODevice::ReadOnly)) {
-            QTextStream in(&file);
-            QString fileContents = in.readAll();
-            file.close();
-
-            // Create a new tab with the file name as the tab text
-            customTabWidget->createNewTab(fileContents, QFileInfo(selectedFilePath).fileName(), selectedFilePath);
-        }
+        // Create a new tab with the file name as the tab text
+        customTabWidget->createNewTab(selectedFilePath);
     }
 }
 

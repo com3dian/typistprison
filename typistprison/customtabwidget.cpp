@@ -19,6 +19,7 @@
 
 CustomTabWidget::CustomTabWidget(QWidget *parent)
     : QTabWidget(parent)
+    , untitledCount(1)
 {
     setupTabBar();
     setupTabWidget();
@@ -82,14 +83,44 @@ void CustomTabWidget::setupStyles() {
     );
 }
 
-void CustomTabWidget::createNewTab(const QString &content,
-                                   const QString &tabName,
-                                   const QString &filePath,
-                                   bool isUntitled) {
+void CustomTabWidget::createNewTab(const QString &filePath,
+                                   bool isUntitled,
+                                   int tabIndex) {
+
     QWidget *newTab;
+
+    // 
+    QString tabName;
+    QString content;
+    if (isUntitled) {
+        tabName = "untitled-" + QString::number(untitledCount++);
+        content = "";
+    } else {
+        // If a file is selected (either from the dialog or the provided path), load the file
+        QFile file(filePath);
+        qDebug() << "filePath" << filePath;
+        tabName = QFileInfo(filePath).fileName();   // get tabName
+        QFileInfo fileInfo(file);
+        if (fileInfo.isReadable()) {
+    qDebug() << "File is readable.";
+} else {
+    qDebug() << "File is not readable.";
+}
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            content = in.readAll();    //get content
+            qDebug() << "content" << content;
+            file.close();
+        } else {
+            qDebug() << "no content";
+        }
+    }
+    
+    // Create a new tab with the file name as the tab text
     if (tabName.endsWith(".cell.txt") || isUntitled) {
         newTab = new FictionViewTab(content, filePath, this);
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
+        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType, this, &CustomTabWidget::updateFileType);
     } else if (tabName.endsWith(".md")) {
         newTab = new MarkdownViewTab(content, filePath, this);
         connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
@@ -97,8 +128,13 @@ void CustomTabWidget::createNewTab(const QString &content,
         newTab = new PlaintextViewTab(content, filePath, this);
         connect(static_cast<PlaintextViewTab*>(newTab), &PlaintextViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     }
-
-    addTab(newTab, tabName);
+    if (tabIndex == -1) {
+        addTab(newTab, tabName);
+    } else {
+        insertTab(tabIndex, newTab, tabName);
+        // TODO: set cursor positioin and scroll bar maybe
+    }
+    
     setCurrentWidget(newTab);
 }
 
@@ -126,6 +162,7 @@ void CustomTabWidget::updateTabTitle(const QString &fileName) {
     QString currentTitle = this->tabText(currentIndex);
 
     QString newTitle;
+    // dont remember why but it works
     if (currentTitle.endsWith("*") and fileName.endsWith("*")) {
         return;
     } else if (fileName == "*") {
@@ -136,9 +173,30 @@ void CustomTabWidget::updateTabTitle(const QString &fileName) {
     this->setTabText(currentIndex, newTitle);
 }
 
-void CustomTabWidget::onTabCloseRequested(int index) {
+void CustomTabWidget::updateFileType(const QString &newFileName) {
+    int currentIndex = this->currentIndex();
+    QString currentTitle = this->tabText(currentIndex);
+
+    QWidget *currentTab = nullptr;
+    currentTab = this->widget(currentIndex);
+
+    QString savedFilePath;
+    QRegularExpression regex("untitled-\\d+\\*");
+    if (currentTitle.endsWith("cell.txt*") | regex.match(currentTitle).hasMatch()) {
+        savedFilePath = static_cast<FictionViewTab*>(currentTab)->getCurrentFilePath();
+    } else if (currentTitle.endsWith(".md*")) {
+        savedFilePath = static_cast<MarkdownViewTab*>(currentTab)->getCurrentFilePath();;
+    } else {
+        savedFilePath = static_cast<PlaintextViewTab*>(currentTab)->getCurrentFilePath();;
+    }
+    onTabCloseRequested(currentIndex, false);
+
+    createNewTab(savedFilePath, false);
+}
+
+void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
     QString currentTitle = this->tabText(index);
-    if (currentTitle.endsWith("*")) {
+    if (currentTitle.endsWith("*") & needAsking) {
         
         // QRect tabBarRect = this->customTabBar->geometry();
 

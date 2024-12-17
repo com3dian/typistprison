@@ -6,7 +6,7 @@
 #include <QDebug>
 
 FictionHighlighter::FictionHighlighter(QTextDocument *parent)
-    : QSyntaxHighlighter(parent), searchString(""), globalFontSize(12)
+    : QSyntaxHighlighter(parent), searchString(""), globalFontSize(14)
 {
     // Define the format for search highlighting
     searchHighlightFormat.setBackground(QBrush(QColor("#4F726C"))); // Custom background color

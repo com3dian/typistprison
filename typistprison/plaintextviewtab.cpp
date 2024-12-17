@@ -82,7 +82,7 @@ void PlaintextViewTab::setupTextEdit(const QString &content) {
         "   border: none;"
         "}"
         );
-    textEdit->setMinimumWidth(800); // Adjust the minimum width as needed
+    textEdit->setMinimumWidth(480); // Adjust the minimum width as needed
     textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QTextDocument *doc = textEdit->document();
@@ -135,6 +135,10 @@ void PlaintextViewTab::syncScrollBar() {
     vScrollBar->setPageStep(internalScrollBar->pageStep());
     vScrollBar->setValue(internalScrollBar->value());
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
+}
+
+QString PlaintextViewTab::getCurrentFilePath() const {
+    return currentFilePath;
 }
 
 bool PlaintextViewTab::saveContent() {

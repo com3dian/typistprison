@@ -50,7 +50,7 @@ static const QByteArray _openingCharacters = QByteArrayLiteral("([{<*\"'_~");
 static const QByteArray _closingCharacters = QByteArrayLiteral(")]}>*\"'_~");
 
 QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
-    : QPlainTextEdit(parent), globalFontSize(12), matchStringIndex(-1) {
+    : QPlainTextEdit(parent), globalFontSize(14), matchStringIndex(-1) {
     installEventFilter(this);
     viewport()->installEventFilter(this);
     _autoTextOptions = AutoTextOption::BracketClosing;

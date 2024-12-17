@@ -2,9 +2,9 @@
 
 FictionTextEdit::FictionTextEdit(QWidget *parent)
     : QTextEdit(parent),
-    globalFontSize(12),
-    matchStringIndex(-1)
-    // cursorVisible(true)
+    globalFontSize(14),
+    matchStringIndex(-1),
+    isPrisoner(false)
 {
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));

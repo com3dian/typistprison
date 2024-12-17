@@ -42,58 +42,6 @@ int main(int argc, char *argv[])
     QString notoSansMonoFamily = FontManager::instance().getNotoSansMonoFamily();
     QString notoSansRegularFamily = FontManager::instance().getNotoSansRegularFamily();
 
-    // QFont customFont(customFontFamily, 12); // TODO: to be changed to read default font size from 
-    // myWidget->setFont(customFont);
-    
-    // int notoSansLightId = QFontDatabase::addApplicationFont(":/fonts/fonts/NotoSansSC-Light.ttf");
-    // int notoSansRegularId = QFontDatabase::addApplicationFont(":/fonts/fonts/NotoSansSC-Regular.ttf");
-    // int notoSansDemiLightId = QFontDatabase::addApplicationFont(":/fonts/fonts/NotoSansSC-DemiLight.otf");
-    // int notoSansMonoId = QFontDatabase::addApplicationFont(":/fonts/fonts/NotoSansMono-Regular.ttf");
-    // int notoSansSerifId = QFontDatabase::addApplicationFont(":/fonts/fonts/NotoSerifTC-Regular.ttf");
-
-
-    // QString notoSansLightFamily;
-    // QString notoSansRegularFamily;
-    // QString notoSansDemiLightFamily;
-    // QString notoSansMonoFamily;
-    // QString notoSansSerifFamily;
-
-    // Retrieve the font family names safely
-    // QStringList notoSansLightFamilies = QFontDatabase::applicationFontFamilies(notoSansLightId);
-    // if (!notoSansLightFamilies.isEmpty()) {
-    //     notoSansLightFamily = notoSansLightFamilies.at(0);
-    // } else {
-    //     qWarning() << "Failed to load Noto Sans Light font family.";
-    // }
-
-    // QStringList notoSansRegularFamilies = QFontDatabase::applicationFontFamilies(notoSansRegularId);
-    // if (!notoSansRegularFamilies.isEmpty()) {
-    //     notoSansRegularFamily = notoSansRegularFamilies.at(0);
-    // } else {
-    //     qWarning() << "Failed to load Noto Sans Regular font family.";
-    // }
-
-    // QStringList notoSansDemiLightFamilies = QFontDatabase::applicationFontFamilies(notoSansDemiLightId);
-    // if (!notoSansDemiLightFamilies.isEmpty()) {
-    //     notoSansDemiLightFamily = notoSansDemiLightFamilies.at(0);
-    // } else {
-    //     qWarning() << "Failed to load Noto Sans DemiLight font family.";
-    // }
-
-    // QStringList notoSansMonoFamilies = QFontDatabase::applicationFontFamilies(notoSansMonoId);
-    // if (!notoSansMonoFamilies.isEmpty()) {
-    //     notoSansMonoFamily = notoSansMonoFamilies.at(0);
-    // } else {
-    //     qWarning() << "Failed to load Noto Sans Mono font family.";
-    // }
-
-    // QStringList notoSansSerifFamilies = QFontDatabase::applicationFontFamilies(notoSansSerifId);
-    // if (!notoSansSerifFamilies.isEmpty()) {
-    //     notoSansSerifFamily = notoSansSerifFamilies.at(0);
-    // } else {
-    //     qWarning() << "Failed to load Noto Sans Mono font family.";
-    // }
-
     #if defined(Q_OS_WIN)
         qDebug() << "Running on Windows";
         QString styleSheet = "QWidget { font-family: 'Noto Sans CJK SC Light';}"
@@ -104,11 +52,10 @@ int main(int argc, char *argv[])
         qDebug() << "Running on MacOS";
         QString styleSheet = QString(
                              "QWidget { font-family: '%1';}"
-                             "PlaintextEdit { font-family: '%3'; }"
-                             "QMarkdownTextEdit { font-family: '%4'; }"
-                             "FictionTextEdit { font-family: '%5'; }"
+                             "PlaintextEdit { font-family: '%2'; }"
+                             "QMarkdownTextEdit { font-family: '%3'; }"
+                             "FictionTextEdit { font-family: '%4'; }"
                              ).arg(notoSansLightFamily)
-                              .arg(12)
                               .arg(notoSansMonoFamily)
                               .arg(notoSansLightFamily)
                               .arg(notoSansLightFamily);
@@ -116,12 +63,11 @@ int main(int argc, char *argv[])
     #elif defined(Q_OS_LINUX)
         qDebug() << "Running on Linux";
         QString styleSheet = QString(
-                             "QWidget { font-family: '%1'; font-size: %2px;}"
-                             "PlaintextEdit { font-family: '%3'; }"
-                             "QMarkdownTextEdit { font-family: '%4'; }"
-                             "FictionTextEdit { font-family: '%5'; }"
+                             "QWidget { font-family: '%1';}"
+                             "PlaintextEdit { font-family: '%2'; }"
+                             "QMarkdownTextEdit { font-family: '%3'; }"
+                             "FictionTextEdit { font-family: '%4'; }"
                              ).arg(notoSansLightFamily)
-                              .arg(12)
                               .arg(notoSansMonoFamily)
                               .arg(notoSansLightFamily)
                               .arg(notoSansLightFamily);

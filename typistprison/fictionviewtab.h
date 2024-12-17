@@ -26,8 +26,20 @@ class FictionViewTab : public QWidget {
 public:
     explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
     bool saveContent();
+    QString getCurrentFilePath() const;
 
 private:
+    FictionTextEdit *textEdit;
+    QString currentFilePath;
+    QScrollBar *vScrollBar;
+    QPushButton *sniperButton;
+    QHBoxLayout *globalLayout;
+    QVBoxLayout *leftLayout;
+    QHBoxLayout *topLeftLayout;
+    QHBoxLayout *bottomLeftLayout;
+    QLabel *wordCountLabel;
+    QString oldTextContent;
+
     void setupTextEdit(const QString &content);
     void setupScrollBar();
     void syncScrollBar();
@@ -36,20 +48,9 @@ private:
     void editContent();
     void updateWordcount();
 
-    FictionTextEdit *textEdit;
-    QScrollBar *vScrollBar;
-    QPushButton *button2;
-
-    QHBoxLayout *globalLayout;
-    QVBoxLayout *leftLayout;
-    QHBoxLayout *topLeftLayout;
-    QHBoxLayout *bottomLeftLayout;
-    QString currentFilePath;
-    QLabel *wordCountLabel;
-    QString oldTextContent;
-
 signals:
     void onChangeTabName(const QString &fileName);
+    void onChangeFileType(const QString &fileName);
 };
 
 #endif // FICTIONVIEWTAB_H

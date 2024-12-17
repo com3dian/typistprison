@@ -18,13 +18,16 @@ public:
     CustomTabBar *customTabBar;
 
     CustomTabWidget(QWidget *parent = nullptr);
-    void createNewTab(const QString &content, const QString &tabName, const QString &filePath, bool isUntitled = false);
+    void createNewTab(const QString &filePath, bool isUntitled = false, int tabIndex = -1);
     void switchToFictionView();
 
 public slots:
     void updateTabTitle(const QString &fileName);
+    void updateFileType(const QString &previousFileName);
 
 private:
+    int untitledCount;
+
     void setupTabWidget();
     void setupTabBar();
     void setupStyles();
@@ -33,7 +36,7 @@ private:
     void applyEditorViewStyles(QTextEdit *textEdit);
 
 private slots:
-    void onTabCloseRequested(int index);
+    void onTabCloseRequested(int index, bool needAsking = true);
     
 
 signals:
