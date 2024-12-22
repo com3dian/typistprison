@@ -35,13 +35,21 @@ class FictionTextEdit : public QTextEdit
 public:
     FictionTextEdit(QWidget *parent = nullptr);
 
+    bool isSniperMode;
+
     void load(const QString& text);
     void setTopMargin(int margin);
-    void activateSniperMode();
-    void deactivateSniperMode();
+    virtual void activateSniperMode();
+    virtual void deactivateSniperMode();
     void search(const QString &searchString);
     void searchPrev(const QString &searchString);
     void clearSearch();
+    void changeGlobalTextColor(const QColor &color);
+    void updateFocusBlock();
+    void changeFontSize(int delta);
+    void applyBlockFormatting(QTextBlock &block);
+    QTextCursor applyCharFormatting(QTextCursor &cursor, bool insertLargeFont = true);
+    QTextCursor applyCharFormatting4NextBlock(QTextCursor &cursor);
 
 signals:
     void onFictionEditSearch(const QString &text);
@@ -53,28 +61,20 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void insertFromMimeData(const QMimeData *source) override;
     void focusInEvent(QFocusEvent *e) override;
-    // void paintEvent(QPaintEvent *event) override;
-    // void focusOutEvent(QFocusEvent *event) override;
 
 private:
-    void applyBlockFormatting(QTextBlock &block);
-    QTextCursor applyCharFormatting(QTextCursor &cursor, bool insertLargeFont = true);
-    QTextCursor applyCharFormatting4NextBlock(QTextCursor &cursor);
-    void updateFocusBlock();
-    void changeGlobalTextColor(const QColor &color);
     int getVisibleCenterY();
     int checkVisibleCenterBlock(const QTextBlock &block);
     QTextBlock findBlockClosestToCenter();
     // void toggleCursorVisibility();
 
-    void changeFontSize(int delta);
     int globalFontSize;
     QTextBlock previousCenteredBlock;
     QTextBlock newCenteredBlock;
-    bool isSniperMode;
+    
     FictionHighlighter* highlighter;
     int matchStringIndex;
-    bool isPrisoner;
+    
 
 };
 

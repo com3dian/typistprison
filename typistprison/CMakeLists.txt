@@ -27,6 +27,8 @@ set(PROJECT_SOURCES
     fictionviewtab.h
     fictionhighlighter.cpp
     fictionhighlighter.h
+    prisonerfictiontextedit.cpp
+    prisonerfictiontextedit.h
     plaintextedit.cpp
     plaintextedit.h
     plaintextviewtab.cpp

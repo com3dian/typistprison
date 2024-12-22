@@ -1,9 +1,8 @@
 #include "fictionviewtab.h"
 
 
-FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent)
+FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent, bool isPrisoner)
     : QWidget(parent), 
-      textEdit(new FictionTextEdit(this)), 
       vScrollBar(new QScrollBar(Qt::Vertical, this)), 
       currentFilePath(filePath),
       oldTextContent("")
@@ -54,7 +53,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // 
 
     // prisoner button
-    QPushButton *prisonerButton = new QPushButton(this);
+    prisonerButton = new QPushButton(this);
     prisonerButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
@@ -70,8 +69,14 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     prisonerButton->setFixedSize(16, 16);
 
     // sniper button
-    sniperButton = new QPushButton("Sniper Button", this);
-
+    if (isPrisoner) {
+        textEdit = new PrisonerFictionTextEdit(this);
+        sniperButton = new QPushButton("No Sniper Button", this);
+    } else {
+        textEdit = new FictionTextEdit(this);
+        sniperButton = new QPushButton("Sniper Button", this);
+    }
+    
     topLeftLayout->addItem(topLeftSpacerLeft1);
     topLeftLayout->addItem(topLeftSpacerLeft2);
     topLeftLayout->addWidget(searchWidget);
@@ -95,12 +100,14 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     QWidget *spacerWidgetLeft = new QWidget();
     spacerWidgetLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
+    spacerWidgetLeft->setMinimumWidth(0);
 
     // add stupid fucking word count
     QLayout *spaceAndCounterLayout = new QVBoxLayout();
     QWidget *spaceAndCounterWidget = new QWidget(this);
     spaceAndCounterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     spaceAndCounterWidget->setMaximumWidth(320);
+    spaceAndCounterWidget->setMinimumWidth(0);
 
     spaceAndCounterLayout->setSpacing(0);
     spaceAndCounterWidget->setContentsMargins(0, 0, 0, 0);
@@ -111,6 +118,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     QWidget *spacerWidgetRight = new QWidget();
     spacerWidgetRight->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     spacerWidgetRight->setMaximumWidth(320); // Limit the max width of the spacer widget
+    spacerWidgetRight->setMinimumWidth(0);
 
     spaceAndCounterLayout->addWidget(spacerWidgetRight);
     QSpacerItem *verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -138,6 +146,15 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     connect(searchWidget, &SearchWidget::onClear, textEdit, &FictionTextEdit::clearSearch);
     connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &FictionTextEdit::searchPrev);
     connect(textEdit, &FictionTextEdit::textChanged, this, &FictionViewTab::updateWordcount);
+
+    if (isPrisoner) {
+        // // Connect signals unique to PrisonerTextEdit
+        // connect(static_cast<PrisonerFictionTextEdit*>(textEdit), &PrisonerFictionTextEdit::onEscape,
+        //         this, &FictionViewTab::deactivatePrisonerMode);
+        // connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
+    } else {
+        connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::activatePrisonerMode); 
+    }
 }
 
 void FictionViewTab::setupTextEdit(const QString &content) {
@@ -300,13 +317,57 @@ void FictionViewTab::updateWordcount() {
     wordCountLabel->setText(QString::number(wordCount) + " words  ");
 }
 
-void FictionTextTab::activatePrisonerMode() {
-    
+void FictionViewTab::activatePrisonerMode() {
+    // new FictionViewTab
+    qDebug() << "activate prisoner mode";
+    QString content = textEdit->toPlainText();
+    QString filePath = getCurrentFilePath();
+    QWidget *parentWidget = nullptr;
+
+    FictionViewTab *fullScreenFictionViewTab = new FictionViewTab(textEdit->toPlainText(), filePath, parentWidget, true);
+
+    // connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
+
+    // Create a QDialog to host the FictionViewTab in full screen
+    QDialog *fullScreenDialog = new QDialog();
+    fullScreenDialog->setStyleSheet("background-color: #31363F;");
+    fullScreenDialog->setWindowFlag(Qt::Window);                  // Set as a window
+    fullScreenDialog->setWindowFlag(Qt::FramelessWindowHint);     // Remove borders and title bar
+    fullScreenDialog->setWindowModality(Qt::ApplicationModal);    // Block interaction with other windows
+    fullScreenDialog->setWindowState(Qt::WindowFullScreen);       // Set full screen
+    fullScreenDialog->setAttribute(Qt::WA_DeleteOnClose);         // Automatically delete when closed
+
+    // Set FictionViewTab as the content of the dialog
+    QVBoxLayout *layout = new QVBoxLayout(fullScreenDialog);
+    layout->addWidget(fullScreenFictionViewTab);
+    fullScreenDialog->setLayout(layout);
+
+    // Store the dialog pointer in a member variable for future reference
+    prisonerDialog = fullScreenDialog;
+    prisonerFictionViewTab = fullScreenFictionViewTab; // New member to track the FictionViewTab
+    fullScreenPrisonerTextEdit = static_cast<PrisonerFictionTextEdit*>(prisonerFictionViewTab->textEdit);
+    QPushButton *fullScreenPrisonerButton = prisonerFictionViewTab->prisonerButton;
+
+    connect(fullScreenPrisonerTextEdit, &PrisonerFictionTextEdit::onEscape, this, &FictionViewTab::deactivatePrisonerMode);
+    connect(fullScreenPrisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
+
+    // Show the dialog in full-screen mode
+    fullScreenDialog->show();
 }
 
 void FictionViewTab::deactivatePrisonerMode() {
+    // Close the prisoner dialog if it exists
+    if (prisonerDialog) {
+        // Get the text from the FictionViewTab before closing
+        if (prisonerFictionViewTab) {
+            QString prisonerText = prisonerFictionViewTab->textEdit->toPlainText();
+            textEdit->load(prisonerText);
+        }
 
-
+        prisonerDialog->close();
+        prisonerDialog = nullptr;  // Reset the pointer
+        prisonerFictionViewTab = nullptr; // Reset the pointer
+    }
 }
 
 

@@ -3,8 +3,7 @@
 FictionTextEdit::FictionTextEdit(QWidget *parent)
     : QTextEdit(parent),
     globalFontSize(14),
-    matchStringIndex(-1),
-    isPrisoner(false)
+    matchStringIndex(-1)
 {
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
@@ -131,20 +130,16 @@ QTextCursor FictionTextEdit::applyCharFormatting4NextBlock(QTextCursor &cursor)
         
         if (isAtBottom) {
             if ((blockRect.bottom() + 16 - totalHeight <= centerY) && (centerY <= blockRect.bottom() + 16)) {
-                qDebug() << "@@@@@@@@@@@@@@@@@@@@1111111111111";
                 charFormat.setForeground(Qt::white);
             } else {
-                qDebug() << "@@@@@@@@@@@@@@@@@@@@2222222222222";
                 QColor customColor("#454F61");
                 charFormat.setForeground(customColor);
             }
         } else {
             if ((blockRect.bottom() + 16 <= centerY) && (centerY <= blockRect.bottom() + totalHeight + 16)) {
-                qDebug() << "@@@@@@@@@@@@@@@@@@@@3333333333333";
                 charFormat.setForeground(Qt::white);
                 // previousCenteredBlock = cursor.block();  // Update previous centered block
             } else {
-                qDebug() << "@@@@@@@@@@@@@@@@@@@@4444444444444";
                 QColor customColor("#454F61");
                 charFormat.setForeground(customColor);
             }
@@ -264,10 +259,20 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
 void FictionTextEdit::load(const QString &text)
 {
     // Clear existing content
-    clear();
+    QTextCursor cursor = this->textCursor();
+    
+    // Select the entire document
+    cursor.select(QTextCursor::Document);
+    
+    // Remove the selected text
+    cursor.removeSelectedText();
+    
+    // ensure the cursor is at the beginning of the document
+    cursor.movePosition(QTextCursor::Start);
+    this->setTextCursor(cursor);
 
     // Set font format
-    QTextCursor cursor = this->textCursor();
+    // QTextCursor cursor = this->textCursor();
     QFont font  = this->font();
     font.setPointSize(globalFontSize);
 
@@ -519,7 +524,6 @@ void FictionTextEdit::updateFocusBlock() {
 
     // Check if the previously centered block is still close to the center
     if (previousCenteredBlock.isValid()) {
-        qDebug() << "++++++++++++++++++++++ 11111";
         int position = checkVisibleCenterBlock(previousCenteredBlock);
         if (position == 0) {
 
@@ -529,14 +533,12 @@ void FictionTextEdit::updateFocusBlock() {
 
     // If there was a previously centered block, set it to grey
     if (previousCenteredBlock.isValid()) {
-        qDebug() << "++++++++++++++++++++++ 22222";
         applyBlockFormatting(previousCenteredBlock);
     }
 
     // check the prevous & next blocks
     int positionPrevious = checkVisibleCenterBlock(previousCenteredBlock.previous());
     if (positionPrevious == 0) {
-        qDebug() << "++++++++++++++++++++++ 33333";
         newCenteredBlock = previousCenteredBlock.previous();
         applyBlockFormatting(newCenteredBlock);
         previousCenteredBlock = newCenteredBlock;
@@ -544,7 +546,6 @@ void FictionTextEdit::updateFocusBlock() {
     }
     int positionNext = checkVisibleCenterBlock(previousCenteredBlock.next());
     if (positionNext == 0) {
-        qDebug() << "++++++++++++++++++++++ 44444";
         newCenteredBlock = previousCenteredBlock.next();
         applyBlockFormatting(newCenteredBlock);
         previousCenteredBlock = newCenteredBlock;

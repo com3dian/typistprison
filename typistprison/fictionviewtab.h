@@ -18,15 +18,17 @@
 #include <QRegularExpression>
 #include "fictiontextedit.h"
 #include "searchWidget.h"
+#include "prisonerfictiontextedit.h"
 
 
 class FictionViewTab : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
+    explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr, bool isPrisoner = false);
     bool saveContent();
     QString getCurrentFilePath() const;
+    QPushButton *prisonerButton;
 
 private:
     FictionTextEdit *textEdit;
@@ -39,6 +41,10 @@ private:
     QHBoxLayout *bottomLeftLayout;
     QLabel *wordCountLabel;
     QString oldTextContent;
+    bool isPrisoner;
+    QDialog *prisonerDialog;
+    FictionViewTab *prisonerFictionViewTab;
+    PrisonerFictionTextEdit* fullScreenPrisonerTextEdit;
 
     void setupTextEdit(const QString &content);
     void setupScrollBar();
@@ -47,6 +53,8 @@ private:
     void deactivateSniperMode();
     void editContent();
     void updateWordcount();
+    void activatePrisonerMode();
+    void deactivatePrisonerMode();
 
 signals:
     void onChangeTabName(const QString &fileName);
