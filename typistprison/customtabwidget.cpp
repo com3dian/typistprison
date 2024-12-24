@@ -55,7 +55,7 @@ void CustomTabWidget::setupStyles() {
         "QTabBar::tab {"
                         "background-color: #454f61;"
                         "color: #C7C8CC;"
-                        "min-width: 8ex;"
+                        "min-width: 8px;"
                         "padding-left: 20px; padding-right: 40px; padding-top: 6px; padding-bottom: 8px;"
                         "border-top-left-radius: 0px; border-top-right-radius: 0px;"
                         "border-bottom-left-radius: 0px;"

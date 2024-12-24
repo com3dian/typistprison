@@ -317,6 +317,11 @@ void FictionTextEdit::load(const QString &text)
         cursor.movePosition(QTextCursor::Start);
         this->setTextCursor(cursor);
     }
+    // disable undo
+    this->document()->setUndoRedoEnabled(false);
+
+    // Re-enable undo/redo
+    this->document()->setUndoRedoEnabled(true);
 }
 
 void FictionTextEdit::insertFromMimeData(const QMimeData *source)

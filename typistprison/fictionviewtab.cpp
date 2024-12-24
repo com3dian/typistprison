@@ -22,7 +22,6 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     wordCountLabel->setFont(font);
     wordCountLabel->setContentsMargins(0, 0, 0, 1);
 
-
     globalLayout->setContentsMargins(0, 0, 0, 0);
     globalLayout->setSpacing(0);
     leftLayout->setContentsMargins(0, 0, 0, 0);
@@ -32,9 +31,9 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     bottomLeftLayout->setContentsMargins(0, 0, 0, 0);
     bottomLeftLayout->setSpacing(0);
 
-    QSpacerItem *topLeftSpacerLeft1 = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
-    QSpacerItem *topLeftSpacerLeft2 = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    QSpacerItem *topLeftSpacerRight = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem *topLeftSpacerLeft1 = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
+    QSpacerItem *topLeftSpacerLeft2 = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem *topLeftSpacerRight = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     SearchWidget *searchWidget = new SearchWidget();
 
@@ -99,15 +98,15 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // bottomLeftSpacer->setMaxWidth(160);
     QWidget *spacerWidgetLeft = new QWidget();
     spacerWidgetLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-    spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
-    spacerWidgetLeft->setMinimumWidth(0);
+    // spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
+    // spacerWidgetLeft->setMinimumWidth(10);
 
     // add stupid fucking word count
     QLayout *spaceAndCounterLayout = new QVBoxLayout();
     QWidget *spaceAndCounterWidget = new QWidget(this);
     spaceAndCounterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    spaceAndCounterWidget->setMaximumWidth(320);
-    spaceAndCounterWidget->setMinimumWidth(0);
+    // spaceAndCounterWidget->setMaximumWidth(320);
+    // spaceAndCounterWidget->setMinimumWidth(10);
 
     spaceAndCounterLayout->setSpacing(0);
     spaceAndCounterWidget->setContentsMargins(0, 0, 0, 0);
@@ -116,9 +115,9 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // bottomRightSpacer->setMaxWidth(150);
     // spaceAndCounterLayout->addItem(bottomRightSpacer);
     QWidget *spacerWidgetRight = new QWidget();
-    spacerWidgetRight->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    spacerWidgetRight->setMaximumWidth(320); // Limit the max width of the spacer widget
-    spacerWidgetRight->setMinimumWidth(0);
+    spacerWidgetRight->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
+    // spacerWidgetRight->setMaximumWidth(320); // Limit the max width of the spacer widget
+    // spacerWidgetRight->setMinimumWidth(10);
 
     spaceAndCounterLayout->addWidget(spacerWidgetRight);
     QSpacerItem *verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -126,9 +125,19 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     spaceAndCounterLayout->addWidget(wordCountLabel);
     spaceAndCounterWidget->setLayout(spaceAndCounterLayout);
 
+
+    QWidget *textEditWidget = new QWidget();
+    QVBoxLayout *textEditLayout = new QVBoxLayout;
+    textEditLayout->addWidget(textEdit);
+
+    // Set the layout's margins to zero
+    textEditLayout->setContentsMargins(0, 0, 0, 0);
+    textEditWidget->setLayout(textEditLayout);
+
     bottomLeftLayout->addWidget(spacerWidgetLeft);
     bottomLeftLayout->addWidget(textEdit);
     bottomLeftLayout->addWidget(spaceAndCounterWidget);
+
 
     leftLayout->addWidget(topLeftWidget);
     leftLayout->addLayout(bottomLeftLayout);
@@ -166,7 +175,8 @@ void FictionViewTab::setupTextEdit(const QString &content) {
         "   border: none;"
         "}"
         );
-    textEdit->setMinimumWidth(480); // Adjust the minimum width as needed
+    textEdit->setMinimumWidth(360); // minimum width
+    textEdit->setMaximumWidth(960); // maximum width
     textEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
 
     QTextDocument *doc = textEdit->document();

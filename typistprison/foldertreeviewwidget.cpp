@@ -43,9 +43,9 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent)
 void FolderTreeViewWidget::setupButton() {
     buttonWidget = new QWidget;
     buttonWidget->setStyleSheet("background-color: #31363F;");
-    buttonWidget->setFixedHeight(38);
-    QTextBrowser *folderTextBrowser = new QTextBrowser(this);
-    folderTextBrowser->setPlainText("Folder"); // TODO: to be changed
+    buttonWidget->setFixedHeight(24);
+
+    QSpacerItem *topSpacerLeft = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
 
     QPushButton *newFileButton = new QPushButton(this);
     newFileButton->setStyleSheet(
@@ -102,7 +102,7 @@ void FolderTreeViewWidget::setupButton() {
     buttonWidgetLayout->setSpacing(12);  // Optional: set spacing between buttons
     
     // Add text to the layout
-    buttonWidgetLayout->addWidget(folderTextBrowser);
+    buttonWidgetLayout->addItem(topSpacerLeft);
 
     // Add buttons to the layout
     buttonWidgetLayout->addWidget(newFileButton);

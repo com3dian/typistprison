@@ -11,7 +11,9 @@ SearchWidget::SearchWidget(QWidget *parent)
 
 
     lineEdit = new QLineEdit(this);
-    lineEdit->setMinimumWidth(256);
+    lineEdit->setMinimumWidth(128);
+    lineEdit->setMaximumWidth(480); // maximum width
+    lineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     lineEdit->setStyleSheet(
             "background-color: transparent; "
             "border: none;"
