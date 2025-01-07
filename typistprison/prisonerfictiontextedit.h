@@ -7,7 +7,7 @@ class PrisonerFictionTextEdit : public FictionTextEdit {
     Q_OBJECT
 
 public:
-    explicit PrisonerFictionTextEdit(QWidget *parent = nullptr);
+    explicit PrisonerFictionTextEdit(QWidget *parent = nullptr, ProjectManager *projectManager = nullptr);
 
 signals:
     void onEscape();

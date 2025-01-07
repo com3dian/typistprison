@@ -1,6 +1,6 @@
 #include "prisonerfictiontextedit.h"
 
-PrisonerFictionTextEdit::PrisonerFictionTextEdit(QWidget *parent)
+PrisonerFictionTextEdit::PrisonerFictionTextEdit(QWidget *parent, ProjectManager *projectManager)
     : FictionTextEdit(parent),
       isPrisoner(false)
 {

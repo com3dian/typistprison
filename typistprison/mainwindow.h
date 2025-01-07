@@ -13,12 +13,14 @@
 #include <QTreeView>
 #include <QHeaderView>
 #include <QScreen>
+#include <QMessageBox>
 
 #include "customtabwidget.h"
 #include "ui_mainwindow.h"
 #include "customtabwidget.h"
 #include "customstyle.h"
 #include "foldertreeviewwidget.h"
+#include "projectmanager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -36,6 +38,7 @@ public:
 
 public slots:
     void openFile(const QString &filePath = ""); // Declaration of the openFile slot
+    void openProject();
 
 private:
     Ui::MainWindow *ui;
@@ -44,6 +47,8 @@ private:
     FolderTreeViewWidget *folderTreeView;
     QSplitter *centralSplitter;
     float previousSplitterPosition;
+    ProjectManager *projectManager;
+    QPushButton *sidePanelButton;
 
     void setupUntitledTab();
     void createNewTab(const QString &tabName);

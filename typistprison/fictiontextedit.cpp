@@ -1,9 +1,13 @@
 #include "fictiontextedit.h"
 
-FictionTextEdit::FictionTextEdit(QWidget *parent)
-    : QTextEdit(parent),
-    globalFontSize(14),
-    matchStringIndex(-1)
+FictionTextEdit::FictionTextEdit(QWidget *parent, ProjectManager *projectManager)
+    : QTextEdit(parent)
+    , globalFontSize(14)
+    , matchStringIndex(-1)
+    , projectManager(projectManager)
+    , previousDocumentLength(0)
+    , previousCursorPosition(0)
+    , previousDocumentText("")
 {
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
@@ -31,6 +35,9 @@ FictionTextEdit::FictionTextEdit(QWidget *parent)
     setUndoRedoEnabled(true); // allow undo
 
     highlighter = new FictionHighlighter(this->document());
+
+    connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
+
 }
 
 void FictionTextEdit::setTopMargin(int margin)
@@ -256,10 +263,12 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void FictionTextEdit::load(const QString &text)
+void FictionTextEdit::load(const QString &text, bool keepCursorPlace)
 {
     // Clear existing content
     QTextCursor cursor = this->textCursor();
+    int currentCursorPosition = cursor.position();
+    int currentScrollValue = verticalScrollBar()->value();
     
     // Select the entire document
     cursor.select(QTextCursor::Document);
@@ -313,8 +322,15 @@ void FictionTextEdit::load(const QString &text)
 
             // Move to the end of the block for the next iteration
             cursor.movePosition(QTextCursor::EndOfBlock);
+        } 
+
+        if (!keepCursorPlace) {
+            cursor.movePosition(QTextCursor::Start);
+        } else {
+            cursor.setPosition(currentCursorPosition);
+            verticalScrollBar()->setValue(currentScrollValue);
         }
-        cursor.movePosition(QTextCursor::Start);
+        
         this->setTextCursor(cursor);
     }
     // disable undo
@@ -322,6 +338,8 @@ void FictionTextEdit::load(const QString &text)
 
     // Re-enable undo/redo
     this->document()->setUndoRedoEnabled(true);
+
+    previousDocumentText = this->toPlainText();
 }
 
 void FictionTextEdit::insertFromMimeData(const QMimeData *source)
@@ -525,6 +543,9 @@ QTextBlock FictionTextEdit::findBlockClosestToCenter() {
 
 void FictionTextEdit::updateFocusBlock() {
     qDebug() << "updateFocusBlock";
+
+    disconnect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
+
     int centerY = getVisibleCenterY();
 
     // Check if the previously centered block is still close to the center
@@ -558,12 +579,15 @@ void FictionTextEdit::updateFocusBlock() {
     }
 
     // Find the new centered block
+    qDebug() << ">>>>>>>>>>>        111111";
     newCenteredBlock = findBlockClosestToCenter();
+    qDebug() << ">>>>>>>>>>>        222222";
     // Set the new centered block to white
     applyBlockFormatting(newCenteredBlock);
 
     // Update the previously centered block
     previousCenteredBlock = newCenteredBlock;
+    connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
 }
 
 void FictionTextEdit::changeGlobalTextColor(const QColor &color)
@@ -673,4 +697,144 @@ void FictionTextEdit::searchPrev(const QString &searchString) {
 void FictionTextEdit::clearSearch() {
     highlighter->setSearchString("");
     matchStringIndex = -1;
+}
+
+void FictionTextEdit::refresh() {
+    if (projectManager) {
+        if (projectManager->isLoadedProject) {
+            QString currentDocumentText = this->document()->toPlainText();
+
+            // if no text changes is loaded into document
+            if (currentDocumentText == previousDocumentText) {
+                return;
+            }
+
+            // get cursor position and scroll value
+            QTextCursor cursor = this->textCursor();
+            int currentCursorPosition = cursor.position();
+            // int currentScrollValue = verticalScrollBar()->value();
+
+            // get current document length and compare with previous length;
+            int currentDocumentLength = this->document()->characterCount() - 1;
+            qDebug() << "currentCursorPosition: " << currentCursorPosition;
+            qDebug() << "currentDocumentLength: " << currentDocumentLength;
+
+            qDebug() << "previousCursorPosition" << previousCursorPosition;
+            qDebug() << "previousDocumentLength" << previousDocumentLength;
+
+            int startIndex;
+            int endIndex;
+            int maxiumBannedWordLength = projectManager->getMaxiumBannedWordLength();
+
+            // identify the the type of text change
+            int lengthDifference = currentDocumentLength - previousDocumentLength;
+            int minCursorIndex = std::min(currentCursorPosition, previousCursorPosition);
+            int maxCursorIndex = std::max(currentCursorPosition, previousCursorPosition);
+
+            if ( (currentDocumentText.mid(0, minCursorIndex) == previousDocumentText.mid(0, minCursorIndex))
+                 &
+                 (currentDocumentText.mid(currentCursorPosition) == previousDocumentText.mid(previousCursorPosition)) ) {
+                qDebug() << "currentDocumentText.mid(0, minCursorIndex)" << currentDocumentText.mid(0, minCursorIndex);
+                qDebug() << "simple insert or removal";
+
+                startIndex = currentCursorPosition - lengthDifference - maxiumBannedWordLength;
+                endIndex = currentCursorPosition + maxiumBannedWordLength;
+            } else {
+                // Perform binary search to find the longest prefix that is a substring in both the
+                // previous and current documents.
+                int left = 0;                                   // Minimum length of prefix
+                int right = minCursorIndex;                     // Maximum length of prefix
+                int bestLength = 0;
+
+                while (left <= right) {
+                    int mid = left + (right - left) / 2;        // Midpoint for binary search
+                    QString prefix = currentDocumentText.left(mid);
+
+                    if (previousDocumentText.contains(prefix)) {
+                        bestLength = mid;                       // Update the best length found
+                        left = mid + 1;                         // Try for a longer prefix
+                    } else {
+                        right = mid - 1;                        // Try for a shorter prefix
+                    }
+                }
+                qDebug() << ":))))))))))bestLength: " << bestLength;
+
+                startIndex = bestLength - maxiumBannedWordLength;
+                endIndex = maxCursorIndex + maxiumBannedWordLength; // todo: better update
+            }
+
+            // make start and end index wthin range of QString  
+            if (startIndex < 0) {
+                startIndex = 0;                 // Clamp startIndex to 0
+            }
+            if (endIndex >= currentDocumentLength) {
+                endIndex = currentDocumentLength - 1;          // C
+            }
+
+            QString subChangedText = currentDocumentText.mid(startIndex, endIndex - startIndex + 1);
+            QString filteredText = projectManager->matchBannedWords(subChangedText);
+
+            qDebug() << "subChangedText" << subChangedText;
+
+            for (int index = startIndex; index <= endIndex; ++index) {
+                QChar subChangedChar = subChangedText.at(index - startIndex);
+                QChar filteredChar = filteredText.at(index - startIndex);
+
+                qDebug() << "for loop";
+
+                if (subChangedChar != filteredChar) {
+                    qDebug() << "currentDocumentText.at(index)" << currentDocumentText.mid(index, 1);
+                    qDebug() << "filteredText.at(index)" << filteredText.mid(index, 1);
+
+                    // Create a QTextCursor for the QTextEdit
+                    QTextCursor cursor = this->textCursor();
+                    // Set the cursor position
+                    cursor.setPosition(index);
+                    // Perform deletion of the character at the cursor
+                    cursor.deleteChar();
+                    // Insert the "*"
+                    cursor.insertText("*");
+
+                }
+            }
+            // Set the modified cursor back to the QTextEdit
+            // this->setTextCursor(cursor);
+
+            // if (currentDocumentLength == previousDocumentLength) {
+            //     // some logic for 
+            //     return;
+
+            // } else if (currentDocumentLength > previousDocumentLength) {
+
+            //     int maxiumBannedWordLength = projectManager->getMaxiumBannedWordLength();
+            //     int startIndex = previousCursorPosition - maxiumBannedWordLength;
+            //     int endIndex = currentCursorPosition + maxiumBannedWordLength;
+
+            //     // insertion happened
+            //     if (startIndex < 0) {
+            //         startIndex = 0;                 // Clamp startIndex to 0
+            //     }
+            //     if (endIndex >= currentDocumentLength) {
+            //         endIndex = currentDocumentLength - 1;          // 
+            //     }
+                
+            //     QString changedTextSlice = currentDocumentText.mid(startIndex, endIndex - startIndex + 1);
+            //     qDebug() << "changedTextSlice: " << changedTextSlice;
+            // }
+
+            // QString filteredDocumentText = projectManager->matchBannedWords(documentText);
+            // disconnect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
+
+            // this->load(filteredDocumentText, true);
+
+            // connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
+        }
+    }
+    to be used in next FictionTextEdit::refresh
+    previousDocumentLength = this->document()->characterCount() - 1;
+    QTextCursor cursor = this->textCursor();
+    previousCursorPosition = cursor.position();
+    previousDocumentText = this->document()->toPlainText();
+    qDebug()<< "==============================";
+    return;
 }

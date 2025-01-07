@@ -17,10 +17,10 @@
    <string notr="true"/>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonTextOnly</enum>
+   <enum>Qt::ToolButtonStyle::ToolButtonTextOnly</enum>
   </property>
   <property name="tabShape">
-   <enum>QTabWidget::Triangular</enum>
+   <enum>QTabWidget::TabShape::Triangular</enum>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>
@@ -34,7 +34,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>37</height>
     </rect>
    </property>
    <property name="cursor">
@@ -87,7 +87,7 @@
     <property name="title">
      <string>Project</string>
     </property>
-    <addaction name="actionOpen"/>
+    <addaction name="actionOpenProject"/>
     <addaction name="actionSwitch"/>
     <addaction name="separator"/>
     <addaction name="actionTest"/>
@@ -183,7 +183,7 @@
     <string>Switch</string>
    </property>
   </action>
-  <action name="actionOpen">
+  <action name="actionOpenProject">
    <property name="text">
     <string>Open Project...</string>
    </property>

@@ -17,9 +17,10 @@
 #include <QRegularExpression>
 
 
-CustomTabWidget::CustomTabWidget(QWidget *parent)
+CustomTabWidget::CustomTabWidget(QWidget *parent, ProjectManager *projectManager)
     : QTabWidget(parent)
     , untitledCount(1)
+    , projectManager(projectManager)
 {
     setupTabBar();
     setupTabWidget();
@@ -101,11 +102,11 @@ void CustomTabWidget::createNewTab(const QString &filePath,
         qDebug() << "filePath" << filePath;
         tabName = QFileInfo(filePath).fileName();   // get tabName
         QFileInfo fileInfo(file);
-        if (fileInfo.isReadable()) {
-    qDebug() << "File is readable.";
-} else {
-    qDebug() << "File is not readable.";
-}
+    if (fileInfo.isReadable()) {
+        qDebug() << "File is readable.";
+    } else {
+        qDebug() << "File is not readable.";
+    }
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             content = in.readAll();    //get content
@@ -118,7 +119,12 @@ void CustomTabWidget::createNewTab(const QString &filePath,
     
     // Create a new tab with the file name as the tab text
     if (tabName.endsWith(".cell.txt") || isUntitled) {
-        newTab = new FictionViewTab(content, filePath, this);
+        if (projectManager) {
+            qDebug() << "project manager in customtabwidget";
+        } else {
+            qDebug() << "no project manager in customtabwidget";
+        }
+        newTab = new FictionViewTab(content, filePath, this, false, projectManager);
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType, this, &CustomTabWidget::updateFileType);
     } else if (tabName.endsWith(".md")) {

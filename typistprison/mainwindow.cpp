@@ -7,6 +7,9 @@ MainWindow::MainWindow(QWidget *parent)
     , untitledCount(1)
     , previousSplitterPosition(0.166)
 {
+
+    projectManager = new ProjectManager();
+
     ui->setupUi(this);
 
     // QWidget* centralWidget = this->centralWidget();  // Assuming centralWidget is the largest
@@ -72,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->statusbar->setStyleSheet("QStatusBar { background-color: #2c2f30;}");
     ui->statusbar->setContentsMargins(2, 0, 2, 0);
 
-    QPushButton *sidePanelButton = new QPushButton(this);
+    sidePanelButton = new QPushButton(this);
     sidePanelButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
@@ -93,35 +96,9 @@ MainWindow::MainWindow(QWidget *parent)
     folderTreeView = new FolderTreeViewWidget;
     folderTreeView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    // QFileSystemModel *fileModel = new QFileSystemModel(this);
-    // fileModel->setRootPath(QDir::rootPath()); // Set the root directory to the file system root
-
-    // QTreeView *fileTreeView = new QTreeView(this);
-    // fileTreeView->setModel(fileModel);  // Set the model for the tree view
-    // fileTreeView->setRootIndex(fileModel->index(QDir::homePath()));  // Set the initial root to the user's home directory
-    // for (int i = 1; i < fileModel->columnCount(); ++i) {
-    //     fileTreeView->setColumnHidden(i, true);
-    // }
-
-    // // Hide the headers (both horizontal and vertical)
-    // fileTreeView->header()->hide();   // Hide horizontal header (column names)
-    // fileTreeView->setHeaderHidden(true);  // Alternative to ensure header is hidden
-    // fileTreeView->setRootIsDecorated(true); // Keep the expand/collapse arrows
-
-    // fileTreeView->setStyleSheet(
-    //     "QTreeView { background-color: #31363F; "
-    //     "            border: none; "
-    //     "            color: #C7C8CC;}"
-    //     "QTreeView::item:hover { background-color: #3a424f; "
-    //     "                        color: #C7C8CC; "
-    //     "                        border: none}"
-    //     "QTreeView::item:selected { background-color: #3a424f; "
-    //     "                           color: #ffa896; "
-    //     "                           border: none;}" // Selected item background and text color
-    //     );
-
     // load customWidget
-    customTabWidget = new CustomTabWidget(this);
+    qDebug() << "ProjectManager pointer before creating CustomTabWidget:" << projectManager;
+    customTabWidget = new CustomTabWidget(this, projectManager);
 
     centralSplitter = new QSplitter(this);
     centralSplitter->setStyleSheet("QSplitter { background-color: #2c2f30; }");
@@ -129,7 +106,6 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->addWidget(customTabWidget);     // Right pane: tab widget
     centralSplitter->setCollapsible(1, false); // Disable collapsing for the right widget
     centralSplitter->setSizes(QList<int>({0, centralSplitter->size().width()})); // Right widget takes over
-
 
     // Set the central widget to the custom tab widget
     setCentralWidget(centralSplitter);
@@ -151,10 +127,15 @@ MainWindow::MainWindow(QWidget *parent)
     // Connect actionFiction_View to
     // connect(ui->actionFiction_View, &QAction::triggered, customTabWidget, &CustomTabWidget::switchToFictionView);
 
-    connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
+    // connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
 
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
 
+    connect(ui->actionOpenProject, &QAction::triggered, this, &MainWindow::openProject);
+
+    // set up side panel button
+    sidePanelButton->setEnabled(false);
+    connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
 
     setupUntitledTab();
     // previousSplitterPosition = 0.166;
@@ -189,28 +170,51 @@ void MainWindow::openFile(const QString &filePath)  // No default argument here
     }
 }
 
+void MainWindow::openProject() {
+    QString selectedProjectRoot = QFileDialog::getExistingDirectory(
+        this, 
+        tr("Open Project Folder"), 
+        QDir::homePath(), 
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+    );
+
+    if (selectedProjectRoot.isEmpty()) {
+        QMessageBox::warning(this, tr("No Folder Selected"), tr("No project folder was selected."));
+        return;
+    }
+
+    // project manager load
+    projectManager->open(selectedProjectRoot);
+    
+    // Re-initialize folderTreeView
+    folderTreeView->refresh(selectedProjectRoot);
+
+    sidePanelButton->setEnabled(true);
+    return;
+}
+
 
 void MainWindow::onLastTabClosed() {
     close();
 }
 
 void MainWindow::toggleFileTreeView() {
-    qDebug() << "void MainWindow::toggleFileTreeView()";
+    // qDebug() << "--------------";
+    // qDebug() << "void MainWindow::toggleFileTreeView()";
     QList<int> sizes = centralSplitter->sizes(); // Get current splitter sizes
     
     // Only calculate the previousSplitterPosition if sizes[0] is non-zero (i.e., left widget is visible)
     if (sizes[0] != 0) {
         // Save the current splitter position before hiding the left widget
         previousSplitterPosition = static_cast<float>(sizes[0]) / centralSplitter->size().width();
-        qDebug() << "splitter close";
-        qDebug() << "previousSplitterPosition" << previousSplitterPosition;
 
         // Hide the left widget and adjust the splitter size
         // folderTreeView->toggleFileTreeView();
         centralSplitter->setSizes(QList<int>({0, centralSplitter->size().width()})); // Right widget takes over
     } else {
-        qDebug() << "splitter open";
-        qDebug() << "previousSplitterPosition" << previousSplitterPosition;
+        if (previousSplitterPosition == 0) {
+            previousSplitterPosition = 0.166;
+        }
         // Restore sizes based on the stored previousSplitterPosition
         centralSplitter->setSizes(
             QList<int>({static_cast<int>(centralSplitter->size().width() * previousSplitterPosition), 
@@ -218,7 +222,5 @@ void MainWindow::toggleFileTreeView() {
 
         // Reset previousSplitterPosition after restoring
         previousSplitterPosition = 0.0;
-
-        // folderTreeView->toggleFileTreeView();
     }
 }

@@ -14,7 +14,7 @@
 #include <QTextBrowser>
 #include <QFileDialog>
 
-FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent)
+FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
     : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr)
 {
     // QScreen *screen = QGuiApplication::primaryScreen();
@@ -22,7 +22,9 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent)
 
     // Initialize fileModel with the custom file system model
     fileModel = new CustomFileSystemModel(this);
-    fileModel->setRootPath(QDir::homePath());
+    fileModel->setRootPath(folderRoot);
+
+    qDebug() << "folderRoot ========================= " << folderRoot;
 
     // Initialize layout and fileTreeView
     layout = new QVBoxLayout(this);
@@ -118,7 +120,13 @@ void FolderTreeViewWidget::setupButton() {
 void FolderTreeViewWidget::setupFileTree() {
     // Set the model for the tree view
     fileTreeView->setModel(fileModel);
-    fileTreeView->setRootIndex(fileModel->index(QDir::homePath()));
+    fileTreeView->setRootIndex(fileModel->index(folderRoot));
+
+    if (QDir(folderRoot).exists()) {
+        qDebug() << "path exists";
+    } else {
+        qDebug() << "path not exist";
+    }
 
     // Hide all columns except the first one (file name column)
     for (int i = 1; i < fileModel->columnCount(); ++i) {
@@ -322,4 +330,48 @@ void FolderTreeViewWidget::onDoubleClicked(const QModelIndex &index)
     }
     QString clickedfilePath = fileModel->filePath(index);
     emit doubleClickedOnFile(clickedfilePath);
+}
+
+void FolderTreeViewWidget::refresh(const QString &newFolderRoot) {
+    // Clean up existing resources to prevent memory leaks
+    if (fileModel) {
+        delete fileModel;
+        fileModel = nullptr;
+    }
+    if (fileTreeView) {
+        delete fileTreeView;
+        fileTreeView = nullptr;
+    }
+    if (layout) {
+        delete layout;
+        layout = nullptr;
+    }
+
+    // Update folderRoot with the new path (if provided)
+    if (!newFolderRoot.isEmpty()) {
+        folderRoot = newFolderRoot;
+    }
+
+    // Reinitialize fileModel
+    fileModel = new CustomFileSystemModel(this);
+    fileModel->setRootPath(folderRoot);
+
+    qDebug() << "folderRoot refreshed ========================= " << folderRoot;
+
+    // Reinitialize layout
+    layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);  // No margins
+    layout->setSpacing(0);                  // No spacing between widgets
+
+    // Reinitialize fileTreeView
+    fileTreeView = new QTreeView(this);
+    CustomTreeStyle *customStyle = new CustomTreeStyle(":/icons/angle_right.png", ":/icons/angle_down.png");
+    fileTreeView->setStyle(customStyle);
+
+    // Reinitialize buttons and file tree view
+    setupButton();
+    setupFileTree();
+
+    // Set the layout for the widget
+    this->setLayout(layout);
 }

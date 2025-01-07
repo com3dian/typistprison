@@ -1,7 +1,7 @@
 #include "fictionviewtab.h"
 
 
-FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent, bool isPrisoner)
+FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent, bool isPrisoner, ProjectManager *projectManager)
     : QWidget(parent), 
       vScrollBar(new QScrollBar(Qt::Vertical, this)), 
       currentFilePath(filePath),
@@ -67,12 +67,20 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     );
     prisonerButton->setFixedSize(16, 16);
 
+    if (projectManager) {
+        qDebug() << "project manager in FictionViewTab";
+    } else {
+        qDebug() << "no project manager in FictionViewTab";
+    }
+
     // sniper button
     if (isPrisoner) {
-        textEdit = new PrisonerFictionTextEdit(this);
+        textEdit = new PrisonerFictionTextEdit(this, projectManager);
+
         sniperButton = new QPushButton("No Sniper Button", this);
     } else {
-        textEdit = new FictionTextEdit(this);
+        textEdit = new FictionTextEdit(this, projectManager);
+
         sniperButton = new QPushButton("Sniper Button", this);
     }
     
@@ -97,15 +105,15 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // QSpacerItem *bottomLeftSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
     // bottomLeftSpacer->setMaxWidth(160);
     QWidget *spacerWidgetLeft = new QWidget();
-    spacerWidgetLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-    // spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
+    spacerWidgetLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
     // spacerWidgetLeft->setMinimumWidth(10);
 
     // add stupid fucking word count
     QLayout *spaceAndCounterLayout = new QVBoxLayout();
     QWidget *spaceAndCounterWidget = new QWidget(this);
     spaceAndCounterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // spaceAndCounterWidget->setMaximumWidth(320);
+    spaceAndCounterWidget->setMaximumWidth(320);
     // spaceAndCounterWidget->setMinimumWidth(10);
 
     spaceAndCounterLayout->setSpacing(0);
@@ -177,7 +185,7 @@ void FictionViewTab::setupTextEdit(const QString &content) {
         );
     textEdit->setMinimumWidth(360); // minimum width
     textEdit->setMaximumWidth(960); // maximum width
-    textEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+    textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QTextDocument *doc = textEdit->document();
     QTextFrame *rootFrame = doc->rootFrame();
@@ -334,7 +342,9 @@ void FictionViewTab::activatePrisonerMode() {
     QString filePath = getCurrentFilePath();
     QWidget *parentWidget = nullptr;
 
-    FictionViewTab *fullScreenFictionViewTab = new FictionViewTab(textEdit->toPlainText(), filePath, parentWidget, true);
+    // TODO: need some extra check;
+    // 
+    FictionViewTab *fullScreenFictionViewTab = new FictionViewTab(textEdit->toPlainText(), filePath, parentWidget, true, projectManager);
 
     // connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
 

@@ -16,16 +16,19 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QRegularExpression>
+
 #include "fictiontextedit.h"
 #include "searchWidget.h"
 #include "prisonerfictiontextedit.h"
+#include "projectmanager.h"
 
 
 class FictionViewTab : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr, bool isPrisoner = false);
+    explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr,
+                            bool isPrisoner = false, ProjectManager *projectManager = nullptr);
     bool saveContent();
     QString getCurrentFilePath() const;
     QPushButton *prisonerButton;
@@ -45,6 +48,7 @@ private:
     QDialog *prisonerDialog;
     FictionViewTab *prisonerFictionViewTab;
     PrisonerFictionTextEdit* fullScreenPrisonerTextEdit;
+    ProjectManager *projectManager;
 
     void setupTextEdit(const QString &content);
     void setupScrollBar();

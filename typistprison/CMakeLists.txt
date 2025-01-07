@@ -59,6 +59,10 @@ set(PROJECT_SOURCES
     customtabbar.h
     customfilesystemmodel.cpp
     customfilesystemmodel.h
+    projectmanager.cpp
+    projectmanager.h
+    utils/ahocorasick.h
+    utils/ahocorasick.cpp
     ${TS_FILES}
 )
 

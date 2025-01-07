@@ -5,6 +5,7 @@
 #include "searchWidget.h"
 #include "fontmanager.h"
 #include "fictionhighlighter.h"
+#include "projectmanager.h"
 
 #include <QAbstractTextDocumentLayout>
 #include <QApplication>
@@ -33,11 +34,11 @@ class FictionTextEdit : public QTextEdit
     Q_OBJECT
 
 public:
-    FictionTextEdit(QWidget *parent = nullptr);
+    FictionTextEdit(QWidget *parent = nullptr, ProjectManager *projectManager = nullptr);
 
     bool isSniperMode;
 
-    void load(const QString& text);
+    void load(const QString& text, bool keepCursorPlace = false);
     void setTopMargin(int margin);
     virtual void activateSniperMode();
     virtual void deactivateSniperMode();
@@ -66,6 +67,7 @@ private:
     int getVisibleCenterY();
     int checkVisibleCenterBlock(const QTextBlock &block);
     QTextBlock findBlockClosestToCenter();
+    void refresh();
     // void toggleCursorVisibility();
 
     int globalFontSize;
@@ -74,6 +76,11 @@ private:
     
     FictionHighlighter* highlighter;
     int matchStringIndex;
+    ProjectManager *projectManager;
+    QString previousText;
+    int previousDocumentLength;
+    int previousCursorPosition;
+    QString previousDocumentText;
     
 
 };

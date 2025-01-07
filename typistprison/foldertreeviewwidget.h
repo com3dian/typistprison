@@ -10,8 +10,9 @@ class FolderTreeViewWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FolderTreeViewWidget(QWidget *parent = nullptr);  // Constructor
+    explicit FolderTreeViewWidget(QWidget *parent = nullptr, const QString folderRoot = "");  // Constructor
     void toggleFileTreeView();
+    void refresh(const QString &newFolderRoot);
 
 signals:
     void doubleClickedOnFile(const QString &filePath);
@@ -28,7 +29,8 @@ private:
     QTreeView *fileTreeView;        // Pointer to the QTreeView
     QWidget *buttonWidget;          // Add this member variable to hold the button widget
     QVBoxLayout *layout;            // Pointer to the QVBoxLayout
-    qreal scalingFactor; // Correctly call devicePixelRatio()
+    qreal scalingFactor;            // Correctly call devicePixelRatio()
+    QString folderRoot;       // project root
 };
 
 #endif // FOLDERTREEVIEWWIDGET_H

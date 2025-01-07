@@ -9,15 +9,17 @@
 #include <QStyleOptionTab>
 
 #include "customtabbar.h"
+#include "projectmanager.h"
 
 
 class CustomTabWidget : public QTabWidget {
     Q_OBJECT
 
 public:
+    CustomTabWidget(QWidget *parent = nullptr, ProjectManager *projectManager = nullptr);
+
     CustomTabBar *customTabBar;
 
-    CustomTabWidget(QWidget *parent = nullptr);
     void createNewTab(const QString &filePath, bool isUntitled = false, int tabIndex = -1);
     void switchToFictionView();
 
@@ -27,6 +29,7 @@ public slots:
 
 private:
     int untitledCount;
+    ProjectManager *projectManager;
 
     void setupTabWidget();
     void setupTabBar();
