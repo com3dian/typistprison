@@ -447,7 +447,11 @@ void FictionTextEdit::changeFontSize(int delta) {
     verticalScrollBar()->setValue(newCenterBlockMiddle - halfViewportHeight);
 }
 
-
+/*  Find the center of the visible area 
+    
+    returns: int
+             the y value of center
+*/
 int FictionTextEdit::getVisibleCenterY() {
     QRect visibleRect = viewport()->rect();
     int centerY = visibleRect.top() * 0.58 + visibleRect.bottom() * 0.42;
@@ -465,17 +469,23 @@ int FictionTextEdit::checkVisibleCenterBlock(const QTextBlock &block) {
         return 0;
 
     } else if (blockRect.top() - 16 > centerY) {
-        return centerY - blockRect.top(); // positive value
+        return blockRect.top() - centerY; // positive value
         // current block is below the middleline
 
     } else if (blockRect.bottom() + 16 < centerY) {
-        return centerY - blockRect.bottom(); // negative value
+        return blockRect.bottom() - centerY; // negative value
+        // current block is aobve the middleline
     }
     return 0; // make compiler happy
 }
 
-// Function to find the block closest to the center of the visible area
+/*  Function to find the block closest to the center of the visible area
+    
+    returns: Qtextblock
+             block closest to the center of the visible area
+*/
 QTextBlock FictionTextEdit::findBlockClosestToCenter() {
+    qDebug() << "\n\n\n\nfindBlockClosestToCenter\n";
 
     QTextDocument *doc = document();
     int centerY = getVisibleCenterY();
@@ -489,28 +499,60 @@ QTextBlock FictionTextEdit::findBlockClosestToCenter() {
 
     QRectF lowBlockRect = document()->documentLayout()->blockBoundingRect(low);
     QRectF highBlockRect = document()->documentLayout()->blockBoundingRect(high);
+    QRectF midBlockRect;
+
+    float ratio = (centerY - lowBlockRect.top()) / (highBlockRect.top() - lowBlockRect.top());
+    if (ratio < 0) {
+        ratio = 0;
+    } else if (ratio > 1) {
+        ratio = 0.99;
+    }
+    int midBlockNumber = low.blockNumber() + (high.blockNumber() - low.blockNumber()) * ratio;
+
+    document()->blockCount()/2;
 
     // Ensure the binary search terminates properly
     while (low.blockNumber() < high.blockNumber()) {
-        int midBlockNumber;
+        if (low.blockNumber() == -1) {
+            return doc->firstBlock();
+        }
 
         QTextBlock midBlock = doc->findBlockByNumber(midBlockNumber);
+        midBlockRect = document()->documentLayout()->blockBoundingRect(midBlock);
         int position = checkVisibleCenterBlock(midBlock);
+
         if (position == 0) {
+            // if midBlock is at the middle of visible area
             return midBlock;
-        } else if (position < 0) {
+        } else if (position > 0) {
+            // current block is below the middle line
             high = midBlock;
             highBlockRect = document()->documentLayout()->blockBoundingRect(high);
-            midBlockNumber = 
-                high.blockNumber() +  (high.blockNumber() - low.blockNumber()) * position / (highBlockRect.top() - lowBlockRect.top());
 
+            // base on the ratio try to locate the block insected with middle line
+            ratio = (centerY - lowBlockRect.top()) / (highBlockRect.top() - lowBlockRect.top());
+            if (ratio < 0) {
+                ratio = 0;
+            } else if (ratio > 1) {
+                ratio = 0.99;
+            }
 
-        } else if (position > 0) {
+            midBlockNumber = low.blockNumber() + (high.blockNumber() - low.blockNumber()) * ratio;
+
+        } else if (position < 0) {
+            // current block is above the middle line
             low = midBlock.next();
             lowBlockRect = document()->documentLayout()->blockBoundingRect(low);
 
-            midBlockNumber = 
-                low.blockNumber() +  (high.blockNumber() - low.blockNumber()) * position / (highBlockRect.top() - lowBlockRect.top());
+            // base on the ratio try to locate the block insected with middle line
+            ratio = (centerY - lowBlockRect.top()) / (highBlockRect.top() - lowBlockRect.top());
+            if (ratio < 0) {
+                ratio = 0;
+            } else if (ratio > 1) {
+                ratio = 0.99;
+            }
+
+            midBlockNumber = low.blockNumber() + (high.blockNumber() - low.blockNumber()) * ratio;
         }
 
         // Break condition to prevent infinite loop
@@ -579,9 +621,7 @@ void FictionTextEdit::updateFocusBlock() {
     }
 
     // Find the new centered block
-    qDebug() << ">>>>>>>>>>>        111111";
     newCenteredBlock = findBlockClosestToCenter();
-    qDebug() << ">>>>>>>>>>>        222222";
     // Set the new centered block to white
     applyBlockFormatting(newCenteredBlock);
 
@@ -657,13 +697,13 @@ void FictionTextEdit::search(const QString &searchString) {
             return; // No match found
         }
     }
-    
+
     // Update matchStringIndex to account for the position in the original document text
     QTextCursor cursor = this->textCursor();
     cursor.setPosition(matchStringIndex);
     cursor.setPosition(matchStringIndex + searchString.length(), QTextCursor::KeepAnchor);
     this->setTextCursor(cursor);
-    
+
     highlighter->setSearchString(searchString);
 }
 
@@ -830,7 +870,7 @@ void FictionTextEdit::refresh() {
             // connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
         }
     }
-    to be used in next FictionTextEdit::refresh
+    // to be used in next FictionTextEdit::refresh
     previousDocumentLength = this->document()->characterCount() - 1;
     QTextCursor cursor = this->textCursor();
     previousCursorPosition = cursor.position();
