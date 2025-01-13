@@ -27,6 +27,7 @@
 #include <QScrollBar>
 #include <QString>
 #include <QStringMatcher>
+#include <QTextImageFormat> // tobe removed
 
 
 class FictionTextEdit : public QTextEdit
@@ -68,6 +69,7 @@ private:
     int checkVisibleCenterBlock(const QTextBlock &block);
     QTextBlock findBlockClosestToCenter();
     void refresh();
+    void updateCursorPosition();
     // void toggleCursorVisibility();
 
     int globalFontSize;

@@ -110,10 +110,7 @@ void CustomTabWidget::createNewTab(const QString &filePath,
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             content = in.readAll();    //get content
-            qDebug() << "content" << content;
             file.close();
-        } else {
-            qDebug() << "no content";
         }
     }
     

@@ -37,6 +37,7 @@ FictionTextEdit::FictionTextEdit(QWidget *parent, ProjectManager *projectManager
     highlighter = new FictionHighlighter(this->document());
 
     connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
+    connect(this, &QTextEdit::cursorPositionChanged, this, &FictionTextEdit::updateCursorPosition);
 
 }
 
@@ -265,6 +266,13 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
 
 void FictionTextEdit::load(const QString &text, bool keepCursorPlace)
 {
+    // detach the FictionTextEdit::refresh to prevent slow out loading
+    if (projectManager) {
+        if (!projectManager->isLoadedProject) {
+            disconnect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
+        }
+    }
+
     // Clear existing content
     QTextCursor cursor = this->textCursor();
     int currentCursorPosition = cursor.position();
@@ -340,6 +348,19 @@ void FictionTextEdit::load(const QString &text, bool keepCursorPlace)
     this->document()->setUndoRedoEnabled(true);
 
     previousDocumentText = this->toPlainText();
+
+        // QTextImageFormat imageFormat;
+        // imageFormat.setName("/Users/com3dian/Desktop/Screenshot 2025-01-13 at 20.25.31.png"); // Path to your image
+
+        // // Insert the image into the document at the current cursor position
+        // cursor.insertImage(imageFormat);
+
+    // attach the FictionTextEdit::refresh to textchanged() signal
+    if (projectManager) {
+        if (!projectManager->isLoadedProject) {
+            connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
+        }
+    }
 }
 
 void FictionTextEdit::insertFromMimeData(const QMimeData *source)
@@ -509,8 +530,6 @@ QTextBlock FictionTextEdit::findBlockClosestToCenter() {
     }
     int midBlockNumber = low.blockNumber() + (high.blockNumber() - low.blockNumber()) * ratio;
 
-    document()->blockCount()/2;
-
     // Ensure the binary search terminates properly
     while (low.blockNumber() < high.blockNumber()) {
         if (low.blockNumber() == -1) {
@@ -581,6 +600,8 @@ QTextBlock FictionTextEdit::findBlockClosestToCenter() {
             return closestBlock;
         }
     }
+
+    return closestBlock; // make compiler happy 
 }
 
 void FictionTextEdit::updateFocusBlock() {
@@ -739,11 +760,20 @@ void FictionTextEdit::clearSearch() {
     matchStringIndex = -1;
 }
 
+/*  Update cursor position to be used in FictionTextEdit::refresh()
+    
+    return None
+*/
+void FictionTextEdit::updateCursorPosition() {
+    QTextCursor cursor = this->textCursor();
+    previousCursorPosition = cursor.position();
+}
+
 void FictionTextEdit::refresh() {
     if (projectManager) {
         if (projectManager->isLoadedProject) {
+            
             QString currentDocumentText = this->document()->toPlainText();
-
             // if no text changes is loaded into document
             if (currentDocumentText == previousDocumentText) {
                 return;
@@ -770,10 +800,18 @@ void FictionTextEdit::refresh() {
             int lengthDifference = currentDocumentLength - previousDocumentLength;
             int minCursorIndex = std::min(currentCursorPosition, previousCursorPosition);
             int maxCursorIndex = std::max(currentCursorPosition, previousCursorPosition);
+            qDebug() << "minCursorIndex" << minCursorIndex;
 
-            if ( (currentDocumentText.mid(0, minCursorIndex) == previousDocumentText.mid(0, minCursorIndex))
+            qDebug() << "currentDocumentText.mid(0, minCursorIndex)" << currentDocumentText.mid(0, minCursorIndex - 1);
+            qDebug() << "previousDocumentText.mid(0, minCursorIndex))" << previousDocumentText.mid(0, minCursorIndex - 1);
+            qDebug() << "currentDocumentText.mid(currentCursorPosition)" << currentDocumentText.mid(currentCursorPosition);
+            qDebug() << "previousDocumentText.mid(previousCursorPosition)" << previousDocumentText.mid(previousCursorPosition);
+
+            if ( (currentDocumentText.mid(0, minCursorIndex - 1) == previousDocumentText.mid(0, minCursorIndex - 1))
                  &
                  (currentDocumentText.mid(currentCursorPosition) == previousDocumentText.mid(previousCursorPosition)) ) {
+                // If insertion or removal
+                // keyboard input; keyboard deletion; keyboard pasting; select and deletion; 
                 qDebug() << "currentDocumentText.mid(0, minCursorIndex)" << currentDocumentText.mid(0, minCursorIndex);
                 qDebug() << "simple insert or removal";
 
@@ -798,6 +836,8 @@ void FictionTextEdit::refresh() {
                     }
                 }
                 qDebug() << ":))))))))))bestLength: " << bestLength;
+                qDebug() << ":))))))))))previousCursorPosition" << previousCursorPosition;
+                qDebug() << ":))))))))))" << std::min(previousCursorPosition, currentCursorPosition);
 
                 startIndex = bestLength - maxiumBannedWordLength;
                 endIndex = maxCursorIndex + maxiumBannedWordLength; // todo: better update
@@ -805,7 +845,7 @@ void FictionTextEdit::refresh() {
 
             // make start and end index wthin range of QString  
             if (startIndex < 0) {
-                startIndex = 0;                 // Clamp startIndex to 0
+                startIndex = 0;                                // Clamp startIndex to 0
             }
             if (endIndex >= currentDocumentLength) {
                 endIndex = currentDocumentLength - 1;          // C
@@ -837,37 +877,6 @@ void FictionTextEdit::refresh() {
 
                 }
             }
-            // Set the modified cursor back to the QTextEdit
-            // this->setTextCursor(cursor);
-
-            // if (currentDocumentLength == previousDocumentLength) {
-            //     // some logic for 
-            //     return;
-
-            // } else if (currentDocumentLength > previousDocumentLength) {
-
-            //     int maxiumBannedWordLength = projectManager->getMaxiumBannedWordLength();
-            //     int startIndex = previousCursorPosition - maxiumBannedWordLength;
-            //     int endIndex = currentCursorPosition + maxiumBannedWordLength;
-
-            //     // insertion happened
-            //     if (startIndex < 0) {
-            //         startIndex = 0;                 // Clamp startIndex to 0
-            //     }
-            //     if (endIndex >= currentDocumentLength) {
-            //         endIndex = currentDocumentLength - 1;          // 
-            //     }
-                
-            //     QString changedTextSlice = currentDocumentText.mid(startIndex, endIndex - startIndex + 1);
-            //     qDebug() << "changedTextSlice: " << changedTextSlice;
-            // }
-
-            // QString filteredDocumentText = projectManager->matchBannedWords(documentText);
-            // disconnect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
-
-            // this->load(filteredDocumentText, true);
-
-            // connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
         }
     }
     // to be used in next FictionTextEdit::refresh
@@ -875,6 +884,5 @@ void FictionTextEdit::refresh() {
     QTextCursor cursor = this->textCursor();
     previousCursorPosition = cursor.position();
     previousDocumentText = this->document()->toPlainText();
-    qDebug()<< "==============================";
     return;
 }
