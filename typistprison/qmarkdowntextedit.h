@@ -70,6 +70,7 @@ public:
     void search(const QString &searchString);
     void searchPrev(const QString &searchString);
     void clearSearch();
+    void updateImage();
 
 public Q_SLOTS:
     void duplicateText();

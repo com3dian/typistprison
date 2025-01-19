@@ -7,8 +7,8 @@
 #include <QStylePainter>
 #include <QPainterPath>
 #include <QStyleOptionTab>
+#include <QHBoxLayout>
 
-#include "customtabbar.h"
 #include "projectmanager.h"
 
 
@@ -18,14 +18,14 @@ class CustomTabWidget : public QTabWidget {
 public:
     CustomTabWidget(QWidget *parent = nullptr, ProjectManager *projectManager = nullptr);
 
-    CustomTabBar *customTabBar;
-
     void createNewTab(const QString &filePath, bool isUntitled = false, int tabIndex = -1);
     void switchToFictionView();
 
 public slots:
     void updateTabTitle(const QString &fileName);
     void updateFileType(const QString &previousFileName);
+    void closeWindowIfNoTabs(int index);
+    void onTabCloseRequested(int index, bool needAsking = true);
 
 private:
     int untitledCount;
@@ -34,16 +34,20 @@ private:
     void setupTabWidget();
     void setupTabBar();
     void setupStyles();
-    void closeWindowIfNoTabs(int index);
     void applyFictionViewStyles(QTextEdit *textEdit);
     void applyEditorViewStyles(QTextEdit *textEdit);
 
 private slots:
-    void onTabCloseRequested(int index, bool needAsking = true);
     
+    
+protected:
+    void tabInserted(int index) override;
 
 signals:
     void lastTabClosed();
+    void tabInsertedSignal(int index, const QString &label);
+    void tabClosedFromSyncedTabWidgetSignal(int index);
+    void updatedTabTitleSignal(int currentIndex, QString newTitle);
 
 };
 

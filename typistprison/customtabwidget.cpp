@@ -29,10 +29,15 @@ CustomTabWidget::CustomTabWidget(QWidget *parent, ProjectManager *projectManager
     setTabPosition(QTabWidget::North);
 }
 
+void CustomTabWidget::tabInserted(int index) {
+    QTabWidget::tabInserted(index);                                          // Call the base implementation
+    emit tabInsertedSignal(index, tabText(index));                           // Emit custom signal
+}
+
 void CustomTabWidget::setupTabBar() {
-    // customTabBar = new CustomTabBar();
-    // setTabBar(customTabBar);
-    setTabPosition(QTabWidget::North); // Options: North, South, East, West
+    // // customTabBar = new CustomTabBar();
+    // // setTabBar(customTabBar);
+    // setTabPosition(QTabWidget::North); // Options: North, South, East, West
 }
 
 void CustomTabWidget::setupTabWidget() {
@@ -174,6 +179,8 @@ void CustomTabWidget::updateTabTitle(const QString &fileName) {
         newTitle = fileName;
     }
     this->setTabText(currentIndex, newTitle);
+
+    emit updatedTabTitleSignal(currentIndex, newTitle);
 }
 
 void CustomTabWidget::updateFileType(const QString &newFileName) {
@@ -238,12 +245,14 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
                 }
                 if (isSuccessful) {
                     removeTab(index);
+                    emit tabClosedFromSyncedTabWidgetSignal(index);
                 }
                 break;
             case QMessageBox::Discard:
                 // Discard changes and close the tab
                 qDebug() << "Discarding changes and closing the tab at index" << index;
                 removeTab(index);
+                emit tabClosedFromSyncedTabWidgetSignal(index);
                 break;
             case QMessageBox::Cancel:
                 // Cancel the close operation
@@ -256,5 +265,6 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
         }
     } else {
         removeTab(index);
+        emit tabClosedFromSyncedTabWidgetSignal(index);
     }
 }

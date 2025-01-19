@@ -55,8 +55,8 @@ set(PROJECT_SOURCES
     foldertreeviewwidget.h
     customtreestyle.cpp
     customtreestyle.h
-    customtabbar.cpp
-    customtabbar.h
+    customtabbarwidget.cpp
+    customtabbarwidget.h
     customfilesystemmodel.cpp
     customfilesystemmodel.h
     projectmanager.cpp

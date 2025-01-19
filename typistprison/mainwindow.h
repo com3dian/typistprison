@@ -20,6 +20,7 @@
 #include "customtabwidget.h"
 #include "customstyle.h"
 #include "foldertreeviewwidget.h"
+#include "customtabbarwidget.h"
 #include "projectmanager.h"
 
 QT_BEGIN_NAMESPACE

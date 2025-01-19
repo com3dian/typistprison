@@ -77,7 +77,7 @@ MarkdownHighlighter::MarkdownHighlighter(
     initHighlightingRules();
 
     // initialize the text formats
-    initTextFormats();
+    initTextFormats(globalFontSize, globalFontSize);
 
     // initialize code languages
     initCodeLangs();
@@ -321,8 +321,8 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character format for block quotes
     format = QTextCharFormat();
-    format.setForeground(QColor(colorGrey));
     format.setFontPointSize(globalFontSize);
+    format.setForeground(QColor(colorBold));
     _formats[BlockQuote] = std::move(format);
 
     format = QTextCharFormat();
@@ -574,8 +574,6 @@ void MarkdownHighlighter::highlightHeadline(const QString &text) {
             } else {
                 maskedFormat.setFontPointSize(globalFontSize);
             }
-            
-            qDebug() << "_formats[state].fontPointSize() is " << _formats[state].fontPointSize();
 
             setFormat(0, headingLevel, maskedFormat);
 
@@ -2250,6 +2248,10 @@ int MarkdownHighlighter::highlightLinkOrImage(const QString &text,
         // Apply formatting to highlight the image.
         formatAndMaskRemaining(startIndex + 1, endIndex - startIndex - 1,
                                startIndex - 1, closingIndex, _formats[Image]);
+        qDebug() << "startIndex: " << startIndex;
+        qDebug() << "endIndex: " << endIndex;
+        qDebug() << "closeIndex: " << closingIndex;
+
         return closingIndex;
     }
     // If the character after the closing ']' is '(', it's a regular link

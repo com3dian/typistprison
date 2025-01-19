@@ -257,7 +257,7 @@ protected:
 
     void highlightBlock(const QString &text) override;
 
-    static void initTextFormats(int defaultFontSize = 12, int globalFontSize = 12);
+    static void initTextFormats(int defaultFontSize = 14, int globalFontSize = 14);
 
     static void initCodeLangs();
 

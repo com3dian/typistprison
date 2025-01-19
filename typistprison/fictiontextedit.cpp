@@ -349,12 +349,6 @@ void FictionTextEdit::load(const QString &text, bool keepCursorPlace)
 
     previousDocumentText = this->toPlainText();
 
-        // QTextImageFormat imageFormat;
-        // imageFormat.setName("/Users/com3dian/Desktop/Screenshot 2025-01-13 at 20.25.31.png"); // Path to your image
-
-        // // Insert the image into the document at the current cursor position
-        // cursor.insertImage(imageFormat);
-
     // attach the FictionTextEdit::refresh to textchanged() signal
     if (projectManager) {
         if (!projectManager->isLoadedProject) {

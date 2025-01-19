@@ -108,6 +108,8 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
         viewport()->update(areaToUpdate.toRect());
     });
 
+    connect(this, &QPlainTextEdit::textChanged, this, &QMarkdownTextEdit::updateImage);
+
     // workaround for disabled signals up initialization
     QTimer::singleShot(300, this, &QMarkdownTextEdit::adjustRightMargin);
 
@@ -1791,6 +1793,10 @@ QMargins QMarkdownTextEdit::viewportMargins() {
     return QPlainTextEdit::viewportMargins();
 }
 
+
+/* typrison special methods from below
+
+*/
 void QMarkdownTextEdit::load(const QString &text)
 {
     qDebug() << __func__;
@@ -1895,3 +1901,81 @@ void QMarkdownTextEdit::clearSearch() {
     _highlighter->setSearchString("");
     matchStringIndex = -1;
 }
+
+void QMarkdownTextEdit::updateImage() {
+    qDebug() << __func__;
+    disconnect(this, &QPlainTextEdit::textChanged, this, &QMarkdownTextEdit::updateImage);
+
+    QTextDocument* document = this->document();
+    QTextBlock block = document->begin();
+
+    int count = 0;
+
+    while (block.isValid()) {
+        count += 1;
+        qDebug() << "..........................";
+        QString blockText = block.text();
+        // Check if the block contains the markdown image format
+        if (blockText.startsWith("![") && blockText.contains("](") && blockText.endsWith(")")) {
+            int openingBracketIndex = blockText.indexOf('[');
+            int closingBracketIndex = blockText.indexOf(']', openingBracketIndex);
+            int openingParenIndex = blockText.indexOf('(', closingBracketIndex);
+            int closingParenIndex = blockText.indexOf(')', openingParenIndex);
+            
+            // Validate structure
+            if (openingBracketIndex != -1 &&
+                closingBracketIndex != -1 &&
+                openingParenIndex != -1 &&
+                closingParenIndex != -1 &&
+                openingBracketIndex < closingBracketIndex &&
+                closingBracketIndex + 1 == openingParenIndex &&
+                openingParenIndex < closingParenIndex) {
+
+                QString altText = blockText.mid(openingBracketIndex + 1, closingBracketIndex - openingBracketIndex - 1);
+                QString imagePath = blockText.mid(openingParenIndex + 1, closingParenIndex - openingParenIndex - 1);
+
+                // Log detected image information
+                qDebug() << "Markdown Image Found:";
+                qDebug() << "Alt Text:" << altText;
+                qDebug() << "Image Path:" << imagePath;
+
+                QTextImageFormat imageFormat;
+                imageFormat.setName(imagePath); // Path to image
+
+                // get the cursor
+                QTextCursor cursor = this->textCursor();
+
+                QTextBlock nextBlock = block.next();
+
+                if (nextBlock.isValid()) {
+                    QString nextBlockText = nextBlock.text().trimmed();
+                    if (nextBlockText.isEmpty()) {
+                        cursor.setPosition(block.position() + block.length());
+                        qDebug() << "blockText" << blockText;
+                        
+                    } else {
+                        cursor.setPosition(block.position() + block.length() - 1);
+                        cursor.insertText("\n");
+                        // block = block.next();
+                    }
+                } else {
+                    cursor.setPosition(block.position() + block.length() - 1);
+                    cursor.insertText("\n");
+                    // block = block.next();
+                }
+
+                // Insert the image into the document at the current cursor position
+                cursor.insertImage(imageFormat);
+                block = block.next();
+            }
+        }
+        if (count >=3) {
+            break;
+        }
+
+        block = block.next(); // Move to the next block
+    }
+    connect(this, &QPlainTextEdit::textChanged, this, &QMarkdownTextEdit::updateImage);
+}
+
+

@@ -96,14 +96,27 @@ MainWindow::MainWindow(QWidget *parent)
     folderTreeView = new FolderTreeViewWidget;
     folderTreeView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    // load customWidget
+    
     qDebug() << "ProjectManager pointer before creating CustomTabWidget:" << projectManager;
-    customTabWidget = new CustomTabWidget(this, projectManager);
+    
 
     centralSplitter = new QSplitter(this);
     centralSplitter->setStyleSheet("QSplitter { background-color: #2c2f30; }");
-    centralSplitter->addWidget(folderTreeView);  // Left pane: file explorer
-    centralSplitter->addWidget(customTabWidget);     // Right pane: tab widget
+    centralSplitter->addWidget(folderTreeView);  // Left panel: file explorer
+
+
+    QWidget *editorWidget = new QWidget(this);  // Right panel: editor
+    QVBoxLayout *editorLayout = new QVBoxLayout;
+    // load customWidget
+    customTabWidget = new CustomTabWidget(this, projectManager);
+    CustomTabBarWidget *tabBarWidget = new CustomTabBarWidget(this, customTabWidget);
+
+    editorLayout->addWidget(tabBarWidget);
+    editorLayout->addWidget(customTabWidget);
+    
+    editorWidget->setLayout(editorLayout);
+    
+    centralSplitter->addWidget(editorWidget);     // Right pane: tab widget
     centralSplitter->setCollapsible(1, false); // Disable collapsing for the right widget
     centralSplitter->setSizes(QList<int>({0, centralSplitter->size().width()})); // Right widget takes over
 
@@ -138,9 +151,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
 
     setupUntitledTab();
-    // previousSplitterPosition = 0.166;
-    // toggleFileTreeView();
-    // toggleFileTreeView();
 }
 
 MainWindow::~MainWindow()
