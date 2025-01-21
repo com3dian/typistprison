@@ -143,6 +143,7 @@ MainWindow::MainWindow(QWidget *parent)
     // connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
 
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
+    connect(folderTreeView, &FolderTreeViewWidget::fileDeleted, customTabWidget, &CustomTabWidget::handleFileDeleted);
 
     connect(ui->actionOpenProject, &QAction::triggered, this, &MainWindow::openProject);
 

@@ -15,6 +15,7 @@ public:
     void refresh(const QString &newFolderRoot);
 
 signals:
+    void fileDeleted(const QString &filePath);
     void doubleClickedOnFile(const QString &filePath);
 
 private:

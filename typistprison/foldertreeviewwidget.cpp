@@ -253,10 +253,28 @@ void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
         // Handle the action triggered
         if (selectedAction == openActionFile) {
             // Open the file
-            qDebug() << "Open clicked on item:" << index.data().toString();
+            // Get the file path and emit the signal
+            QString filePath = fileModel->filePath(index);
+            emit doubleClickedOnFile(filePath);
         } else if (selectedAction == deleteActionFile) {
             // Delete the file
-            qDebug() << "Delete clicked on item:" << index.data().toString();
+            QString filePath = fileModel->filePath(index);
+            QMessageBox::StandardButton reply = QMessageBox::question(
+                this, 
+                "Confirm Delete",
+                "Are you sure you want to delete this file?",
+                QMessageBox::Yes | QMessageBox::No
+            );
+
+            if (reply == QMessageBox::Yes) {
+                QFile file(filePath);
+                if (file.remove()) {
+                    emit fileDeleted(filePath);
+                    fileModel->setRootPath(fileModel->rootPath()); // Refresh view
+                } else {
+                    QMessageBox::warning(this, "Error", "Failed to delete the file");
+                }
+            }
         } else if (selectedAction == renameActionFile) {
             // Rename the file
             qDebug() << "Rename clicked on item:" << index.data().toString();

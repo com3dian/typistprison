@@ -26,6 +26,7 @@ public slots:
     void updateFileType(const QString &previousFileName);
     void closeWindowIfNoTabs(int index);
     void onTabCloseRequested(int index, bool needAsking = true);
+    void handleFileDeleted(const QString &deletedFilePath);
 
 private:
     int untitledCount;

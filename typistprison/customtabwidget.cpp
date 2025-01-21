@@ -137,9 +137,11 @@ void CustomTabWidget::createNewTab(const QString &filePath,
         connect(static_cast<PlaintextViewTab*>(newTab), &PlaintextViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     }
     if (tabIndex == -1) {
-        addTab(newTab, tabName);
+        int newIndex = addTab(newTab, tabName);
+        setTabData(newIndex, filePath);  // Store the file path
     } else {
-        insertTab(tabIndex, newTab, tabName);
+        int newIndex = insertTab(tabIndex, newTab, tabName);
+        setTabData(newIndex, filePath);  // Store the file path
         // TODO: set cursor positioin and scroll bar maybe
     }
     
@@ -266,5 +268,15 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
     } else {
         removeTab(index);
         emit tabClosedFromSyncedTabWidgetSignal(index);
+    }
+}
+
+void CustomTabWidget::handleFileDeleted(const QString &deletedFilePath)
+{
+    for (int i = 0; i < count(); ++i) {
+        if (tabData(i).toString() == deletedFilePath) {
+            removeTab(i);
+            break;
+        }
     }
 }
