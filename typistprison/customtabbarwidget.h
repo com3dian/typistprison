@@ -12,6 +12,8 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QEasingCurve>
+#include <QSpacerItem>
+#include <QApplication>
 
 #include "customtabwidget.h"
 

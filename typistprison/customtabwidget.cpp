@@ -136,12 +136,11 @@ void CustomTabWidget::createNewTab(const QString &filePath,
         newTab = new PlaintextViewTab(content, filePath, this);
         connect(static_cast<PlaintextViewTab*>(newTab), &PlaintextViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     }
+
     if (tabIndex == -1) {
         int newIndex = addTab(newTab, tabName);
-        setTabData(newIndex, filePath);  // Store the file path
     } else {
         int newIndex = insertTab(tabIndex, newTab, tabName);
-        setTabData(newIndex, filePath);  // Store the file path
         // TODO: set cursor positioin and scroll bar maybe
     }
     
@@ -194,7 +193,7 @@ void CustomTabWidget::updateFileType(const QString &newFileName) {
 
     QString savedFilePath;
     QRegularExpression regex("untitled-\\d+\\*");
-    if (currentTitle.endsWith("cell.txt*") | regex.match(currentTitle).hasMatch()) {
+    if (currentTitle.endsWith("cell.txt*") || regex.match(currentTitle).hasMatch()) {
         savedFilePath = static_cast<FictionViewTab*>(currentTab)->getCurrentFilePath();
     } else if (currentTitle.endsWith(".md*")) {
         savedFilePath = static_cast<MarkdownViewTab*>(currentTab)->getCurrentFilePath();;
@@ -238,7 +237,7 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
                 title = this->tabText(index);
                 qDebug() << regex.match(title).hasMatch();
 
-                if (title.endsWith("cell.txt*") | regex.match(title).hasMatch()) {
+                if (title.endsWith("cell.txt*") || regex.match(title).hasMatch()) {
                     isSuccessful = static_cast<FictionViewTab*>(newTab)->saveContent();
                 } else if (title.endsWith(".md*")) {
                     isSuccessful = static_cast<MarkdownViewTab*>(newTab)->saveContent();
@@ -273,9 +272,34 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
 
 void CustomTabWidget::handleFileDeleted(const QString &deletedFilePath)
 {
+    QString title;
+    QWidget *tab = nullptr;
+    QString filePath;
+    QRegularExpression regex("untitled-\\d+");
+    QRegularExpression regexWithAsterisk("untitled-\\d+\\*");
+
     for (int i = 0; i < count(); ++i) {
-        if (tabData(i).toString() == deletedFilePath) {
+        title = this->tabText(i);
+        tab = this->widget(i);
+
+        if (title.endsWith(".cell.txt") || title.endsWith(".cell.txt*") || regex.match(title).hasMatch() || regexWithAsterisk.match(title).hasMatch() ) {
+            qDebug() << "case one";
+            filePath = static_cast<FictionViewTab*>(tab)->getCurrentFilePath();
+
+        } else if (title.endsWith(".md") || title.endsWith(".md*")) {
+            qDebug() << "case two";
+            filePath = static_cast<MarkdownViewTab*>(tab)->getCurrentFilePath();
+
+        } else {
+            qDebug() << "case three";
+            filePath = static_cast<PlaintextViewTab*>(tab)->getCurrentFilePath();
+        }
+
+        qDebug() << "filePath" << filePath;
+
+        if (filePath == deletedFilePath) {
             removeTab(i);
+            emit tabClosedFromSyncedTabWidgetSignal(i);
             break;
         }
     }

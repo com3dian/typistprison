@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
     // Set the font as the default application font
     app.setStyleSheet(styleSheet);
 
+    w.setWindowIcon(QIcon(":/icons/typrison_icon.png"));
     w.show();
     return app.exec();
 }

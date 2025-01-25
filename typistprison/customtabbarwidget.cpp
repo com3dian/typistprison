@@ -1,4 +1,4 @@
-#include "customtabbarWidget.h"
+#include "customtabbarwidget.h"
 
 CustomTabBarWidget::CustomTabBarWidget(QWidget *parent, CustomTabWidget *syncedTabWidget)
     : QWidget(parent), syncedTabWidget(syncedTabWidget), isExpanded(false) {
@@ -16,10 +16,14 @@ CustomTabBarWidget::CustomTabBarWidget(QWidget *parent, CustomTabWidget *syncedT
     // Setup the tab bar
     setupTabBar();
 
+    QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+
     // Add toggle button, menu bar, and tab bar to the main layout
     mainLayout->addWidget(toggleButton); // Toggle button on the left
     mainLayout->addWidget(menuBar);     // Menu bar in the middle
     mainLayout->addWidget(tabBar);      // Tab bar on the right
+    mainLayout->addItem(spacer);
 }
 
 CustomTabBarWidget::~CustomTabBarWidget() {
@@ -64,8 +68,15 @@ void CustomTabBarWidget::onTabInserted(int index, const QString &label) {
         tabBar->setTabButton(index, QTabBar::RightSide, closeButton);
 
         // Connect the close button to remove the tab
-        connect(closeButton, &QPushButton::clicked, this, [this, index]() {
-            onTabRemoved(index);
+        connect(closeButton, &QPushButton::clicked, this, [this, closeButton]() {
+            // Retrieve the index from the button's property
+            QPoint buttonPos = closeButton->mapToParent(QPoint(0, 0));
+            int tabIndex = tabBar->tabAt(buttonPos);
+
+            // If the tab index is valid, emit the onTabRemoved signal
+            if (tabIndex != -1) {
+                onTabRemoved(tabIndex);
+            }
         });
 
         syncedTabWidget->blockSignals(false);
@@ -84,8 +95,8 @@ void CustomTabBarWidget::onTabClosedFromSyncedWidget(int index) {
 }
 
 void CustomTabBarWidget::onTabRemoved(int index) {
+    qDebug() << "index" << index;
     if (syncedTabWidget) {
-
         syncedTabWidget->closeWindowIfNoTabs(index);
     }
 }
@@ -144,14 +155,22 @@ void CustomTabBarWidget::setupMenuBar() {
     menuBar->setMinimumWidth(0);  // 折叠时的最小宽度
 
     QHBoxLayout *menuLayout = new QHBoxLayout(menuBar);
-    menuLayout->setContentsMargins(5, 0, 0, 0);
-    menuLayout->setSpacing(10);
+    menuLayout->setContentsMargins(5, 0, 5, 0);
+    menuLayout->setSpacing(0);
 
     // 添加一些 PushButton
     button1 = new QPushButton("Button 1", this);
+    QPixmap pixmap(":/icons/angle_down.png"); // Replace with your image path
+    QIcon customIcon(pixmap);
+    button1->setIcon(customIcon);
+    button1->setIconSize(QSize(16, 16));
+    button1->setStyleSheet("QPushButton { padding: 5px 10px; }");
+
     button1->setVisible(false); // 默认折叠时隐藏
 
-    button2 = new QPushButton("Button 1", this);
+    button2 = new QPushButton("Button 2", this);
+    button2->setStyleSheet("QPushButton { padding: 5px 10px; }");
+
     button2->setVisible(false); // 默认折叠时隐藏
 
     menuLayout->addWidget(button1);
@@ -164,6 +183,11 @@ void CustomTabBarWidget::showMenu() {
 }
 
 void CustomTabBarWidget::toggleMenuBar() {
+
+    int buttonWidth1 = button1->sizeHint().width();
+    int buttonWidth2 = button2->sizeHint().width();
+    int requiredWidth = buttonWidth1 + buttonWidth2;
+
     // Animate the expansion of the menu bar
     QPropertyAnimation *animation = new QPropertyAnimation(menuBar, "minimumWidth", this);
     animation->setDuration(300);
@@ -171,7 +195,7 @@ void CustomTabBarWidget::toggleMenuBar() {
 
     if (isExpanded) {
         // Collapse menu bar
-        animation->setStartValue(500);  // Expanded width
+        animation->setStartValue(requiredWidth);  // Expanded width
         animation->setEndValue(0);      // Collapsed width
         button1->setVisible(false);     // Hide button when collapsed
         button2->setVisible(false);     // Hide button when collapsed
@@ -179,7 +203,7 @@ void CustomTabBarWidget::toggleMenuBar() {
     } else {
         // Expand menu bar
         animation->setStartValue(0);    // Collapsed width
-        animation->setEndValue(500);    // Expanded width
+        animation->setEndValue(requiredWidth);    // Expanded width
         button1->setVisible(true);      // Show button when expanded
         button2->setVisible(true);      // Show button when expanded
 

@@ -23,7 +23,8 @@ private:
     void setupButton();
     void onItemClicked(const QModelIndex &index);
     void onCustomContextMenu(const QPoint &point);
-    void addFile();
+    void addFile(const QString &targetDir = QString());
+    void addFolder(const QString &targetDir = QString());
     void onDoubleClicked(const QModelIndex &index);
 
     QFileSystemModel *fileModel;    // Pointer to the file system model
