@@ -8,10 +8,11 @@ mot
 
 
 FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent, bool isPrisoner, ProjectManager *projectManager)
-    : QWidget(parent), 
-      vScrollBar(new QScrollBar(Qt::Vertical, this)), 
-      currentFilePath(filePath),
-      oldTextContent("")
+    : BaseTextEditTab(content, filePath, parent), 
+      vScrollBar(new QScrollBar(Qt::Vertical, this)),
+      oldTextContent(""),
+      isPrisoner(isPrisoner),
+      projectManager(projectManager)
 {
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
@@ -260,10 +261,6 @@ void FictionViewTab::deactivateSniperMode() {
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
 }
 
-QString FictionViewTab::getCurrentFilePath() const {
-    return currentFilePath;
-}
-
 bool FictionViewTab::saveContent() {
     if (currentFilePath.isEmpty()) {
         // If no file path is provided, prompt the user to select a save location
@@ -395,7 +392,6 @@ void FictionViewTab::deactivatePrisonerMode() {
         prisonerFictionViewTab = nullptr; // Reset the pointer
     }
 }
-
 
 
 

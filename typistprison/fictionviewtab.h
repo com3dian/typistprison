@@ -21,21 +21,20 @@
 #include "searchWidget.h"
 #include "prisonerfictiontextedit.h"
 #include "projectmanager.h"
+#include "basetextedittab.h"
 
 
-class FictionViewTab : public QWidget {
+class FictionViewTab : public BaseTextEditTab {
     Q_OBJECT
 
 public:
     explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr,
-                            bool isPrisoner = false, ProjectManager *projectManager = nullptr);
-    bool saveContent();
-    QString getCurrentFilePath() const;
+                          bool isPrisoner = false, ProjectManager *projectManager = nullptr);
+    bool saveContent() override;
     QPushButton *prisonerButton;
 
 private:
     FictionTextEdit *textEdit;
-    QString currentFilePath;
     QScrollBar *vScrollBar;
     QPushButton *sniperButton;
     QHBoxLayout *globalLayout;
@@ -59,10 +58,6 @@ private:
     void updateWordcount();
     void activatePrisonerMode();
     void deactivatePrisonerMode();
-
-signals:
-    void onChangeTabName(const QString &fileName);
-    void onChangeFileType(const QString &fileName);
 };
 
 #endif // FICTIONVIEWTAB_H
