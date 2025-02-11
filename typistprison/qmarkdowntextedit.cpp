@@ -108,8 +108,6 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
         viewport()->update(areaToUpdate.toRect());
     });
 
-    connect(this, &QPlainTextEdit::textChanged, this, &QMarkdownTextEdit::updateImage);
-
     // workaround for disabled signals up initialization
     QTimer::singleShot(300, this, &QMarkdownTextEdit::adjustRightMargin);
 
@@ -118,6 +116,14 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     palette.setColor(QPalette::HighlightedText, QColor("#31363F"));
     this->setPalette(palette);
 
+    // image popup
+    setMouseTracking(true);
+
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, this, &QMarkdownTextEdit::readBlock);
+
+    popup = new ImagePopup(this);
 }
 
 /**
@@ -1902,80 +1908,51 @@ void QMarkdownTextEdit::clearSearch() {
     matchStringIndex = -1;
 }
 
-void QMarkdownTextEdit::updateImage() {
-    qDebug() << __func__;
-    disconnect(this, &QPlainTextEdit::textChanged, this, &QMarkdownTextEdit::updateImage);
+void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
+    lastMousePos = event->pos();
 
-    QTextDocument* document = this->document();
-    QTextBlock block = document->begin();
-
-    int count = 0;
-
-    while (block.isValid()) {
-        count += 1;
-        qDebug() << "..........................";
-        QString blockText = block.text();
-        // Check if the block contains the markdown image format
-        if (blockText.startsWith("![") && blockText.contains("](") && blockText.endsWith(")")) {
-            int openingBracketIndex = blockText.indexOf('[');
-            int closingBracketIndex = blockText.indexOf(']', openingBracketIndex);
-            int openingParenIndex = blockText.indexOf('(', closingBracketIndex);
-            int closingParenIndex = blockText.indexOf(')', openingParenIndex);
-            
-            // Validate structure
-            if (openingBracketIndex != -1 &&
-                closingBracketIndex != -1 &&
-                openingParenIndex != -1 &&
-                closingParenIndex != -1 &&
-                openingBracketIndex < closingBracketIndex &&
-                closingBracketIndex + 1 == openingParenIndex &&
-                openingParenIndex < closingParenIndex) {
-
-                QString altText = blockText.mid(openingBracketIndex + 1, closingBracketIndex - openingBracketIndex - 1);
-                QString imagePath = blockText.mid(openingParenIndex + 1, closingParenIndex - openingParenIndex - 1);
-
-                // Log detected image information
-                qDebug() << "Markdown Image Found:";
-                qDebug() << "Alt Text:" << altText;
-                qDebug() << "Image Path:" << imagePath;
-
-                QTextImageFormat imageFormat;
-                imageFormat.setName(imagePath); // Path to image
-
-                // get the cursor
-                QTextCursor cursor = this->textCursor();
-
-                QTextBlock nextBlock = block.next();
-
-                if (nextBlock.isValid()) {
-                    QString nextBlockText = nextBlock.text().trimmed();
-                    if (nextBlockText.isEmpty()) {
-                        cursor.setPosition(block.position() + block.length());
-                        qDebug() << "blockText" << blockText;
-                        
-                    } else {
-                        cursor.setPosition(block.position() + block.length() - 1);
-                        cursor.insertText("\n");
-                        // block = block.next();
-                    }
-                } else {
-                    cursor.setPosition(block.position() + block.length() - 1);
-                    cursor.insertText("\n");
-                    // block = block.next();
-                }
-
-                // Insert the image into the document at the current cursor position
-                cursor.insertImage(imageFormat);
-                block = block.next();
-            }
+    if (popup) {
+        if (popup->isVisible()) {
+            popup->hide();  // Hide popup when mouse moves
         }
-        if (count >=3) {
-            break;
-        }
-
-        block = block.next(); // Move to the next block
     }
-    connect(this, &QPlainTextEdit::textChanged, this, &QMarkdownTextEdit::updateImage);
+
+    timer->start(1000);  // Restart timer (1 sec delay)
+    QPlainTextEdit::mouseMoveEvent(event);
 }
 
+void QMarkdownTextEdit::readBlock() {
+    qDebug() << "lastMousePos" << lastMousePos;
+    QTextCursor cursor = cursorForPosition(lastMousePos);
+    QTextBlock block = cursor.block();
+    QString blockText = block.text();
 
+    if (!blockText.isEmpty()) {
+        QRegularExpression regex(R"(!\[[^\]]*\]\(([^)]+)\))");  // Matches Markdown image format
+        QRegularExpressionMatch match = regex.match(blockText);
+
+        if (match.hasMatch()) {
+            QString imagePath = match.captured(1);  // Extract path inside parentheses
+
+            if (!imagePath.isEmpty()) {
+                QTextCursor currentCursor = textCursor();
+                int currentCursorPosition = currentCursor.position();
+
+                // Get the start and end positions of the block
+                int blockStartPosition = block.position();
+                int blockEndPosition = blockStartPosition + block.length();
+
+                // Check if the current cursor is within the block
+                if (currentCursorPosition < blockStartPosition || currentCursorPosition > blockEndPosition) {
+                    qDebug() << "Markdown Image Detected: " << imagePath;
+
+                    QPoint globalPos = mapToGlobal(lastMousePos);
+                    popup->showImageAt(imagePath, globalPos);
+                } else {
+                    qDebug() << "Cursor is within the block, popup not shown.";
+                }
+            }
+        }
+    }
+    qDebug() << "readBlock finish";
+}

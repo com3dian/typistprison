@@ -1,3 +1,9 @@
+/*
+PlaintextViewTab
+
+
+*/
+
 #include "plaintextviewtab.h"
 
 

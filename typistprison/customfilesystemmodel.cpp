@@ -1,3 +1,7 @@
+/*
+file system model for file tree panel
+*/
+
 #include "customfilesystemmodel.h"
 
 CustomFileSystemModel::CustomFileSystemModel(QObject *parent)
@@ -6,6 +10,10 @@ CustomFileSystemModel::CustomFileSystemModel(QObject *parent)
     // Any additional initialization can be done here if needed
 }
 
+/*
+override data method to show different file type with unique color
+
+*/
 QVariant CustomFileSystemModel::data(const QModelIndex &index, int role) const {
     if (role == Qt::ForegroundRole) {
         QString fileName = QFileSystemModel::fileName(index);

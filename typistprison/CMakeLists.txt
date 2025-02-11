@@ -61,8 +61,10 @@ set(PROJECT_SOURCES
     customfilesystemmodel.h
     projectmanager.cpp
     projectmanager.h
-    utils/ahocorasick.h
     utils/ahocorasick.cpp
+    utils/ahocorasick.h
+    popups/imagepopup.cpp
+    popups/imagepopup.h
     ${TS_FILES}
 )
 

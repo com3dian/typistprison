@@ -29,7 +29,7 @@
 
 #include "markdownhighlighter.h"
 #include "fontmanager.h"
-
+#include "popups/imagepopup.h"
 
 class QMarkdownTextEdit : public QPlainTextEdit {
     Q_OBJECT
@@ -70,7 +70,6 @@ public:
     void search(const QString &searchString);
     void searchPrev(const QString &searchString);
     void clearSearch();
-    void updateImage();
 
 public Q_SLOTS:
     void duplicateText();
@@ -116,7 +115,9 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     bool _handleBracketClosingUsed;
 
-    // extended
+    // extended typrison
+    void mouseMoveEvent(QMouseEvent *event) override;
+
 
 Q_SIGNALS:
     void urlClicked(QString url);
@@ -131,4 +132,11 @@ Q_SIGNALS:
 private:
     int globalFontSize;
     int matchStringIndex;
+
+    QTimer *timer;
+    QPoint lastMousePos;
+    ImagePopup *popup;
+
+
+    void readBlock();
 };

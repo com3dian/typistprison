@@ -1,3 +1,9 @@
+/*
+FictionViewTab
+
+mot
+*/
+
 #include "fictionviewtab.h"
 
 
