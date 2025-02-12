@@ -282,19 +282,8 @@ void CustomTabWidget::handleFileDeleted(const QString &deletedFilePath)
         title = this->tabText(i);
         tab = this->widget(i);
 
-        if (title.endsWith(".cell.txt") || title.endsWith(".cell.txt*") || regex.match(title).hasMatch() || regexWithAsterisk.match(title).hasMatch() ) {
-            qDebug() << "case one";
-            filePath = static_cast<FictionViewTab*>(tab)->getCurrentFilePath();
-
-        } else if (title.endsWith(".md") || title.endsWith(".md*")) {
-            qDebug() << "case two";
-            filePath = static_cast<MarkdownViewTab*>(tab)->getCurrentFilePath();
-
-        } else {
-            qDebug() << "case three";
-            filePath = static_cast<PlaintextViewTab*>(tab)->getCurrentFilePath();
-        }
-
+        filePath = static_cast<BaseTextEditTab*>(tab)->getCurrentFilePath();
+        
         qDebug() << "filePath" << filePath;
 
         if (filePath == deletedFilePath) {

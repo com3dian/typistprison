@@ -3,11 +3,11 @@
 
 
 MarkdownViewTab::MarkdownViewTab(const QString &content, const QString &filePath, QWidget *parent)
-    : QWidget(parent),
+    : BaseTextEditTab(content, filePath, parent),
       textEdit(new QMarkdownTextEdit(this)), 
-      vScrollBar(new QScrollBar(Qt::Vertical, this)),
-      currentFilePath(filePath)
+      vScrollBar(new QScrollBar(Qt::Vertical, this))
 {
+    // Remove currentFilePath initialization as it's handled by BaseTextEditTab
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
     topLeftLayout = new QHBoxLayout();
@@ -141,35 +141,36 @@ void MarkdownViewTab::syncScrollBar() {
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
 }
 
-QString MarkdownViewTab::getCurrentFilePath() const {
-    return currentFilePath;
-}
+// // Remove getCurrentFilePath() as it's inherited from BaseTextEditTab
+// bool MarkdownViewTab::saveContent() {
+//     if (currentFilePath.isEmpty()) {
+//         // If no file path is provided, prompt the user to select a save location
+//         QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
+//         if (fileName.isEmpty()) {
+//             // If the user cancels the save dialog, do nothing
+//             return false;
+//         }
+//         currentFilePath = fileName;
+//     }
 
-bool MarkdownViewTab::saveContent() {
-    if (currentFilePath.isEmpty()) {
-        // If no file path is provided, prompt the user to select a save location
-        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
-        if (fileName.isEmpty()) {
-            // If the user cancels the save dialog, do nothing
-            return false;
-        }
-        currentFilePath = fileName;
-    }
+//     QFile file(currentFilePath);
+//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//         QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+//         return false;
+//     }
 
-    QFile file(currentFilePath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
-        return false;
-    }
+//     QTextStream out(&file);
+//     out << textEdit->toPlainText();
+//     file.close();
 
-    QTextStream out(&file);
-    out << textEdit->toPlainText();
-    file.close();
-
-    emit onChangeTabName(QFileInfo(currentFilePath).fileName());
-    return true;
-}
+//     emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+//     return true;
+// }
 
 void MarkdownViewTab::editContent() {
     emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");
+}
+
+QString MarkdownViewTab::getTextContent() const {
+    return textEdit->toPlainText();
 }

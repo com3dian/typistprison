@@ -30,7 +30,7 @@ class FictionViewTab : public BaseTextEditTab {
 public:
     explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr,
                           bool isPrisoner = false, ProjectManager *projectManager = nullptr);
-    bool saveContent() override;
+    QString getTextContent() const override;
     QPushButton *prisonerButton;
 
 private:

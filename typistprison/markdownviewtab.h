@@ -14,16 +14,18 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QFile>
+
 #include "qmarkdowntextedit.h"
 #include "searchWidget.h"
+#include "basetextedittab.h"
 
-class MarkdownViewTab : public QWidget {
+class MarkdownViewTab : public BaseTextEditTab {
     Q_OBJECT
 
 public:
     explicit MarkdownViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
-    bool saveContent();
-    QString getCurrentFilePath() const;
+    // bool saveContent();
+    QString getTextContent() const override;
 
 private:
     QMarkdownTextEdit *textEdit;

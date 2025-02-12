@@ -2,26 +2,31 @@
 #define BASETEXTEDITTAB_H
 
 #include <QWidget>
-#include <QString>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTextStream>
+#include <QFileInfo>
 
 class BaseTextEditTab : public QWidget {
     Q_OBJECT
 
 public:
-    explicit BaseTextEditTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
+    BaseTextEditTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
     virtual ~BaseTextEditTab();
-
-    virtual QString getCurrentFilePath() const;
-    virtual void setFilePath(const QString &path);
-    virtual bool saveContent() = 0; // Pure virtual function
-
-signals:
-    void onChangeTabName(const QString &newName);
-    void onChangeFileType(const QString &newName);
+    QString getCurrentFilePath() const;
+    void setFilePath(const QString &path);
 
 protected:
     QString currentFilePath;
     QString content;
+    virtual QString getTextContent() const = 0;
+
+public slots:
+    virtual bool saveContent();
+
+signals:
+    void onChangeTabName(const QString &fileName);
+    void onChangeFileType(const QString &path);
 };
 
 #endif // BASETEXTEDITTAB_H

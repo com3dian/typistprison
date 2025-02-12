@@ -14,16 +14,18 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QDebug>
+
 #include "plaintextedit.h"
 #include "searchWidget.h"
+#include "basetextedittab.h"
 
-class PlaintextViewTab : public QWidget {
+class PlaintextViewTab : public BaseTextEditTab {
     Q_OBJECT
 
 public:
     explicit PlaintextViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
-    bool saveContent();
-    QString getCurrentFilePath() const;
+    QString getTextContent() const override;
+    // bool saveContent();
 
 private:
     PlaintextEdit *textEdit;

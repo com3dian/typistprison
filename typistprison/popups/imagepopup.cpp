@@ -22,48 +22,11 @@ ImagePopup::ImagePopup(QWidget *parent) : QWidget(parent) {
     // Image Label inside Popup
     imageLabel = new QLabel(this);
     imageLabel->setScaledContents(true);
-    imageLabel->setStyleSheet("background-color: white; border-radius: 10px;");
+    imageLabel->setStyleSheet("background-color: white;");
 
     // Set a minimum size for the popup
     resize(100, 100); // Default size, will adjust based on the image
 }
-
-// void ImagePopup::showImageAt(const QString &imagePath, QPoint pos) {
-//     QPixmap pixmap(imagePath);
-//     if (!pixmap.isNull()) {
-//         // Scale the image by 0.05 (5% of its original size) while maintaining aspect ratio
-//         QPixmap scaledPixmap = pixmap.scaled(pixmap.size() * 0.05, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-//         // Set the scaled pixmap to the label
-//         imageLabel->setPixmap(scaledPixmap);
-
-//         // Resize the popup to fit the scaled image
-//         QSize imageSize = scaledPixmap.size();
-//         QSize popupSize = imageSize + QSize(40, 40); // Add padding for the shadow and margins
-//         resize(popupSize);
-
-//         // Center the imageLabel within the popup
-//         imageLabel->setGeometry(
-//             (popupSize.width() - imageSize.width()) / 2,  // Center horizontally
-//             (popupSize.height() - imageSize.height()) / 2, // Center vertically
-//             imageSize.width(),
-//             imageSize.height()
-//         );
-
-//         // Position the popup relative to the given position
-//         // Center the popup below the cursor or adjust as needed
-//         pos = QPoint(1000, 600);
-//         QPoint popupPos = pos - QPoint(popupSize.width() / 2, popupSize.height() / 2);
-//         show();
-//         setGeometry(popupPos.x(), popupPos.y(), popupSize.width(), popupSize.height());
-//         // move(popupPos);
-
-        
-//     } else {
-//         qDebug() << "Failed to load image:" << imagePath;
-//     }
-// }
-
 
 
 void ImagePopup::showImageAt(const QString &imagePath, QPoint pos) {
@@ -94,7 +57,7 @@ void ImagePopup::showImageAt(const QString &imagePath, QPoint pos) {
             QRect screenGeometry = screen->geometry();
 
             // Adjust the popup position to ensure it stays within the screen bounds
-            QPoint popupPos = pos - QPoint(popupSize.width() / 2, popupSize.height() / 2);
+            QPoint popupPos = pos;
             popupPos.setX(std::max(screenGeometry.left(), std::min(popupPos.x(), screenGeometry.right() - popupSize.width())));
             popupPos.setY(std::max(screenGeometry.top(), std::min(popupPos.y(), screenGeometry.bottom() - popupSize.height())));
 

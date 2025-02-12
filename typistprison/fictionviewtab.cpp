@@ -14,6 +14,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
       isPrisoner(isPrisoner),
       projectManager(projectManager)
 {
+    // Remove currentFilePath initialization as it's handled by BaseTextEditTab
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
     topLeftLayout = new QHBoxLayout();
@@ -261,44 +262,44 @@ void FictionViewTab::deactivateSniperMode() {
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
 }
 
-bool FictionViewTab::saveContent() {
-    if (currentFilePath.isEmpty()) {
-        // If no file path is provided, prompt the user to select a save location
-        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
-        if (fileName.isEmpty()) {
-            // If the user cancels the save dialog, do nothing
-            return false;
-        }
-        currentFilePath = fileName;
+// bool FictionViewTab::saveContent() {
+//     if (currentFilePath.isEmpty()) {
+//         // If no file path is provided, prompt the user to select a save location
+//         QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
+//         if (fileName.isEmpty()) {
+//             // If the user cancels the save dialog, do nothing
+//             return false;
+//         }
+//         currentFilePath = fileName;
         
-        QFile file(currentFilePath);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
-            return false;
-        }
+//         QFile file(currentFilePath);
+//         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//             QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+//             return false;
+//         }
 
-        QTextStream out(&file);
-        out << textEdit->toPlainText();
-        file.close();
+//         QTextStream out(&file);
+//         out << textEdit->toPlainText();
+//         file.close();
 
-        emit onChangeFileType(fileName);
+//         emit onChangeFileType(fileName);
 
-        return true;
-    }
+//         return true;
+//     }
 
-    QFile file(currentFilePath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
-        return false;
-    }
+//     QFile file(currentFilePath);
+//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//         QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+//         return false;
+//     }
 
-    QTextStream out(&file);
-    out << textEdit->toPlainText();
-    file.close();
+//     QTextStream out(&file);
+//     out << textEdit->toPlainText();
+//     file.close();
 
-    emit onChangeTabName(QFileInfo(currentFilePath).fileName());
-    return true;
-}
+//     emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+//     return true;
+// }
 
 void FictionViewTab::editContent() {
     emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");
@@ -391,6 +392,10 @@ void FictionViewTab::deactivatePrisonerMode() {
         prisonerDialog = nullptr;  // Reset the pointer
         prisonerFictionViewTab = nullptr; // Reset the pointer
     }
+}
+
+QString FictionViewTab::getTextContent() const {
+    return textEdit->toPlainText();
 }
 
 

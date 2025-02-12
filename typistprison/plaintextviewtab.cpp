@@ -8,8 +8,11 @@ PlaintextViewTab
 
 
 PlaintextViewTab::PlaintextViewTab(const QString &content, const QString &filePath, QWidget *parent)
-    : QWidget(parent), textEdit(new PlaintextEdit(this)), vScrollBar(new QScrollBar(Qt::Vertical, this)), currentFilePath(filePath)
+    : BaseTextEditTab(content, filePath, parent), 
+      textEdit(new PlaintextEdit(this)), 
+      vScrollBar(new QScrollBar(Qt::Vertical, this))
 {
+    // Remove currentFilePath initialization as it's handled by BaseTextEditTab
     globalLayout = new QHBoxLayout(this);
     leftLayout = new QVBoxLayout();
     topLeftLayout = new QHBoxLayout();
@@ -143,39 +146,40 @@ void PlaintextViewTab::syncScrollBar() {
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
 }
 
-QString PlaintextViewTab::getCurrentFilePath() const {
-    return currentFilePath;
-}
+// // Remove getCurrentFilePath() as it's inherited from BaseTextEditTab
+// bool PlaintextViewTab::saveContent() {
+//     if (currentFilePath.isEmpty()) {
+//         // If no file path is provided, prompt the user to select a save location
+//         QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
+// //         if (fileName.isEmpty()) {
+//             // If the user cancels the save dialog, do nothing
+//             return false;
+//         }
+//         currentFilePath = fileName;
+//     }
 
-bool PlaintextViewTab::saveContent() {
-    if (currentFilePath.isEmpty()) {
-        // If no file path is provided, prompt the user to select a save location
-        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
-        if (fileName.isEmpty()) {
-            // If the user cancels the save dialog, do nothing
-            return false;
-        }
-        currentFilePath = fileName;
-    }
+//     QFile file(currentFilePath);
+//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//         QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+//         return false;
+//     }
 
-    QFile file(currentFilePath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
-        return false;
-    }
+//     QTextStream out(&file);
+//     out << textEdit->toPlainText();
+//     file.close();
 
-    QTextStream out(&file);
-    out << textEdit->toPlainText();
-    file.close();
+//     // QMessageBox::information(this, "Save", "Content saved successfully.");
+//     emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+//     qDebug() << "save content";
+//     qDebug() << QFileInfo(currentFilePath).fileName();
 
-    // QMessageBox::information(this, "Save", "Content saved successfully.");
-    emit onChangeTabName(QFileInfo(currentFilePath).fileName());
-    qDebug() << "save content";
-    qDebug() << QFileInfo(currentFilePath).fileName();
-
-    return true;
-}
+//     return true;
+// }
 
 void PlaintextViewTab::editContent() {
     emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");
+}
+
+QString PlaintextViewTab::getTextContent() const {
+    return textEdit->toPlainText();
 }
