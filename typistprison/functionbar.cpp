@@ -246,7 +246,8 @@ void CustomTabBarWidget::setupMenuBar() {
 
     button1->setStyleSheet(
         "QPushButton {"
-        "    padding: 5px 10px; "
+        "    padding: 0px 10px; "
+        "    height: 32px; "
         "    color: #BDBDBD; "
         "    background-color: transparent;"
         "    border-radius: 4px;"        // Rounded corners
@@ -365,5 +366,5 @@ void CustomTabBarWidget::hideBothPaintCornerWidget() {
     paintLeftEdgeWidget->setVisible(false);
     transparentLeftWidget->setVisible(false);
 
-    isScrollbuttonActive = true
+    isScrollbuttonActive = true;
 }
