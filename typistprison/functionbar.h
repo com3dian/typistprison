@@ -14,8 +14,13 @@
 #include <QEasingCurve>
 #include <QSpacerItem>
 #include <QApplication>
+#include <QLabel>
 
 #include "customtabwidget.h"
+#include "functionbar/customtabbar.h"
+#include "functionbar/paintcornerwidget.h"
+#include "functionbar/paintleftedgewidget.h"
+
 
 class CustomTabBarWidget : public QWidget {
     Q_OBJECT
@@ -24,15 +29,27 @@ public:
     explicit CustomTabBarWidget(QWidget *parent = nullptr, CustomTabWidget *syncedTabWidget = nullptr);
     ~CustomTabBarWidget();
 
+    QList<QPushButton*> getAllButtons() const;
+
 private:
     QFrame *menuBar;
     QPushButton *toggleButton;
 
     QPushButton *button1;
     QPushButton *button2;
+    CustomTabBar *tabBar;
+    PaintCornerWidget *paintCornerWidget;
+    PaintLeftEdgeWidget *paintLeftEdgeWidget;
+    QWidget *transparentLeftWidget;
+    QWidget *transparentRightWidget;
 
-    QTabBar *tabBar;
-    
+    QSpacerItem *fixedSpacer1;
+    QSpacerItem *fixedSpacer2;
+
+    bool isScrollbuttonActive;
+
+    QHBoxLayout *mainLayout;
+
     QMenu *menu;
     bool isExpanded;
     CustomTabWidget *syncedTabWidget;
@@ -49,8 +66,13 @@ private:
     void onTabMoved(int from, int to);
     void onTabTitleUpdated(int index, QString newTitle);
 
-private slots:
+public slots:
     void toggleMenuBar();
+    void showPaintCornerWidget();
+    void hidePaintCornerWidget();
+    void showPaintLeftEdgeWidget();
+    void hidePaintLeftEdgeWidget();
+    void hideBothPaintCornerWidget();
 };
 
 #endif // CUSTOMTABBARWIDGET_H

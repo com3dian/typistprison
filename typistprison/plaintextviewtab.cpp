@@ -87,7 +87,7 @@ void PlaintextViewTab::setupTextEdit(const QString &content) {
     textEdit->load(content);
     textEdit->setStyleSheet(
         "QTextEdit {"
-        "   background-color: #31363F;"
+        "   background-color: transparent;"
         "   border: none;"
         "}"
         );
@@ -145,36 +145,6 @@ void PlaintextViewTab::syncScrollBar() {
     vScrollBar->setValue(internalScrollBar->value());
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
 }
-
-// // Remove getCurrentFilePath() as it's inherited from BaseTextEditTab
-// bool PlaintextViewTab::saveContent() {
-//     if (currentFilePath.isEmpty()) {
-//         // If no file path is provided, prompt the user to select a save location
-//         QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
-// //         if (fileName.isEmpty()) {
-//             // If the user cancels the save dialog, do nothing
-//             return false;
-//         }
-//         currentFilePath = fileName;
-//     }
-
-//     QFile file(currentFilePath);
-//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-//         QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
-//         return false;
-//     }
-
-//     QTextStream out(&file);
-//     out << textEdit->toPlainText();
-//     file.close();
-
-//     // QMessageBox::information(this, "Save", "Content saved successfully.");
-//     emit onChangeTabName(QFileInfo(currentFilePath).fileName());
-//     qDebug() << "save content";
-//     qDebug() << QFileInfo(currentFilePath).fileName();
-
-//     return true;
-// }
 
 void PlaintextViewTab::editContent() {
     emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");

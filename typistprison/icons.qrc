@@ -6,6 +6,7 @@
         <file>icons/sidebar_silent.png</file>
         <file>icons/sidebar_hover.png</file>
         <file>icons/sidebar_clicked.png</file>
+        <file>icons/sidebar_triggerred.png</file>
         <file>icons/tab_close.png</file>
         <file>icons/tab_hover.png</file>
         <file>icons/tab_clicked.png</file>
@@ -32,7 +33,8 @@
         <file>icons/md_icon.png</file>
         <file>icons/cell_icon.png</file>
         <file>icons/txt_icon.png</file>
-
+        <file>icons/toggle_menu.png</file>
+        <file>icons/toggle_menu_back.png</file>
 
     </qresource>
 </RCC>

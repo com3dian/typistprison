@@ -187,7 +187,7 @@ void FictionViewTab::setupTextEdit(const QString &content) {
     textEdit->load(content);
     textEdit->setStyleSheet(
         "QTextEdit {"
-        "   background-color: #31363F;"
+        "   background-color: transparent;"
         "   border: none;"
         "}"
         );

@@ -38,6 +38,7 @@ void CustomTabWidget::setupTabBar() {
     // // customTabBar = new CustomTabBar();
     // // setTabBar(customTabBar);
     // setTabPosition(QTabWidget::North); // Options: North, South, East, West
+    tabBar()->hide();
 }
 
 void CustomTabWidget::setupTabWidget() {
@@ -52,40 +53,9 @@ void CustomTabWidget::setupStyles() {
     setStyleSheet(
         "QTabWidget::pane {"
                             "    border: 0px;"
-                            "    background-color: #31363F;"
+                            "    background-color: #2c2c2c;"
                             "    margin: 0px;"
                             "}"
-        "QTabBar { alignment: left; }"
-        "QTabBar::tab:selected { background-color: #31363F; color: #ffa896; border-top: 1px solid #ffa896;}"
-        "QTabBar::tab:hover { background-color: #3a424f; color: #ffffff}"
-        "QTabBar::tab {"
-                        "background-color: #454f61;"
-                        "color: #C7C8CC;"
-                        "min-width: 8px;"
-                        "padding-left: 20px; padding-right: 40px; padding-top: 6px; padding-bottom: 8px;"
-                        "border-top-left-radius: 0px; border-top-right-radius: 0px;"
-                        "border-bottom-left-radius: 0px;"
-                        "border-bottom-right-radius: 0px;"
-                        "border: 0px;"
-                        "margin-right: -1px;"
-                        "margin-bottom: -1px;"
-        "}"
-
-        "QTabBar::close-button {"
-        "   subcontrol-position: right;"
-        "   image: url(:/icons/tab_close.png); "
-        "   margin-right:8px;"
-        "}"
-
-        "QTabBar::close-button:hover {"
-        "    image: url(:/icons/tab_hover.png);"
-        "    margin-right:8px;"
-        "}"
-
-        "QTabBar::close-button:pressed {"
-        "    image: url(:/icons/tab_clicked.png);"
-        "    margin-right:8px;"
-        "}"
     );
 }
 

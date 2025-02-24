@@ -221,7 +221,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character format for horizontal rulers
     format = QTextCharFormat();
-    QString colorHorizontalFore("#31363F");
+    QString colorHorizontalFore("2c2c2c");
     format.setForeground(QColor(colorHorizontalFore));
     QString colorHorizontalBack("#454F61");
     format.setBackground(QColor(colorHorizontalBack));

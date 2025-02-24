@@ -29,7 +29,7 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
     // Initialize layout and fileTreeView
     layout = new QVBoxLayout(this);
     // Set margins and spacing to zero
-    layout->setContentsMargins(0, 0, 0, 0);  // No margins
+    layout->setContentsMargins(32, 0, 0, 0);  // No margins
     layout->setSpacing(0);                    // No spacing between widgets
 
     fileTreeView = new QTreeView(this);
@@ -44,7 +44,7 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
 
 void FolderTreeViewWidget::setupButton() {
     buttonWidget = new QWidget;
-    buttonWidget->setStyleSheet("background-color: #31363F;");
+    buttonWidget->setStyleSheet("background-color: #1F2020;");
     buttonWidget->setFixedHeight(24);
 
     QSpacerItem *topSpacerLeft = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
@@ -138,7 +138,7 @@ void FolderTreeViewWidget::setupFileTree() {
 
     // Customize the appearance of the file tree view
     fileTreeView->setStyleSheet(
-        "QTreeView { background-color: #31363F; "
+        "QTreeView { background-color: #1F2020; "
         "            border: none; "
         "            color: #C7C8CC;}"
         "QTreeView::item:hover { background-color: #3a424f; "

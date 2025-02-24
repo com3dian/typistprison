@@ -14,13 +14,14 @@
 #include <QHeaderView>
 #include <QScreen>
 #include <QMessageBox>
+#include <QStackedWidget>
+#include <QGraphicsDropShadowEffect>
 
 #include "customtabwidget.h"
 #include "ui_mainwindow.h"
-#include "customtabwidget.h"
 #include "customstyle.h"
 #include "foldertreeviewwidget.h"
-#include "customtabbarwidget.h"
+#include "functionbar.h"
 #include "projectmanager.h"
 
 QT_BEGIN_NAMESPACE
@@ -50,10 +51,27 @@ private:
     float previousSplitterPosition;
     ProjectManager *projectManager;
     QPushButton *sidePanelButton;
+    QPushButton *button1;
+    QPushButton *button2;
+    QPushButton *menuToggleButton;
+    QFrame *existingFrame = nullptr;
+    CustomTabBarWidget *tabBarWidget;
 
     void setupUntitledTab();
+    void setupMenuButtons(CustomTabBarWidget *tabBarWidget);
     void createNewTab(const QString &tabName);
     void onLastTabClosed();
     void toggleFileTreeView();
+    void resizeEvent(QResizeEvent *event) override;
+    void adjustButtonPosition();
+    void handleMouseEnterMenuButton(QPushButton *button);
+    void handleFocusLeaveMenuButton();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+signals:
+    void mouseClick();
+
 };
 #endif // MAINWINDOW_H

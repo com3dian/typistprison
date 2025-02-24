@@ -55,14 +55,18 @@ set(PROJECT_SOURCES
     foldertreeviewwidget.h
     customtreestyle.cpp
     customtreestyle.h
-    customtabbarwidget.cpp
-    customtabbarwidget.h
     customfilesystemmodel.cpp
     customfilesystemmodel.h
     projectmanager.cpp
     projectmanager.h
     basetextedittab.cpp
     basetextedittab.h
+    functionbar.cpp
+    functionbar.h
+    functionbar/customtabbar.cpp
+    functionbar/customtabbar.h
+    functionbar/paintcornerwidget.h
+    functionbar/paintleftedgewidget.h
     utils/ahocorasick.h
     utils/ahocorasick.cpp
     utils/ahocorasick.h
