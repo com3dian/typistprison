@@ -5,28 +5,32 @@ CustomTabBar::CustomTabBar(QWidget *parent) : QTabBar(parent) {
     this->setContentsMargins(0, 0, 0, 0);
     this->setStyleSheet("QTabBar::tab { margin: 0px; padding: 0px; }");
 
-    //this->setIconSize(QSize(24, 24));
-
     QTimer::singleShot(0, this, SLOT(customizeScrollButtons()));
 }
 
 void CustomTabBar::customizeScrollButtons() {
-    // In your environment the buttons have object names "ScrollLeftButton" and "ScrollRightButton"
+    // Retrieve the scroll buttons by their object names
     QToolButton *leftButton = findChild<QToolButton*>("ScrollLeftButton");
     QToolButton *rightButton = findChild<QToolButton*>("ScrollRightButton");
 
     QString noStyle = "QToolButton { border: none; background-color: transparent; } "
-                  "QToolButton:hover { background-color: transparent; }";
+                      "QToolButton:hover { background-color: transparent; }";
 
     if (leftButton) {
+        // Optionally customize appearance
         leftButton->setIconSize(QSize(0, 0));
         leftButton->setFixedSize(0, 0);
         leftButton->setStyleSheet(noStyle);
+
+        // Install event filter to detect visibility changes
+        leftButton->installEventFilter(this);
     }
     if (rightButton) {
         rightButton->setIconSize(QSize(0, 0));
         rightButton->setFixedSize(QSize(0, 0));
         rightButton->setStyleSheet(noStyle);
+
+        rightButton->installEventFilter(this);
     }
 }
 
@@ -107,4 +111,18 @@ void CustomTabBar::paintEvent(QPaintEvent *event) {
         painter.setPen(QColor("#BDBDBD"));
         painter.drawText(rect.adjusted(16, 2, -16, 0), Qt::AlignLeft | Qt::AlignVCenter, tabText(i));
     }
+}
+
+bool CustomTabBar::eventFilter(QObject *obj, QEvent *event) {
+    // Check if the object is one of the scroll buttons
+    if (obj->objectName() == "ScrollLeftButton" || obj->objectName() == "ScrollRightButton") {
+        if (event->type() == QEvent::Show) {
+            qDebug() << "emit scrollbuttonActivate();";
+            emit scrollbuttonActivate();
+        } else if (event->type() == QEvent::Hide) {
+            emit scrollbuttonInactivate();
+        }
+    }
+    // Ensure the base class processes the event too
+    return QTabBar::eventFilter(obj, event);
 }

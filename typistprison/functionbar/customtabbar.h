@@ -20,6 +20,7 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
     void customizeScrollButtons();
@@ -30,6 +31,7 @@ signals:
     void firstTabFocus();
     void firstTabNoFocus();
     void scrollbuttonActivate();
+    void scrollbuttonInactivate();
 };
 
 #endif // CUSTOMTABBAR_H

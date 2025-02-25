@@ -15,6 +15,7 @@
 #include <QSpacerItem>
 #include <QApplication>
 #include <QLabel>
+#include <QScrollArea>
 
 #include "customtabwidget.h"
 #include "functionbar/customtabbar.h"
@@ -73,6 +74,7 @@ public slots:
     void showPaintLeftEdgeWidget();
     void hidePaintLeftEdgeWidget();
     void hideBothPaintCornerWidget();
+    void notHideBothPaintCornerWidget();
 };
 
 #endif // CUSTOMTABBARWIDGET_H

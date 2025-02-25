@@ -7,6 +7,7 @@ CustomTabBarWidget::CustomTabBarWidget(QWidget *parent, CustomTabWidget *syncedT
     mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
+    this->setFixedHeight(48);
 
     // Setup the toggle button
     setupToggleButton();
@@ -222,6 +223,14 @@ void CustomTabBarWidget::setupTabBar() {
         this, &CustomTabBarWidget::hidePaintLeftEdgeWidget,
         Qt::UniqueConnection);
 
+    connect(tabBar, &CustomTabBar::scrollbuttonActivate,
+        this, &CustomTabBarWidget::hideBothPaintCornerWidget,
+        Qt::UniqueConnection);
+    connect(tabBar, &CustomTabBar::scrollbuttonInactivate,
+        this, &CustomTabBarWidget::notHideBothPaintCornerWidget,
+        Qt::UniqueConnection);
+
+
     return;
 }
 
@@ -276,7 +285,7 @@ void CustomTabBarWidget::setupMenuBar() {
     );
     button2->setLayoutDirection(Qt::RightToLeft);
 
-    button2->setVisible(false); // 默认折叠时隐藏
+    button2->setVisible(false); // default hide
 
     menuLayout->addWidget(button1);
     menuLayout->addWidget(button2);
@@ -363,8 +372,13 @@ void CustomTabBarWidget::hidePaintLeftEdgeWidget() {
 }
 
 void CustomTabBarWidget::hideBothPaintCornerWidget() {
-    paintLeftEdgeWidget->setVisible(false);
-    transparentLeftWidget->setVisible(false);
+    qDebug() << "CustomTabBarWidget::hideBothPaintCornerWidget()";
+    paintCornerWidget->setVisible(false);
+    transparentRightWidget->setVisible(false);
 
     isScrollbuttonActive = true;
+}
+
+void CustomTabBarWidget::notHideBothPaintCornerWidget() {
+    isScrollbuttonActive = false;
 }

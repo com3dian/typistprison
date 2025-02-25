@@ -332,10 +332,10 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button)
         QPushButton *frameButton3 = new QPushButton("Save", newFrame);
         QPushButton *frameButton4 = new QPushButton("Save All", newFrame);
         
-        frameButton1->setFixedSize(144, 28);
-        frameButton2->setFixedSize(144, 28);
-        frameButton3->setFixedSize(144, 28);
-        frameButton4->setFixedSize(144, 28);
+        frameButton1->setFixedSize(108, 28);
+        frameButton2->setFixedSize(108, 28);
+        frameButton3->setFixedSize(108, 28);
+        frameButton4->setFixedSize(108, 28);
 
         frameLayout->addWidget(frameButton1);
         frameLayout->addWidget(frameButton2);
@@ -344,14 +344,14 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button)
     }
     else if (button == button2) {
         // Create buttons for Button 2's frame.
-        QPushButton *frameButton1 = new QPushButton("Cut", newFrame);
-        QPushButton *frameButton2 = new QPushButton("Copy", newFrame);
+        QPushButton *frameButton1 = new QPushButton("Open", newFrame);
+        QPushButton *frameButton2 = new QPushButton("Switch...", newFrame);
         QPushButton *frameButton3 = new QPushButton("Paste", newFrame);
 
         // Set fixed sizes and unique background colors.
-        frameButton1->setFixedSize(144, 28);
-        frameButton2->setFixedSize(144, 28);
-        frameButton3->setFixedSize(144, 28);
+        frameButton1->setFixedSize(108, 28);
+        frameButton2->setFixedSize(108, 28);
+        frameButton3->setFixedSize(108, 28);
 
         frameLayout->addWidget(frameButton1);
         frameLayout->addWidget(frameButton2);
