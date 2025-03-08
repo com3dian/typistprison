@@ -24,7 +24,6 @@ class MarkdownViewTab : public BaseTextEditTab {
 
 public:
     explicit MarkdownViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr);
-    // bool saveContent();
     QString getTextContent() const override;
 
 private:
@@ -42,10 +41,6 @@ private:
     void activateHighlightMode();
     void deactivateHighlightMode();
     void editContent();
-
-signals:
-    void onChangeTabName(const QString &fileName);
-
 };
 
 #endif // MARKDOWNVIEWTAB_H

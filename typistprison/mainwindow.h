@@ -23,6 +23,9 @@
 #include "foldertreeviewwidget.h"
 #include "functionbar.h"
 #include "projectmanager.h"
+#include "basetextedittab.h"
+#include "searchWidget.h"
+#include "functionbar/menubutton.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -40,7 +43,10 @@ public:
 
 public slots:
     void openFile(const QString &filePath = ""); // Declaration of the openFile slot
+    void saveFile();
+    void searchFile();
     void openProject();
+    void saveProject();
 
 private:
     Ui::MainWindow *ui;
@@ -66,6 +72,7 @@ private:
     void adjustButtonPosition();
     void handleMouseEnterMenuButton(QPushButton *button);
     void handleFocusLeaveMenuButton();
+    void setupActions();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

@@ -67,9 +67,12 @@ set(PROJECT_SOURCES
     functionbar/customtabbar.h
     functionbar/paintcornerwidget.h
     functionbar/paintleftedgewidget.h
+    functionbar/menubutton.cpp
+    functionbar/menubutton.h
     utils/ahocorasick.h
     utils/ahocorasick.cpp
     utils/ahocorasick.h
+    utils/hoverbutton.h
     popups/imagepopup.cpp
     popups/imagepopup.h
     ${TS_FILES}

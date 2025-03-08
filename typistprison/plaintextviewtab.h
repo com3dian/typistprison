@@ -43,9 +43,6 @@ private:
     void deactivateHighlightMode();
     void editContent();
 
-signals:
-    void onChangeTabName(const QString &fileName);
-
 };
 
 #endif // PLIANTEXTVIEWTAB_H

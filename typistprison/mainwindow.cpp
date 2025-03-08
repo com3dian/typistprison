@@ -29,11 +29,12 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->setStyleSheet(
     "QSplitter { background-color: #1F2020; }"  // Background of the splitter itself
     "QSplitter::handle {"
-    "    background-color: #1F2020;"  // Change this to your desired color
-    "    width: 1px;"  // Adjust thickness
+    "    background-color: #1F2020;"
     "}"
     );
     centralSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // Make the handle always visible by preventing complete collapse
+    centralSplitter->setHandleWidth(8);  // Set the physical handle width to match CSS
 
     folderTreeView = new FolderTreeViewWidget;
     centralSplitter->addWidget(folderTreeView);  
@@ -43,11 +44,31 @@ MainWindow::MainWindow(QWidget *parent)
     editorLayout->setContentsMargins(0, 0, 0, 0); // Remove margins
     editorLayout->setSpacing(0); // Remove spacing
     customTabWidget = new CustomTabWidget(this, projectManager);
+
+    // Double holder for tab widget
+    QWidget *customTabWidgetHolder = new QWidget(this);
+    customTabWidgetHolder->setAttribute(Qt::WA_TranslucentBackground);
+    customTabWidgetHolder->setStyleSheet(
+        "QWidget {"
+        "    background-color: #2c2c2c;"
+        "    border: none;"
+        "    border-top-left-radius: 6px;"      // Top-left corner
+        "    border-top-right-radius: 6px;"     // Top-right corner
+        "    border-bottom-left-radius: 6px;"   // Bottom-left corner (more rounded)
+        "    border-bottom-right-radius: 6px;"  // Bottom-right corner (more rounded)
+        "}"
+    );
+    // Create layout for the holder
+    QVBoxLayout *tabWidgetLayout = new QVBoxLayout(customTabWidgetHolder);
+    tabWidgetLayout->setContentsMargins(0, 0, 8, 8); // Left, Right, Bottom margins (No top margin)
+    tabWidgetLayout->setSpacing(0); // Optional, to avoid extra spacing
+    tabWidgetLayout->addWidget(customTabWidget);
+
     tabBarWidget = new CustomTabBarWidget(this, customTabWidget);
     setupMenuButtons(tabBarWidget);
 
     editorLayout->addWidget(tabBarWidget);
-    editorLayout->addWidget(customTabWidget);
+    editorLayout->addWidget(customTabWidgetHolder);
     editorWidget->setLayout(editorLayout);
 
     centralSplitter->addWidget(editorWidget);
@@ -81,42 +102,73 @@ MainWindow::MainWindow(QWidget *parent)
     );
     sidePanelButton->setFixedSize(32, 32);
     sidePanelButton->raise(); // Bring to front
+    sidePanelButton->setVisible(false);
 
     // Move the button to the bottom-left corner dynamically
     adjustButtonPosition();
 
-    // Connect the action of opening a file to the creation of a new tab
-    ui->actionOpen_File->setShortcut(QKeySequence(Qt::CTRL  |  Qt::Key_O));
-    connect(ui->actionOpen_File, &QAction::triggered, this, [this]() {
-        // Call the openFile method with an empty string or a specific path
-        openFile("");  // Or provide a default path if needed
-    });
-
-    // Connect the action of creating a new file to the creation of a new untitled tab
-    ui->actionNew_File->setShortcut(QKeySequence(Qt::CTRL  |  Qt::Key_N));
-    connect(ui->actionNew_File, &QAction::triggered, this, &MainWindow::setupUntitledTab);
-
     // Connect the customTabWidget's lastTabClosed signal to the MainWindow's slot to close the window
     connect(customTabWidget, &CustomTabWidget::lastTabClosed, this, &MainWindow::onLastTabClosed);
 
-    // Connect actionFiction_View to
-    // connect(ui->actionFiction_View, &QAction::triggered, customTabWidget, &CustomTabWidget::switchToFictionView);
-
-    // connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
-
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
     connect(folderTreeView, &FolderTreeViewWidget::fileDeleted, customTabWidget, &CustomTabWidget::handleFileDeleted);
-
-    connect(ui->actionOpenProject, &QAction::triggered, this, &MainWindow::openProject);
 
     // set up side panel button
     sidePanelButton->setEnabled(false);
     connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
 
     setupUntitledTab();
-    ui->menubar->setVisible(false);
+    setupActions();
 
     qApp->installEventFilter(this);
+}
+
+void MainWindow::setupActions() {
+    // Create actions for shortcuts instead of relying on invisible buttons
+    QAction* actionOpenFile = new QAction("Open File", this);
+    QAction* actionNewFile = new QAction("New File", this);
+    QAction* actionSaveFile = new QAction("Save File", this);
+    QAction* actionSearchFile = new QAction("Search File", this);
+    QAction* actionOpenProject = new QAction("Open Project", this);
+    QAction* actionSaveAllProject = new QAction("Save All Project", this);
+
+    // Set shortcuts for the actions
+    actionOpenFile->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
+    actionNewFile->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_N));
+    actionSaveFile->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
+    // actionSearchFile->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F)); // Added search shortcut
+
+    // Add actions to the main window so they work globally
+    this->addAction(actionOpenFile);
+    this->addAction(actionNewFile);
+    this->addAction(actionSaveFile);
+    this->addAction(actionSearchFile);
+    this->addAction(actionOpenProject);
+    this->addAction(actionSaveAllProject);
+
+    // Connect signals to the appropriate slots
+    connect(actionOpenFile, &QAction::triggered, this, [this]() {
+        openFile("");
+    });
+    connect(actionNewFile, &QAction::triggered, this, [this]() {
+        setupUntitledTab();
+    });
+    connect(actionSaveFile, &QAction::triggered, this, [this]() {
+        saveFile();
+    });
+    connect(actionSearchFile, &QAction::triggered, this, [this]() {
+        searchFile();
+    });
+    connect(actionOpenProject, &QAction::triggered, this, [this]() {
+        openProject();
+    });
+    connect(actionSaveAllProject, &QAction::triggered, this, [this]() {
+        saveProject();
+    });
+
+    // Keep the invisible buttons for any other purpose if needed
+    // but they're not necessary for shortcuts anymore
+    // invisibleButtonHolder->setVisible(false);
 }
 
 // ---- Override resizeEvent to Keep Button in Bottom-Left ----
@@ -127,7 +179,7 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 
 // ---- Adjust the Button's Position Based on Window Size ----
 void MainWindow::adjustButtonPosition() {
-    int margin = 4; // Adjust margin for spacing
+    int margin = 16; // Adjust margin for spacing
     int buttonX = margin; 
     int buttonY = height() - sidePanelButton->height() - margin; // Bottom left corner
     sidePanelButton->move(buttonX, buttonY);
@@ -136,12 +188,6 @@ void MainWindow::adjustButtonPosition() {
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-void MainWindow::setupUntitledTab()
-{
-    // Create the default untitled tab
-    customTabWidget->createNewTab("", true);
 }
 
 void MainWindow::setupMenuButtons(CustomTabBarWidget *tabBarWidget) {
@@ -153,6 +199,12 @@ void MainWindow::setupMenuButtons(CustomTabBarWidget *tabBarWidget) {
     }
     button1->installEventFilter(this);
     button2->installEventFilter(this);
+}
+
+void MainWindow::setupUntitledTab()
+{
+    // Create the default untitled tab
+    customTabWidget->createNewTab("", true);
 }
 
 void MainWindow::openFile(const QString &filePath)  // No default argument here
@@ -168,6 +220,44 @@ void MainWindow::openFile(const QString &filePath)  // No default argument here
     if (!selectedFilePath.isEmpty()) {
         // Create a new tab with the file name as the tab text
         customTabWidget->createNewTab(selectedFilePath);
+    }
+}
+
+void MainWindow::saveFile() {
+    // Get the current active tab from customTabWidget
+    QWidget *currentTab = customTabWidget->currentWidget();
+    
+    // Check if there is an active tab
+    if (currentTab) {
+        // Cast to BaseTextEditTab since all tab types inherit from it
+        BaseTextEditTab *textEditTab = qobject_cast<BaseTextEditTab*>(currentTab);
+        
+        // If the cast is successful, save the content
+        if (textEditTab) {
+            textEditTab->saveContent();
+        }
+    }
+}
+
+void MainWindow::searchFile()
+{
+    // Get the current tab widget
+    QWidget* currentWidget = customTabWidget->currentWidget();
+    if (!currentWidget)
+        return;
+    
+    // Cast to BaseTextEditTab since all tab types inherit from it
+    BaseTextEditTab* textEditTab = qobject_cast<BaseTextEditTab*>(currentWidget);
+    if (textEditTab) {
+        // Set focus to the text edit
+        textEditTab->setFocus();
+        
+        // Find the search widget within the tab and give it focus
+        SearchWidget* searchWidget = textEditTab->findChild<SearchWidget*>();
+        if (searchWidget) {
+            qDebug() << "SearchWidget";
+            searchWidget->handleSearch("");
+        }
     }
 }
 
@@ -191,9 +281,20 @@ void MainWindow::openProject() {
     folderTreeView->refresh(selectedProjectRoot);
 
     sidePanelButton->setEnabled(true);
+    toggleFileTreeView();
+    sidePanelButton->setVisible(true);
     return;
 }
 
+void MainWindow::saveProject() {
+    for (int i = 0; i < customTabWidget->count(); ++i) {
+        QWidget *tab = customTabWidget->widget(i);
+        BaseTextEditTab *textEditTab = qobject_cast<BaseTextEditTab*>(tab);
+        if (textEditTab) {
+            textEditTab->saveContent();
+        }
+    }
+}
 
 void MainWindow::onLastTabClosed() {
     close();
@@ -260,7 +361,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             handleMouseEnterMenuButton(static_cast<QPushButton *>(obj));
         }
     }
-        // Now, handle all mouse press events in the application
+    
+    // Now, handle all mouse press events in the application
     if (event->type() == QEvent::MouseButtonPress)
     {
         if (obj == button1 || obj == button2 || obj == menuToggleButton) {
@@ -269,26 +371,33 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
         
-        // Optionally, ensure the click is within the main window.
         // Convert the global position to the main window's coordinates.
         QPoint posInMainWindow = this->mapFromGlobal(mouseEvent->globalPos());
         if (this->rect().contains(posInMainWindow))
         {
-            // If the drop-down frame is visible, hide it.
+            // If the drop-down frame is visible, handle it
             if (existingFrame && existingFrame->isVisible())
             {
-                qDebug() << "emit mouseClick();";
-                handleFocusLeaveMenuButton();
+                // Convert mouse position to MainWindow coordinates
+                QPoint posInMainWindow = this->mapFromGlobal(mouseEvent->globalPos());
+                
+                // Check if click is inside the frame
+                if (existingFrame->geometry().contains(posInMainWindow)) {
+                    
+                    return false;
+                }
+
                 emit mouseClick();
+                handleFocusLeaveMenuButton();
                 disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+                
             }
         }
     }
     return QWidget::eventFilter(obj, event);
 }
 
-void MainWindow::handleMouseEnterMenuButton(QPushButton *button)
-{
+void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
     // Remove any existing frame if present.
     if (existingFrame) {
         existingFrame->setParent(nullptr);
@@ -307,62 +416,101 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button)
         "    border: 1px solid #1F2020; "
         "    border-radius: 4px; "
         "}"
-        "QPushButton { "
+        "QMenuButton { "
         "    margin: 0px; "
         "    padding: 0px; "
         "    border: none; "
-        "    text-align: left; "
-        "    color: #BDBDBD; "
         "    background-color: transparent; "
         "}  "
-        "QPushButton:hover {"
-            "    color: #FFFFFF;"  // Replace with your desired hover color
-        "}"
     );
 
     // Set up the layout for the frame with no margins and spacing between buttons.
     QVBoxLayout *frameLayout = new QVBoxLayout(newFrame);
-    frameLayout->setContentsMargins(12, 4, 12, 12);
+    frameLayout->setContentsMargins(8, 4, 6, 6);
     frameLayout->setSpacing(0);
+
+    #ifdef Q_OS_MAC
+        #define CONTROL_SYMBOL "⌘ "  // Mac Command key
+    #else
+        #define CONTROL_SYMBOL "Ctrl+"  // Windows & Linux use "Ctrl"
+    #endif
 
     if (button == button1) {
         // Create buttons for Button 1's frame.
-        QPushButton *frameButton1 = new QPushButton("New", newFrame);
-        QPushButton *frameButton2 = new QPushButton("Open", newFrame);
-        QPushButton *frameButton3 = new QPushButton("Save", newFrame);
-        QPushButton *frameButton4 = new QPushButton("Save All", newFrame);
+        MenuButton *frameButtonNew = new MenuButton("New", CONTROL_SYMBOL "N", this);
+        connect(frameButtonNew, &MenuButton::clicked, this, [this]() {
+            emit mouseClick();
+            handleFocusLeaveMenuButton();
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            setupUntitledTab();
+        });
         
-        frameButton1->setFixedSize(108, 28);
-        frameButton2->setFixedSize(108, 28);
-        frameButton3->setFixedSize(108, 28);
-        frameButton4->setFixedSize(108, 28);
+        // Open file button
+        MenuButton *frameButtonOpen = new MenuButton("Open", CONTROL_SYMBOL "O", newFrame);
+        connect(frameButtonOpen, &MenuButton::clicked, this, [this]() {
+            emit mouseClick();
+            handleFocusLeaveMenuButton();
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            openFile("");
+        });
+        
+        // Save file button
+        MenuButton *frameButtonSave = new MenuButton("Save", CONTROL_SYMBOL "S", newFrame);
+        connect(frameButtonSave, &MenuButton::clicked, this, [this]() {
+            emit mouseClick();
+            handleFocusLeaveMenuButton();
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            saveFile();
+        });
 
-        frameLayout->addWidget(frameButton1);
-        frameLayout->addWidget(frameButton2);
-        frameLayout->addWidget(frameButton3);
-        frameLayout->addWidget(frameButton4);
+        MenuButton *frameButtonSearch = new MenuButton("Search", "", newFrame);
+        connect(frameButtonSearch, &QPushButton::clicked, this, [this]() {
+            emit mouseClick();
+            handleFocusLeaveMenuButton();
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            searchFile();
+        });
+        
+        frameButtonNew->setFixedSize(108, 28);
+        frameButtonOpen->setFixedSize(108, 28);
+        frameButtonSave->setFixedSize(108, 28);
+        frameButtonSearch->setFixedSize(108, 28);
+
+        frameLayout->addWidget(frameButtonNew);
+        frameLayout->addWidget(frameButtonOpen);
+        frameLayout->addWidget(frameButtonSave);
+        frameLayout->addWidget(frameButtonSearch);
     }
     else if (button == button2) {
         // Create buttons for Button 2's frame.
-        QPushButton *frameButton1 = new QPushButton("Open", newFrame);
-        QPushButton *frameButton2 = new QPushButton("Switch...", newFrame);
-        QPushButton *frameButton3 = new QPushButton("Paste", newFrame);
+        MenuButton *frameButtonOpen = new MenuButton("Open", "", newFrame);
+        connect(frameButtonOpen, &MenuButton::clicked, this, [this]() {
+            emit mouseClick();
+            handleFocusLeaveMenuButton();
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            openProject();
+        });
+        MenuButton *frameButtonSaveAll = new MenuButton("Save All", "", newFrame);
+        MenuButton *frameButtonSwitch = new MenuButton("Switch...", "", newFrame);
+        MenuButton *frameButtonEdit = new MenuButton("Paste", "", newFrame);
 
         // Set fixed sizes and unique background colors.
-        frameButton1->setFixedSize(108, 28);
-        frameButton2->setFixedSize(108, 28);
-        frameButton3->setFixedSize(108, 28);
+        frameButtonOpen->setFixedSize(108, 28);
+        frameButtonSaveAll->setFixedSize(108, 28);
+        frameButtonSwitch->setFixedSize(108, 28);
+        frameButtonEdit->setFixedSize(108, 28);
 
-        frameLayout->addWidget(frameButton1);
-        frameLayout->addWidget(frameButton2);
-        frameLayout->addWidget(frameButton3);
+        frameLayout->addWidget(frameButtonOpen);
+        frameLayout->addWidget(frameButtonSaveAll);
+        frameLayout->addWidget(frameButtonSwitch);
+        frameLayout->addWidget(frameButtonEdit);
     }
 
     // Resize the frame to fit its contents.
     newFrame->adjustSize();
 
     // Position the frame just below the button (adjusting as needed).
-    QPoint buttonBottomLeft = button->mapToParent(QPoint(-2, button->height() + 14));
+    QPoint buttonBottomLeft = button->mapToParent(QPoint(8, button->height() + 14));
     newFrame->move(buttonBottomLeft);
 
     // Show the new frame and save it in the member variable.

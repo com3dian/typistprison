@@ -19,7 +19,7 @@ CustomTabBarWidget::CustomTabBarWidget(QWidget *parent, CustomTabWidget *syncedT
     setupTabBar();
 
     QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    fixedSpacer1 = new QSpacerItem(8, 0, QSizePolicy::Fixed, QSizePolicy::Minimum);
+    fixedSpacer1 = new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Minimum);
     fixedSpacer2 = new QSpacerItem(1, 0, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
     paintLeftEdgeWidget = new PaintLeftEdgeWidget(this);
@@ -84,17 +84,20 @@ void CustomTabBarWidget::onTabInserted(int index, const QString &label) {
         syncedTabWidget->blockSignals(true);
 
         QPushButton *closeButton = new QPushButton(this);
-        closeButton->setFixedSize(12, 12); // Small size for a close button
+        closeButton->setFixedSize(16, 16); // Small size for a close button
         closeButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
             "border-image: url(:/icons/tab_close.png) 0 0 0 0 stretch stretch;"
             "}"
+            "QPushButton:hover {"
+            "border-image: url(:/icons/tab_hover.png) 0 0 0 0 stretch stretch;"
+            "}"
         );
 
         QWidget *tabContainer = new QWidget(this);
         QHBoxLayout *layout = new QHBoxLayout(tabContainer);
-        layout->setContentsMargins(4, 4, 16, 0); // Adds space around the contents
+        layout->setContentsMargins(4, 4, 12, 0); // Adds space around the contents
         layout->setSpacing(8); // Space between label and button
 
         QSpacerItem *spacer = new QSpacerItem(96, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -242,7 +245,7 @@ void CustomTabBarWidget::setupMenuBar() {
     menuBar->setMinimumWidth(0);  // minimal width folded
 
     QHBoxLayout *menuLayout = new QHBoxLayout(menuBar);
-    menuLayout->setContentsMargins(8, 0, 0, 0);
+    menuLayout->setContentsMargins(6, 0, 8, 0);
     menuLayout->setSpacing(0);
 
     // add some PushButton
@@ -255,11 +258,12 @@ void CustomTabBarWidget::setupMenuBar() {
 
     button1->setStyleSheet(
         "QPushButton {"
-        "    padding: 0px 10px; "
+        "    padding: 0px 14px 0px 10px; "
         "    height: 32px; "
         "    color: #BDBDBD; "
         "    background-color: transparent;"
         "    border-radius: 4px;"        // Rounded corners
+        "    text-align: left;"
         "}"
         "QPushButton:hover {"
         "    background-color: #2c2c2c;" 
@@ -274,7 +278,8 @@ void CustomTabBarWidget::setupMenuBar() {
     button2->setIconSize(QSize(16, 16));
     button2->setStyleSheet(
         "QPushButton {"
-        "    padding: 5px 10px; "
+        "    padding: 0px 14px 0px 10px; "
+        "    height: 32px; "
         "    color: #BDBDBD; "
         "    background-color: transparent;"
         "    border-radius: 4px;"        // Rounded corners
@@ -302,7 +307,7 @@ void CustomTabBarWidget::toggleMenuBar() {
 
     int buttonWidth1 = button1->sizeHint().width();
     int buttonWidth2 = button2->sizeHint().width();
-    int requiredWidth = buttonWidth1 + buttonWidth2;
+    int requiredWidth = buttonWidth1 + buttonWidth2 + 8;
 
     // Animate the expansion of the menu bar
     QPropertyAnimation *animation = new QPropertyAnimation(menuBar, "minimumWidth", this);

@@ -202,7 +202,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character formats for headlines
     format = QTextCharFormat();
-    QString colorString("#FF8A8A"); //96E9C6 //#f58d6c
+    QString colorString("#FF9EAA"); // #FF8A8A
     format.setForeground(QColor(colorString));
     format.setFontWeight(QFont::Bold);
     format.setFontPointSize(defaultFontSize * 1.6);
@@ -221,9 +221,9 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character format for horizontal rulers
     format = QTextCharFormat();
-    QString colorHorizontalFore("2c2c2c");
+    QString colorHorizontalFore("#2c2c2c");
     format.setForeground(QColor(colorHorizontalFore));
-    QString colorHorizontalBack("#454F61");
+    QString colorHorizontalBack("#787878");
     format.setBackground(QColor(colorHorizontalBack));
     _formats[HorizontalRuler] = std::move(format);
 
@@ -234,7 +234,6 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     QString colorList("#9ffcc0");
     format.setForeground(QColor(colorList));
     _formats[List] = format;
-    // #fc6049
 
     // set character format for checkbox
     format = QTextCharFormat();
@@ -252,7 +251,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character format for links
     format = QTextCharFormat();
-    QString colorLink("#feffbf");
+    QString colorLink("#FF9EAA");
     format.setForeground(QColor(colorLink));
     format.setFontUnderline(true);
     _formats[Link] = std::move(format);
@@ -269,9 +268,9 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     format = QTextCharFormat();
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
-    QString colorCodeBackground("#2b303b");
+    QString colorCodeBackground("#262626");
     format.setBackground(QColor(colorCodeBackground));
-    QString colorCodeForeground("#C7C8CC");
+    QString colorCodeForeground("#cbd0d4"); //  // #C7C8CC
     format.setForeground(QColor(colorCodeForeground));
     _formats[CodeBlock] = format;
     _formats[InlineCodeBlock] = format;
@@ -293,20 +292,20 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     // set character format for bold
     format = QTextCharFormat();
     format.setFontWeight(QFont::Bold);
-    QString colorBold("#96CEB4"); // #FABC3F #8E8FFA
+    QString colorBold("#98D2C0"); // #96CEB4
     format.setForeground(QColor(colorBold));
     _formats[Bold] = std::move(format);
 
     // set character format for comments
     format = QTextCharFormat();
-    QString colorGrey("#62708a");
+    QString colorGrey("#787878");
     format.setForeground(QColor(colorGrey));
     format.setFontPointSize(globalFontSize);
     _formats[Comment] = std::move(format);
 
     // set character format for masked syntax
     format = QTextCharFormat();
-    QString colorTest("#62708a");
+    QString colorTest("#787878");
     format.setForeground(QColor(colorTest));
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);

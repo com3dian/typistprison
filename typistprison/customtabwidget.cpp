@@ -53,7 +53,7 @@ void CustomTabWidget::setupStyles() {
     setStyleSheet(
         "QTabWidget::pane {"
                             "    border: 0px;"
-                            "    background-color: #2c2c2c;"
+                            "    background-color: transparent;"
                             "    margin: 0px;"
                             "}"
     );
@@ -97,15 +97,17 @@ void CustomTabWidget::createNewTab(const QString &filePath,
             qDebug() << "no project manager in customtabwidget";
         }
         newTab = new FictionViewTab(content, filePath, this, false, projectManager);
-        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
+        // connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType, this, &CustomTabWidget::updateFileType);
     } else if (tabName.endsWith(".md")) {
         newTab = new MarkdownViewTab(content, filePath, this);
-        connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
+        // connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     } else {
         newTab = new PlaintextViewTab(content, filePath, this);
-        connect(static_cast<PlaintextViewTab*>(newTab), &PlaintextViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
+        // connect(static_cast<PlaintextViewTab*>(newTab), &PlaintextViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     }
+
+    connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
 
     if (tabIndex == -1) {
         int newIndex = addTab(newTab, tabName);
@@ -161,15 +163,9 @@ void CustomTabWidget::updateFileType(const QString &newFileName) {
     QWidget *currentTab = nullptr;
     currentTab = this->widget(currentIndex);
 
-    QString savedFilePath;
     QRegularExpression regex("untitled-\\d+\\*");
-    if (currentTitle.endsWith("cell.txt*") || regex.match(currentTitle).hasMatch()) {
-        savedFilePath = static_cast<FictionViewTab*>(currentTab)->getCurrentFilePath();
-    } else if (currentTitle.endsWith(".md*")) {
-        savedFilePath = static_cast<MarkdownViewTab*>(currentTab)->getCurrentFilePath();;
-    } else {
-        savedFilePath = static_cast<PlaintextViewTab*>(currentTab)->getCurrentFilePath();;
-    }
+
+    QString savedFilePath = static_cast<BaseTextEditTab*>(currentTab)->getCurrentFilePath();
     onTabCloseRequested(currentIndex, false);
 
     createNewTab(savedFilePath, false);
@@ -207,13 +203,7 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
                 title = this->tabText(index);
                 qDebug() << regex.match(title).hasMatch();
 
-                if (title.endsWith("cell.txt*") || regex.match(title).hasMatch()) {
-                    isSuccessful = static_cast<FictionViewTab*>(newTab)->saveContent();
-                } else if (title.endsWith(".md*")) {
-                    isSuccessful = static_cast<MarkdownViewTab*>(newTab)->saveContent();
-                } else {
-                    isSuccessful = static_cast<PlaintextViewTab*>(newTab)->saveContent();
-                }
+                isSuccessful = static_cast<BaseTextEditTab*>(newTab)->saveContent();
                 if (isSuccessful) {
                     removeTab(index);
                     emit tabClosedFromSyncedTabWidgetSignal(index);

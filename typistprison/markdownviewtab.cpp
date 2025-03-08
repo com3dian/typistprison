@@ -24,28 +24,13 @@ MarkdownViewTab::MarkdownViewTab(const QString &content, const QString &filePath
 
     QSpacerItem *topLeftSpacerLeft1 = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
     QSpacerItem *topLeftSpacerLeft2 = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    QSpacerItem *topLeftSpacerRight = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem *topLeftSpacerRight = new QSpacerItem(20, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
     SearchWidget *searchWidget = new SearchWidget();
-    
-    QPushButton *button1 = new QPushButton();
-    QPixmap normalPixmap("/home/com3dian/Downloads/background.png");
-    button1->setIcon(QIcon(normalPixmap));
-    button1->setStyleSheet(
-        "QPushButton {"
-        "   background-color: transparent;"
-        "   border: none;"
-        "}"
-        "QPushButton:hover {"
-        "   border-image: url(/home/com3dian/Downloads/noun-remove-1075149.svg);"
-        "}"
-        );
-    button1->setIconSize(QSize(32, 32));
 
     topLeftLayout->addItem(topLeftSpacerLeft1);
     topLeftLayout->addItem(topLeftSpacerLeft2);
     topLeftLayout->addWidget(searchWidget);
-    topLeftLayout->addWidget(button1);
     topLeftLayout->addItem(topLeftSpacerRight);
 
     QWidget *topLeftWidget = new QWidget(this);
@@ -109,12 +94,12 @@ void MarkdownViewTab::setupScrollBar() {
         "    margin: 0px 0px 0px 0px;"
         "}"
         "QScrollBar::handle:vertical {"
-        "    background: #4A515E;"
+        "    background: #262626;"
         "    min-height: 16px;"
         "    border-radius: 4px;"
         "}"
         "QScrollBar::handle:vertical:hover {"
-        "    background: #989A9C;"
+        "    background: #1f2020;"
         "}"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
         "    height: 0px;"
@@ -140,32 +125,6 @@ void MarkdownViewTab::syncScrollBar() {
     vScrollBar->setValue(internalScrollBar->value());
     vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
 }
-
-// // Remove getCurrentFilePath() as it's inherited from BaseTextEditTab
-// bool MarkdownViewTab::saveContent() {
-//     if (currentFilePath.isEmpty()) {
-//         // If no file path is provided, prompt the user to select a save location
-//         QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
-//         if (fileName.isEmpty()) {
-//             // If the user cancels the save dialog, do nothing
-//             return false;
-//         }
-//         currentFilePath = fileName;
-//     }
-
-//     QFile file(currentFilePath);
-//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-//         QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
-//         return false;
-//     }
-
-//     QTextStream out(&file);
-//     out << textEdit->toPlainText();
-//     file.close();
-
-//     emit onChangeTabName(QFileInfo(currentFilePath).fileName());
-//     return true;
-// }
 
 void MarkdownViewTab::editContent() {
     emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");

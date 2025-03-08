@@ -29,28 +29,13 @@ PlaintextViewTab::PlaintextViewTab(const QString &content, const QString &filePa
 
     QSpacerItem *topLeftSpacerLeft1 = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
     QSpacerItem *topLeftSpacerLeft2 = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    QSpacerItem *topLeftSpacerRight = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem *topLeftSpacerRight = new QSpacerItem(20, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
     SearchWidget *searchWidget = new SearchWidget();
-
-    QPushButton *button1 = new QPushButton();
-    QPixmap normalPixmap("/home/com3dian/Downloads/background.png");
-    button1->setIcon(QIcon(normalPixmap));
-    button1->setStyleSheet(
-        "QPushButton {"
-        "   background-color: transparent;"
-        "   border: none;"
-        "}"
-        "QPushButton:hover {"
-        "   border-image: url(/home/com3dian/Downloads/noun-remove-1075149.svg);"
-        "}"
-        );
-    button1->setIconSize(QSize(32, 32));
-
+    
     topLeftLayout->addItem(topLeftSpacerLeft1);
     topLeftLayout->addItem(topLeftSpacerLeft2);
     topLeftLayout->addWidget(searchWidget);
-    topLeftLayout->addWidget(button1);
     topLeftLayout->addItem(topLeftSpacerRight);
 
     QWidget *topLeftWidget = new QWidget(this);
@@ -75,7 +60,6 @@ PlaintextViewTab::PlaintextViewTab(const QString &content, const QString &filePa
     setLayout(globalLayout);
     connect(textEdit, &PlaintextEdit::onPlaintextSearch, searchWidget, &SearchWidget::handleSearch);
     connect(textEdit, &PlaintextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
-    connect(textEdit, &PlaintextEdit::onSave, this, &PlaintextViewTab::saveContent);
     connect(textEdit, &PlaintextEdit::textChanged, this, &PlaintextViewTab::editContent);
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &PlaintextEdit::search);
     connect(searchWidget, &SearchWidget::onClear, textEdit, &PlaintextEdit::clearSearch);
@@ -114,12 +98,12 @@ void PlaintextViewTab::setupScrollBar() {
         "    margin: 0px 0px 0px 0px;"
         "}"
         "QScrollBar::handle:vertical {"
-        "    background: #4A515E;"
+        "    background: #262626;"
         "    min-height: 16px;"
         "    border-radius: 4px;"
         "}"
         "QScrollBar::handle:vertical:hover {"
-        "    background: #989A9C;"
+        "    background: #1f2020;"
         "}"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
         "    height: 0px;"

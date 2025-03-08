@@ -23,7 +23,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // Add wordcount label
     wordCountLabel = new QLabel(this);
     wordCountLabel->setAlignment(Qt::AlignRight | Qt::AlignBottom);
-    wordCountLabel->setStyleSheet("QLabel { color : #454F61; }"); // #989A9C
+    wordCountLabel->setStyleSheet("QLabel { color: #BDBDBD; background-color: #1F2020; border-radius: 4px; }");
     QFont font = wordCountLabel->font();  // Get the current font of the QLabel
     font.setBold(true);                   // Set the font to bold
     // Apply the font to the QLabel
@@ -41,39 +41,13 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
 
     QSpacerItem *topLeftSpacerLeft1 = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
     QSpacerItem *topLeftSpacerLeft2 = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    QSpacerItem *topLeftSpacerRight = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem *topLeftSpacerRight = new QSpacerItem(20, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
 
     SearchWidget *searchWidget = new SearchWidget();
 
-    // QPushButton *button1 = new QPushButton();
-    // QPixmap normalPixmap("/home/com3dian/Downloads/background.png");
-    // button1->setIcon(QIcon(normalPixmap));
-    // button1->setStyleSheet(
-    //     "QPushButton {"
-    //     "   background-color: transparent;"
-    //     "   border: none;"
-    //     "}"
-    //     "QPushButton:hover {"
-    //     "   border-image: url(/home/com3dian/Downloads/noun-remove-1075149.svg);"
-    //     "}"
-    //     );
-    // 
-
-    // prisoner button
-    prisonerButton = new QPushButton(this);
-    prisonerButton->setStyleSheet(
-            "QPushButton {"
-            "border: none;"
-            "border-image: url(:/icons/newfile_silent.png) 0 0 0 0 stretch stretch;"
-            "}"
-            "QPushButton:hover {"
-            "border-image: url(:/icons/newfile_hover.png) 0 0 0 0 stretch stretch;"
-            "}"
-            "QPushButton:pressed {"
-            "border-image: url(:/icons/newfile_clicked.png) 0 0 0 0 stretch stretch;"
-            "}"
-    );
-    prisonerButton->setFixedSize(16, 16);
+    // add prisoner button
+    prisonerButton = new HoverButton("Prisoner", QIcon(":/icons/prisoner.png"), this);
+    prisonerButton->setLayoutDirection(Qt::RightToLeft);
 
     if (projectManager) {
         qDebug() << "project manager in FictionViewTab";
@@ -82,21 +56,23 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     }
 
     // sniper button
+    sniperButton = new HoverButton("Sniper", QIcon(":/icons/sniper.png"), this);
+    sniperButton->setLayoutDirection(Qt::RightToLeft);
     if (isPrisoner) {
         textEdit = new PrisonerFictionTextEdit(this, projectManager);
 
-        sniperButton = new QPushButton("No Sniper Button", this);
+        sniperButton->setVisible(false);
     } else {
         textEdit = new FictionTextEdit(this, projectManager);
 
-        sniperButton = new QPushButton("Sniper Button", this);
+        sniperButton->setVisible(true);
     }
     
     topLeftLayout->addItem(topLeftSpacerLeft1);
     topLeftLayout->addItem(topLeftSpacerLeft2);
-    topLeftLayout->addWidget(searchWidget);
     topLeftLayout->addWidget(prisonerButton);
     topLeftLayout->addWidget(sniperButton);
+    topLeftLayout->addWidget(searchWidget);
     topLeftLayout->addItem(topLeftSpacerRight);
 
     QWidget *topLeftWidget = new QWidget(this);
@@ -163,7 +139,6 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
 
     setLayout(globalLayout);
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
-    connect(textEdit, &FictionTextEdit::onSave, this, &FictionViewTab::saveContent);
     connect(textEdit, &FictionTextEdit::textChanged, this, &FictionViewTab::editContent);
     connect(textEdit, &FictionTextEdit::onFictionEditSearch, searchWidget, &SearchWidget::handleSearch);
     connect(textEdit, &FictionTextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
@@ -215,12 +190,12 @@ void FictionViewTab::setupScrollBar() {
         "    margin: 0px 0px 0px 0px;"
         "}"
         "QScrollBar::handle:vertical {"
-        "    background: #4A515E;"
+        "    background: #262626;"
         "    min-height: 16px;"
         "    border-radius: 4px;"
         "}"
         "QScrollBar::handle:vertical:hover {"
-        "    background: #989A9C;"
+        "    background: #1f2020;"
         "}"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
         "    height: 0px;"
@@ -262,44 +237,44 @@ void FictionViewTab::deactivateSniperMode() {
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
 }
 
-// bool FictionViewTab::saveContent() {
-//     if (currentFilePath.isEmpty()) {
-//         // If no file path is provided, prompt the user to select a save location
-//         QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
-//         if (fileName.isEmpty()) {
-//             // If the user cancels the save dialog, do nothing
-//             return false;
-//         }
-//         currentFilePath = fileName;
+bool FictionViewTab::saveContent() {
+    if (currentFilePath.isEmpty()) {
+        // If no file path is provided, prompt the user to select a save location
+        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
+        if (fileName.isEmpty()) {
+            // If the user cancels the save dialog, do nothing
+            return false;
+        }
+        currentFilePath = fileName;
         
-//         QFile file(currentFilePath);
-//         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-//             QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
-//             return false;
-//         }
+        QFile file(currentFilePath);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+            return false;
+        }
 
-//         QTextStream out(&file);
-//         out << textEdit->toPlainText();
-//         file.close();
+        QTextStream out(&file);
+        out << textEdit->toPlainText();
+        file.close();
 
-//         emit onChangeFileType(fileName);
+        emit onChangeFileType(fileName);
 
-//         return true;
-//     }
+        return true;
+    }
 
-//     QFile file(currentFilePath);
-//     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-//         QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
-//         return false;
-//     }
+    QFile file(currentFilePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Save Error", "Unable to open file for writing.");
+        return false;
+    }
 
-//     QTextStream out(&file);
-//     out << textEdit->toPlainText();
-//     file.close();
+    QTextStream out(&file);
+    out << textEdit->toPlainText();
+    file.close();
 
-//     emit onChangeTabName(QFileInfo(currentFilePath).fileName());
-//     return true;
-// }
+    emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+    return true;
+}
 
 void FictionViewTab::editContent() {
     emit onChangeTabName(QFileInfo(currentFilePath).fileName() + "*");

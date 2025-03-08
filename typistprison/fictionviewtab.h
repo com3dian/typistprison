@@ -22,6 +22,7 @@
 #include "prisonerfictiontextedit.h"
 #include "projectmanager.h"
 #include "basetextedittab.h"
+#include "utils/hoverbutton.h"
 
 
 class FictionViewTab : public BaseTextEditTab {
@@ -31,12 +32,12 @@ public:
     explicit FictionViewTab(const QString &content, const QString &filePath, QWidget *parent = nullptr,
                           bool isPrisoner = false, ProjectManager *projectManager = nullptr);
     QString getTextContent() const override;
-    QPushButton *prisonerButton;
+    HoverButton *prisonerButton;
 
 private:
     FictionTextEdit *textEdit;
     QScrollBar *vScrollBar;
-    QPushButton *sniperButton;
+    HoverButton *sniperButton;
     QHBoxLayout *globalLayout;
     QVBoxLayout *leftLayout;
     QHBoxLayout *topLeftLayout;
@@ -55,6 +56,7 @@ private:
     void activateSniperMode();
     void deactivateSniperMode();
     void editContent();
+    bool saveContent() override;
     void updateWordcount();
     void activatePrisonerMode();
     void deactivatePrisonerMode();

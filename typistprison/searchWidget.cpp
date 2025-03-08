@@ -12,12 +12,12 @@ SearchWidget::SearchWidget(QWidget *parent)
 
     lineEdit = new QLineEdit(this);
     lineEdit->setMinimumWidth(128);
-    lineEdit->setMaximumWidth(480); // maximum width
+    // lineEdit->setMaximumWidth(480); // maximum width
     lineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     lineEdit->setStyleSheet(
             "background-color: transparent; "
             "border: none;"
-            "color: #C7C8CC;"
+            "color: #FFFFFF;"
     );
 
     button = new QPushButton(this);
@@ -209,24 +209,24 @@ bool SearchWidget::eventFilter(QObject *obj, QEvent *event)
 void SearchWidget::updateBottomLine()
 {
     if (isOnSearch) {
-        bottomLine->setStyleSheet("background-color: #A8D8B9;");
+        bottomLine->setStyleSheet("background-color: #FFFFFF;");
 
         button->setStyleSheet(
                 "QPushButton {"
                 "border: none;"
-                "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
+                "border-image: url(:/icons/tab_close.png) 0 0 0 0 stretch stretch;"
                 "}"
                 "QPushButton:hover {"
-                "border-image: url(:/icons/clearsearch_hover.png) 0 0 0 0 stretch stretch;"
+                "border-image: url(:/icons/tab_hover.png) 0 0 0 0 stretch stretch;"
                 "}"
                 "QPushButton:pressed {"
-                "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
+                "border-image: url(:/icons/tab_hover.png) 0 0 0 0 stretch stretch;"
                 "}"
         );
         button->setFixedSize(16, 16);
     }
     else if (isHovered || !lineEdit->text().isEmpty() || lineEdit->hasFocus()) {
-        bottomLine->setStyleSheet("background-color: #454F61;");
+        bottomLine->setStyleSheet("background-color: #C0C0C0;");
 
         button->setStyleSheet(
                 "QPushButton {"
@@ -237,7 +237,7 @@ void SearchWidget::updateBottomLine()
                 "border-image: url(:/icons/search_hover.png) 0 0 0 0 stretch stretch;"
                 "}"
                 "QPushButton:pressed {"
-                "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
+                "border-image: url(:/icons/search_hover.png) 0 0 0 0 stretch stretch;"
                 "}"
         );
         button->setFixedSize(16, 16);
@@ -262,4 +262,5 @@ void SearchWidget::loseAttention()
     }
     lineEdit->setText("+");
     lineEdit->clear();
+    lineEdit->clearFocus();
 }
