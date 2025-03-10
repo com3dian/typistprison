@@ -9,7 +9,6 @@ SearchWidget::SearchWidget(QWidget *parent)
     QScreen *screen = QGuiApplication::primaryScreen(); // Use QGuiApplication to get the primary screen
     scalingFactor = screen->devicePixelRatio(); // Correctly call devicePixelRatio()
 
-
     lineEdit = new QLineEdit(this);
     lineEdit->setMinimumWidth(128);
     // lineEdit->setMaximumWidth(480); // maximum width
@@ -19,6 +18,10 @@ SearchWidget::SearchWidget(QWidget *parent)
             "border: none;"
             "color: #FFFFFF;"
     );
+    QPalette palette = lineEdit->palette();
+    palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
+    palette.setColor(QPalette::HighlightedText, QColor("#2C2C2C"));
+    lineEdit->setPalette(palette);
 
     button = new QPushButton(this);
     button->setStyleSheet(
@@ -70,10 +73,6 @@ void SearchWidget::handleSearch(const QString &text)
             lineEdit->setText(text);
         }
 
-        QPalette palette = lineEdit->palette();
-        palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
-        palette.setColor(QPalette::HighlightedText, QColor("#31363F"));
-        lineEdit->setPalette(palette);
         lineEdit->selectAll();
 
         button->setStyleSheet(

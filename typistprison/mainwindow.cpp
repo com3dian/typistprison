@@ -112,6 +112,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
     connect(folderTreeView, &FolderTreeViewWidget::fileDeleted, customTabWidget, &CustomTabWidget::handleFileDeleted);
+    connect(folderTreeView, &FolderTreeViewWidget::fileRenamed, customTabWidget, &CustomTabWidget::handleFileRenamed);
 
     // set up side panel button
     sidePanelButton->setEnabled(false);
@@ -510,8 +511,8 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
     newFrame->adjustSize();
 
     // Position the frame just below the button (adjusting as needed).
-    QPoint buttonBottomLeft = button->mapToParent(QPoint(8, button->height() + 14));
-    newFrame->move(buttonBottomLeft);
+    QPoint buttonBottomLeft = button->mapToGlobal(QPoint(0, button->height() + 14));
+    newFrame->move(this->mapFromGlobal(buttonBottomLeft));
 
     // Show the new frame and save it in the member variable.
     newFrame->setVisible(true);

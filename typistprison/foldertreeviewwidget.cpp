@@ -285,8 +285,30 @@ void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
                 }
             }
         } else if (selectedAction == renameActionFile) {
+            // Store the original file path before editing
+            QString originalFilePath = fileModel->filePath(index);
+            
             // Rename the file
             fileTreeView->edit(index);
+            
+            // Connect to the commitData signal which is emitted when editing is finished
+            connect(fileTreeView->itemDelegate(), &QAbstractItemDelegate::commitData, this, 
+                [this, index, originalFilePath](QWidget *editor) {
+                    // Get the updated file path
+                    QString newFilePath = fileModel->filePath(index);
+                    qDebug() << "File renamed from:" << originalFilePath << "to:" << newFilePath;
+                    
+                    // Emit the signal with the new path
+                    emit fileRenamed(originalFilePath, newFilePath);
+                    
+                    // Disconnect to prevent multiple signals
+                    disconnect(fileTreeView->itemDelegate(), &QAbstractItemDelegate::commitData, this, nullptr);
+                });
+        } else if (selectedAction == copyPathActionFile) {
+            // copy the path
+            QString dirPath = fileModel->filePath(index);
+            QClipboard *clipboard = QGuiApplication::clipboard();
+            clipboard->setText(dirPath);
         }
     }
 }

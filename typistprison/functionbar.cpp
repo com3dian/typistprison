@@ -140,11 +140,20 @@ void CustomTabBarWidget::onTabInserted(int index, const QString &label) {
 }
 
 void CustomTabBarWidget::onTabClosedFromSyncedWidget(int index) {
+    qDebug() << "onTabClosedFromSyncedWidget =================================";
     if (syncedTabWidget) {
         syncedTabWidget->blockSignals(true);
+        qDebug() << "onTabClosedFromSyncedWidget =================================  index" << index;
 
+        if (index >= 0 && index < tabBar->count()) {
+            qDebug() << "onTabClosedFromSyncedWidget =================================  count()" << tabBar->count();
+        }
         tabBar->setTabButton(index, QTabBar::RightSide, nullptr);  // Remove the close button
+        QApplication::processEvents();
         tabBar->removeTab(index);                                  // Remove the tab
+        QApplication::processEvents();
+
+        qDebug() << "onTabClosedFromSyncedWidget =================================  2";
 
         syncedTabWidget->blockSignals(false);
     }

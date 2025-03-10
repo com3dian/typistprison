@@ -7,7 +7,7 @@ PlaintextEdit::PlaintextEdit(QWidget *parent)
 {
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
-    palette.setColor(QPalette::HighlightedText, QColor("#31363F"));
+    palette.setColor(QPalette::HighlightedText, QColor("#2C2C2C"));
     this->setPalette(palette);
 
     // set `Noto Sans Regular` as default font for fictiontextedit 

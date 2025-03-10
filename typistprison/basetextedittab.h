@@ -20,6 +20,7 @@ protected:
     QString currentFilePath;
     QString content;
     virtual QString getTextContent() const = 0;
+    // virtual QString setTextContent(const QString &text) = 0;
 
 public slots:
     virtual bool saveContent();

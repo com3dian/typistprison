@@ -23,13 +23,28 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // Add wordcount label
     wordCountLabel = new QLabel(this);
     wordCountLabel->setAlignment(Qt::AlignRight | Qt::AlignBottom);
-    wordCountLabel->setStyleSheet("QLabel { color: #BDBDBD; background-color: #1F2020; border-radius: 4px; }");
+    wordCountLabel->setStyleSheet("QLabel { color: #656565; background-color: #1F2020; border-radius: 4px; }");
     QFont font = wordCountLabel->font();  // Get the current font of the QLabel
-    font.setBold(true);                   // Set the font to bold
+    // font.setBold(true);                   // Set the font to bold
     // Apply the font to the QLabel
     wordCountLabel->setFont(font);
-    wordCountLabel->setContentsMargins(0, 0, 0, 1);
-
+    wordCountLabel->setContentsMargins(8, 5, 4, 8);
+    wordCountLabel->setVisible(false);  // Hide the label by default
+    
+    // Create a holder widget for the word count label
+    QWidget *wordCountHolder = new QWidget(this);
+    QHBoxLayout *wordCountLayout = new QHBoxLayout(wordCountHolder);
+    wordCountLayout->setContentsMargins(0, 0, 0, 0);
+    wordCountLayout->setSpacing(0);
+    
+    // Add spacer to push the label to the right
+    QSpacerItem *wordCountSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    wordCountLayout->addItem(wordCountSpacer);
+    wordCountLayout->addWidget(wordCountLabel);
+    
+    // Set the holder widget's policy to expand
+    wordCountHolder->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    
     globalLayout->setContentsMargins(0, 0, 0, 0);
     globalLayout->setSpacing(0);
     leftLayout->setContentsMargins(0, 0, 0, 0);
@@ -114,7 +129,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     spaceAndCounterLayout->addWidget(spacerWidgetRight);
     QSpacerItem *verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
     spaceAndCounterLayout->addItem(verticalSpacer);
-    spaceAndCounterLayout->addWidget(wordCountLabel);
+    spaceAndCounterLayout->addWidget(wordCountHolder);
     spaceAndCounterWidget->setLayout(spaceAndCounterLayout);
 
 
@@ -166,6 +181,8 @@ void FictionViewTab::setupTextEdit(const QString &content) {
         "   border: none;"
         "}"
         );
+    
+    // Set initial minimum width, but we'll adjust this dynamically
     textEdit->setMinimumWidth(360); // minimum width
     textEdit->setMaximumWidth(960); // maximum width
     textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -281,6 +298,10 @@ void FictionViewTab::editContent() {
 }
 
 void FictionViewTab::updateWordcount() {
+    // if word count label is not visible, make it visible
+    if (!wordCountLabel->isVisible()) {
+        wordCountLabel->setVisible(true);
+    }
     // prevent lagging in snipper mode
     QString newTextContent = textEdit->toPlainText();
     if (newTextContent == oldTextContent) {
@@ -292,6 +313,8 @@ void FictionViewTab::updateWordcount() {
         wordCountLabel->setText(QString::number(0) + " words  ");
         return;
     }
+
+    qDebug() << "word count height" << wordCountLabel->height();
     int wordCount = 0;
 
     // Regular expression for alphabetic languages (English, etc.)
@@ -373,20 +396,13 @@ QString FictionViewTab::getTextContent() const {
     return textEdit->toPlainText();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void FictionViewTab::resizeEvent(QResizeEvent *event) {
+    QWidget::resizeEvent(event);
+    
+    // Calculate a proportional minimum width based on the tab's width
+    // For example, make it 40% of the tab width, but not less than 360px
+    int newMinWidth = qMin(960, qMax(360, static_cast<int>(width() * 0.72)));
+    
+    // Update the textEdit's minimum width
+    textEdit->setMinimumWidth(newMinWidth);
+}

@@ -231,7 +231,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     format = QTextCharFormat();
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
-    QString colorList("#9ffcc0");
+    QString colorList("#b4c1a1"); // #9ffcc0
     format.setForeground(QColor(colorList));
     _formats[List] = format;
 
@@ -243,7 +243,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     _formats[CheckBoxUnChecked] = std::move(format);
     // set character format for checked checkbox
     format = QTextCharFormat();
-    QString colorCheckedBox("#72bafc");
+    QString colorCheckedBox("#b7c7ce");
     format.setForeground(QColor(colorCheckedBox));
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
@@ -292,7 +292,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     // set character format for bold
     format = QTextCharFormat();
     format.setFontWeight(QFont::Bold);
-    QString colorBold("#98D2C0"); // #96CEB4
+    QString colorBold("#f4d89b"); // #96CEB4 //#98D2C0
     format.setForeground(QColor(colorBold));
     _formats[Bold] = std::move(format);
 
@@ -320,8 +320,9 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character format for block quotes
     format = QTextCharFormat();
+    QString colorQuote("#b4c1a1");
     format.setFontPointSize(globalFontSize);
-    format.setForeground(QColor(colorBold));
+    format.setForeground(QColor(colorQuote));
     _formats[BlockQuote] = std::move(format);
 
     format = QTextCharFormat();

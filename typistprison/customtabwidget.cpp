@@ -65,6 +65,12 @@ void CustomTabWidget::createNewTab(const QString &filePath,
 
     QWidget *newTab;
 
+    if (not filePath.isEmpty()) {
+        if (this->checkIdenticalOpenedFile(filePath) != -1) {
+            return;
+        }
+    }
+
     // 
     QString tabName;
     QString content;
@@ -77,11 +83,11 @@ void CustomTabWidget::createNewTab(const QString &filePath,
         qDebug() << "filePath" << filePath;
         tabName = QFileInfo(filePath).fileName();   // get tabName
         QFileInfo fileInfo(file);
-    if (fileInfo.isReadable()) {
-        qDebug() << "File is readable.";
-    } else {
-        qDebug() << "File is not readable.";
-    }
+        if (fileInfo.isReadable()) {
+            qDebug() << "File is readable.";
+        } else {
+            qDebug() << "File is not readable.";
+        }
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             content = in.readAll();    //get content
@@ -97,14 +103,11 @@ void CustomTabWidget::createNewTab(const QString &filePath,
             qDebug() << "no project manager in customtabwidget";
         }
         newTab = new FictionViewTab(content, filePath, this, false, projectManager);
-        // connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType, this, &CustomTabWidget::updateFileType);
     } else if (tabName.endsWith(".md")) {
         newTab = new MarkdownViewTab(content, filePath, this);
-        // connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     } else {
         newTab = new PlaintextViewTab(content, filePath, this);
-        // connect(static_cast<PlaintextViewTab*>(newTab), &PlaintextViewTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
     }
 
     connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
@@ -112,7 +115,7 @@ void CustomTabWidget::createNewTab(const QString &filePath,
     if (tabIndex == -1) {
         int newIndex = addTab(newTab, tabName);
     } else {
-        int newIndex = insertTab(tabIndex, newTab, tabName);
+        int newIndex = insertTab(tabIndex, newTab, tabName); 
         // TODO: set cursor positioin and scroll bar maybe
     }
     
@@ -230,26 +233,46 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
     }
 }
 
-void CustomTabWidget::handleFileDeleted(const QString &deletedFilePath)
+int CustomTabWidget::checkIdenticalOpenedFile(const QString &givenFilePath)
 {
     QString title;
     QWidget *tab = nullptr;
     QString filePath;
-    QRegularExpression regex("untitled-\\d+");
-    QRegularExpression regexWithAsterisk("untitled-\\d+\\*");
 
     for (int i = 0; i < count(); ++i) {
         title = this->tabText(i);
         tab = this->widget(i);
 
         filePath = static_cast<BaseTextEditTab*>(tab)->getCurrentFilePath();
-        
-        qDebug() << "filePath" << filePath;
 
-        if (filePath == deletedFilePath) {
-            removeTab(i);
-            emit tabClosedFromSyncedTabWidgetSignal(i);
-            break;
+        if (filePath == givenFilePath) {
+            return i;
         }
+    }
+
+    return -1;
+}
+
+void CustomTabWidget::handleFileDeleted(const QString &deletedFilePath)
+{
+    int tabIndex = checkIdenticalOpenedFile(deletedFilePath);
+
+    if (tabIndex != -1) {
+        removeTab(tabIndex);
+        emit tabClosedFromSyncedTabWidgetSignal(tabIndex);
+    }
+}
+
+void CustomTabWidget::handleFileRenamed(const QString &originalFilePath, const QString &newFilePath)
+{
+    int tabIndex = checkIdenticalOpenedFile(originalFilePath);
+    qDebug() << "tabIndex: " << tabIndex;
+    if (tabIndex != -1) {
+
+        removeTab(tabIndex);
+        emit tabClosedFromSyncedTabWidgetSignal(tabIndex);
+
+        qDebug() << "emit tabClosedFromSyncedTabWidgetSignal(tabIndex); -----------------------";
+        createNewTab(newFilePath, false, tabIndex);
     }
 }

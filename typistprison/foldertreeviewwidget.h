@@ -16,6 +16,7 @@ public:
 
 signals:
     void fileDeleted(const QString &filePath);
+    void fileRenamed(const QString &originalFilePath, const QString &newFilePath);
     void doubleClickedOnFile(const QString &filePath);
 
 private:

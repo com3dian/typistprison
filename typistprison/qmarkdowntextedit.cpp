@@ -113,7 +113,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
 
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
-    palette.setColor(QPalette::HighlightedText, QColor("#31363F"));
+    palette.setColor(QPalette::HighlightedText, QColor("#2C2C2C"));
     this->setPalette(palette);
 
     // image popup

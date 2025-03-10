@@ -11,7 +11,7 @@ FictionTextEdit::FictionTextEdit(QWidget *parent, ProjectManager *projectManager
 {
     QPalette palette = this->palette();
     palette.setColor(QPalette::Highlight, QColor("#84e0a5"));
-    palette.setColor(QPalette::HighlightedText, QColor("#31363F"));
+    palette.setColor(QPalette::HighlightedText, QColor("#2C2C2C"));
     this->setPalette(palette);
 
     setUndoRedoEnabled(false); // forbid undo
@@ -92,7 +92,7 @@ QTextCursor FictionTextEdit::applyCharFormatting(QTextCursor &cursor, bool inser
             charFormat.setForeground(Qt::white);
             // previousCenteredBlock = cursor.block();  // Update previous centered block
         } else {
-            QColor customColor("#454F61");
+            QColor customColor("#656565");
             charFormat.setForeground(customColor);
         }
     } else {
@@ -140,7 +140,7 @@ QTextCursor FictionTextEdit::applyCharFormatting4NextBlock(QTextCursor &cursor)
             if ((blockRect.bottom() + 16 - totalHeight <= centerY) && (centerY <= blockRect.bottom() + 16)) {
                 charFormat.setForeground(Qt::white);
             } else {
-                QColor customColor("#454F61");
+                QColor customColor("#656565");
                 charFormat.setForeground(customColor);
             }
         } else {
@@ -148,7 +148,7 @@ QTextCursor FictionTextEdit::applyCharFormatting4NextBlock(QTextCursor &cursor)
                 charFormat.setForeground(Qt::white);
                 // previousCenteredBlock = cursor.block();  // Update previous centered block
             } else {
-                QColor customColor("#454F61");
+                QColor customColor("#656565");
                 charFormat.setForeground(customColor);
             }
         }
@@ -665,7 +665,7 @@ void FictionTextEdit::changeGlobalTextColor(const QColor &color)
 
 void FictionTextEdit::activateSniperMode() {
     isSniperMode = true;
-    QColor customColor("#454F61"); // gray color
+    QColor customColor("#656565"); // gray color
     changeGlobalTextColor(customColor); // Change all text to gray
 
     // Update the previously centered block to the new highlight color

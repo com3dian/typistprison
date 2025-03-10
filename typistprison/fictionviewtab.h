@@ -60,6 +60,10 @@ private:
     void updateWordcount();
     void activatePrisonerMode();
     void deactivatePrisonerMode();
+
+// In the protected or public section of your class declaration:
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 };
 
 #endif // FICTIONVIEWTAB_H

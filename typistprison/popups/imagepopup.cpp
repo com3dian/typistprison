@@ -14,9 +14,9 @@ ImagePopup::ImagePopup(QWidget *parent) : QWidget(parent) {
 
     // Create a drop shadow effect
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-    shadow->setBlurRadius(30);
+    shadow->setBlurRadius(64);
     shadow->setOffset(0, 0);
-    shadow->setColor(QColor("#84e0a5"));
+    shadow->setColor(QColor("#000000"));
     setGraphicsEffect(shadow);
 
     // Image Label inside Popup

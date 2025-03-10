@@ -27,6 +27,7 @@ public slots:
     void closeWindowIfNoTabs(int index);
     void onTabCloseRequested(int index, bool needAsking = true);
     void handleFileDeleted(const QString &deletedFilePath);
+    void handleFileRenamed(const QString &originalFilePath, const QString &newFilePath);
 
 private:
     int untitledCount;
@@ -37,6 +38,7 @@ private:
     void setupStyles();
     void applyFictionViewStyles(QTextEdit *textEdit);
     void applyEditorViewStyles(QTextEdit *textEdit);
+    int checkIdenticalOpenedFile(const QString &givenFilePath);
 
 private slots:
     
