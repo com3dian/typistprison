@@ -8,6 +8,7 @@
 #include <QPainterPath>
 #include <QStyleOptionTab>
 #include <QHBoxLayout>
+#include <QPoint>
 
 #include "projectmanager.h"
 
@@ -28,6 +29,8 @@ public slots:
     void onTabCloseRequested(int index, bool needAsking = true);
     void handleFileDeleted(const QString &deletedFilePath);
     void handleFileRenamed(const QString &originalFilePath, const QString &newFilePath);
+    void showImageAt(const QString &imagePath, QPoint lastMousePos);
+    void hideImage();
 
 private:
     int untitledCount;
@@ -51,6 +54,8 @@ signals:
     void tabInsertedSignal(int index, const QString &label);
     void tabClosedFromSyncedTabWidgetSignal(int index);
     void updatedTabTitleSignal(int currentIndex, QString newTitle);
+    void showImageAtSignal(const QString &imagePath, QPoint lastMousePos);
+    void hideImageSignal();
 
 };
 

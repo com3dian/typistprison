@@ -29,7 +29,6 @@
 
 #include "markdownhighlighter.h"
 #include "fontmanager.h"
-#include "popups/imagepopup.h"
 
 class QMarkdownTextEdit : public QPlainTextEdit {
     Q_OBJECT
@@ -128,6 +127,8 @@ Q_SIGNALS:
     void onMarkdownSearch(const QString &text);
     void focusGained();
     void onSave();
+    void showImageAt(const QString &imagePath, QPoint lastMousePos);
+    void hideImage();
 
 private:
     int globalFontSize;
@@ -135,8 +136,6 @@ private:
 
     QTimer *timer;
     QPoint lastMousePos;
-    ImagePopup *popup;
-
 
     void readBlock();
 };

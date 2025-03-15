@@ -32,6 +32,7 @@ FictionTextEdit::FictionTextEdit(QWidget *parent, ProjectManager *projectManager
     // connect(cursorTimer, &QTimer::timeout, this, &FictionTextEdit::toggleCursorVisibility);
     // cursorTimer->setInterval(750); // Blink every 750 milliseconds
     // cursorTimer->start();
+    
     setUndoRedoEnabled(true); // allow undo
 
     highlighter = new FictionHighlighter(this->document());

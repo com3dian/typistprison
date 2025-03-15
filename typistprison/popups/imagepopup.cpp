@@ -1,69 +1,52 @@
 /*
-creating popup window display images
+    Creating a popup window to display images with a surrounding shadow
 */
-
 
 #include "imagepopup.h"
 #include <QDebug>
 #include <QScreen>
 #include <QGuiApplication>
+#include <QGraphicsDropShadowEffect>
 
 ImagePopup::ImagePopup(QWidget *parent) : QWidget(parent) {
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
-    // Create a drop shadow effect
-    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-    shadow->setBlurRadius(64);
-    shadow->setOffset(0, 0);
-    shadow->setColor(QColor("#000000"));
-    setGraphicsEffect(shadow);
-
-    // Image Label inside Popup
+    // Image Label inside the Popup
     imageLabel = new QLabel(this);
     imageLabel->setScaledContents(true);
-    imageLabel->setStyleSheet("background-color: white;");
-
-    // Set a minimum size for the popup
-    resize(100, 100); // Default size, will adjust based on the image
+    imageLabel->setAlignment(Qt::AlignCenter);
+    imageLabel->setStyleSheet("background-color: transparent;");
 }
-
 
 void ImagePopup::showImageAt(const QString &imagePath, QPoint pos) {
     QPixmap pixmap(imagePath);
     if (!pixmap.isNull()) {
-        // Scale the image by 0.05 (5% of its original size) while maintaining aspect ratio
-        QPixmap scaledPixmap = pixmap.scaled(pixmap.size() * 0.05, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        // Scale the image by 0.2 (20% of its original size) while maintaining aspect ratio
+        QPixmap scaledPixmap = pixmap.scaled(pixmap.size() * 0.2, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
         // Set the scaled pixmap to the label
         imageLabel->setPixmap(scaledPixmap);
 
-        // Resize the popup to fit the scaled image
+        // Resize the popup to fit the scaled image with shadow padding
         QSize imageSize = scaledPixmap.size();
-        QSize popupSize = imageSize + QSize(40, 40); // Add padding for the shadow and margins
+        QSize popupSize = imageSize + QSize(20, 20); // Extra padding for the shadow
         resize(popupSize);
+        imageLabel->setGeometry(10, 10, imageSize.width(), imageSize.height());
 
-        // Center the imageLabel within the popup
-        imageLabel->setGeometry(
-            (popupSize.width() - imageSize.width()) / 2,  // Center horizontally
-            (popupSize.height() - imageSize.height()) / 2, // Center vertically
-            imageSize.width(),
-            imageSize.height()
-        );
+        // Adjust position relative to button or reference point
+        QPoint popupPos = this->mapFromGlobal(pos);
+        qDebug() << "popupPos:              " << popupPos;
+        move(popupPos);
 
-        // Get the screen geometry to ensure the popup stays within the screen bounds
-        QScreen *screen = QGuiApplication::screenAt(pos);
-        if (screen) {
-            QRect screenGeometry = screen->geometry();
+        // Create and configure the drop shadow effect
+        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
+        shadow->setBlurRadius(24);   // Softer, larger shadow
+        shadow->setColor(QColor("#1F2020")); // Shadow color
+        shadow->setOffset(0, 0);     // Zero offset for uniform shadow
 
-            // Adjust the popup position to ensure it stays within the screen bounds
-            QPoint popupPos = pos;
-            popupPos.setX(std::max(screenGeometry.left(), std::min(popupPos.x(), screenGeometry.right() - popupSize.width())));
-            popupPos.setY(std::max(screenGeometry.top(), std::min(popupPos.y(), screenGeometry.bottom() - popupSize.height())));
-
-            // Move the popup to the adjusted position
-            move(popupPos);
-        }
+        // Apply the effect to the popup
+        setGraphicsEffect(shadow);
 
         show();
     } else {

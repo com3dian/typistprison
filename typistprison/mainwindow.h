@@ -13,6 +13,7 @@
 #include <QTreeView>
 #include <QHeaderView>
 #include <QScreen>
+#include <QPoint>
 #include <QMessageBox>
 #include <QStackedWidget>
 #include <QGraphicsDropShadowEffect>
@@ -25,6 +26,7 @@
 #include "projectmanager.h"
 #include "basetextedittab.h"
 #include "searchWidget.h"
+#include "popups/imageframe.h"
 #include "functionbar/menubutton.h"
 
 QT_BEGIN_NAMESPACE
@@ -47,6 +49,8 @@ public slots:
     void searchFile();
     void openProject();
     void saveProject();
+    void showMarkdownImage(const QString &imagePath, QPoint pos);
+    void hideMarkdownImage();
 
 private:
     Ui::MainWindow *ui;
@@ -62,6 +66,8 @@ private:
     QPushButton *menuToggleButton;
     QFrame *existingFrame = nullptr;
     CustomTabBarWidget *tabBarWidget;
+    ImageFrame *imageFrame;
+    QLabel *imageLabel;
 
     void setupUntitledTab();
     void setupMenuButtons(CustomTabBarWidget *tabBarWidget);

@@ -41,6 +41,13 @@ private:
     void activateHighlightMode();
     void deactivateHighlightMode();
     void editContent();
+    void showImageFunc(const QString &imagePath, QPoint lastMousePos);
+    void hideImageFunc();
+
+signals:
+    void showImageAt(const QString &imagePath, QPoint lastMousePos);
+    void hideImage();
+
 };
 
 #endif // MARKDOWNVIEWTAB_H

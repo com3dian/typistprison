@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , untitledCount(1)
     , previousSplitterPosition(0.166)
+    , imageFrame(nullptr)
 {
     projectManager = new ProjectManager();
     ui->setupUi(this);
@@ -109,6 +110,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Connect the customTabWidget's lastTabClosed signal to the MainWindow's slot to close the window
     connect(customTabWidget, &CustomTabWidget::lastTabClosed, this, &MainWindow::onLastTabClosed);
+    connect(customTabWidget, &CustomTabWidget::showImageAtSignal, this, &MainWindow::showMarkdownImage);
+    connect(customTabWidget, &CustomTabWidget::hideImageSignal, this, &MainWindow::hideMarkdownImage);
 
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
     connect(folderTreeView, &FolderTreeViewWidget::fileDeleted, customTabWidget, &CustomTabWidget::handleFileDeleted);
@@ -117,7 +120,7 @@ MainWindow::MainWindow(QWidget *parent)
     // set up side panel button
     sidePanelButton->setEnabled(false);
     connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
-
+    
     setupUntitledTab();
     setupActions();
 
@@ -536,5 +539,50 @@ void MainWindow::handleFocusLeaveMenuButton() {
     if (existingFrame)
     {
         existingFrame->setVisible(false);
+    }
+}
+
+void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos) {
+    QPixmap pixmap(imagePath);
+    if (!pixmap.isNull()) {
+        // Scale the image by 0.2 (20% of its original size) while maintaining aspect ratio
+        QPixmap scaledPixmap = pixmap.scaled(pixmap.size() * 0.2, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+        // Create ImageFrame if it doesn't exist
+        if (!imageFrame) {
+            imageFrame = new ImageFrame(this);
+        }
+
+        // Set the image to the frame
+        imageFrame->setImage(scaledPixmap);
+
+        // Resize the frame to fit the scaled image with shadow padding
+        QSize imageSize = scaledPixmap.size();
+        QSize frameSize = imageSize + QSize(20, 20); // Extra padding for the shadow
+        imageFrame->resize(frameSize);
+
+        // Adjust position relative to the mouse or reference point
+        QPoint popupPos = this->mapFromGlobal(lastMousePos);
+        qDebug() << "popupPos: " << popupPos;
+        imageFrame->move(popupPos);
+
+        // Create and configure the drop shadow effect
+        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
+        shadow->setBlurRadius(24);   // Softer, larger shadow
+        shadow->setColor(QColor("#1F2020")); // Shadow color
+        shadow->setOffset(0, 0);     // Zero offset for uniform shadow
+
+        // Apply the effect to the frame
+        imageFrame->setGraphicsEffect(shadow);
+
+        imageFrame->show();
+    } else {
+        qDebug() << "Failed to load image:" << imagePath;
+    }
+}
+
+void MainWindow::hideMarkdownImage() {
+    if (imageFrame) {
+        imageFrame->hide();  // Hide the frame
     }
 }

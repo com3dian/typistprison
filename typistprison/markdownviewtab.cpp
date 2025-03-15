@@ -57,6 +57,8 @@ MarkdownViewTab::MarkdownViewTab(const QString &content, const QString &filePath
     connect(textEdit, &QMarkdownTextEdit::focusGained, searchWidget, &SearchWidget::loseAttention);
     connect(textEdit, &QMarkdownTextEdit::onSave, this, &MarkdownViewTab::saveContent);
     connect(textEdit, &QMarkdownTextEdit::textChanged, this, &MarkdownViewTab::editContent);
+    connect(textEdit, &QMarkdownTextEdit::showImageAt, this, &MarkdownViewTab::showImageFunc);
+    connect(textEdit, &QMarkdownTextEdit::hideImage, this, &MarkdownViewTab::hideImageFunc);
     connect(searchWidget, &SearchWidget::onSearch, textEdit, &QMarkdownTextEdit::search);
     connect(searchWidget, &SearchWidget::onClear, textEdit, &QMarkdownTextEdit::clearSearch);
     connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &QMarkdownTextEdit::searchPrev);
@@ -132,4 +134,13 @@ void MarkdownViewTab::editContent() {
 
 QString MarkdownViewTab::getTextContent() const {
     return textEdit->toPlainText();
+}
+
+void MarkdownViewTab::showImageFunc(const QString &imagePath, QPoint lastMousePos) {
+    emit showImageAt(imagePath, lastMousePos);
+}
+
+void MarkdownViewTab::hideImageFunc() {
+    emit hideImage();
+
 }

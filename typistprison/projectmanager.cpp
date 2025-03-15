@@ -122,7 +122,57 @@ QString ProjectManager::matchBannedWords(QString text) {
 }
 
 
+void ProjectManager::readWikiFiles(const QString& selectedProjectRoot) {
+    QDir projectDir(selectedProjectRoot);
+    QDir wikiDir(projectDir.filePath("wiki"));
 
-// void ProjectManager::refresh() {
+    QStringList mdFiles;
+
+    // Check if the "wiki" directory exists
+    if (wikiDir.exists()) {
+        mdFiles = wikiDir.entryList(QStringList() << "*.md", QDir::Files);
+    }
+
+    // If no .md files in "wiki", check for wiki.md in root
+    if (mdFiles.isEmpty()) {
+        QFile wikiFile(projectDir.filePath("wiki.md"));
+        if (wikiFile.exists()) {
+            mdFiles.append("wiki.md"); // Add wiki.md manually
+        }
+    }
+
+    // If still no .md files, do nothing
+    if (mdFiles.isEmpty()) {
+        qDebug() << "No wiki files found.";
+        haveWiki = false;
+        return;
+    }
+
+    qDebug() << "Found wiki files:" << mdFiles;
+
+    // Read and store content (if needed)
+    for (const QString& mdFile : mdFiles) {
+        QFile file(wikiDir.exists() ? wikiDir.filePath(mdFile) : projectDir.filePath(mdFile));
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            QString content = in.readAll();
+            file.close();
+            qDebug() << "Contents of" << mdFile << ":" << content.left(100) << "..."; // Print only first 100 chars
+        } else {
+            qWarning() << "Could not open file:" << mdFile;
+        }
+    }
+}
+
+/* 
+TODO:
+When the banned words are updated, also reload the banned words
+
+*/
+// void ProjectManager::refreshBannedWords() {
+
+// }
+// for wiki
+// void ProjectManager::refreshBannedWords() {
 
 // }

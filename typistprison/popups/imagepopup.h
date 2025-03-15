@@ -5,6 +5,8 @@
 #include <QWidget>
 #include <QLabel>
 #include <QGraphicsDropShadowEffect>
+#include <QFrame>
+
 
 class ImagePopup : public QWidget {
     Q_OBJECT
@@ -15,6 +17,7 @@ public:
 
 private:
     QLabel *imageLabel;
+    QFrame *frame;
 };
 
 #endif // IMAGEPOPUP_H

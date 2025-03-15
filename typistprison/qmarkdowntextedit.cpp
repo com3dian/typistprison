@@ -123,7 +123,7 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     timer->setSingleShot(true);
     connect(timer, &QTimer::timeout, this, &QMarkdownTextEdit::readBlock);
 
-    popup = new ImagePopup(this);
+    // popup = new ImagePopup(this);
 }
 
 /**
@@ -1908,11 +1908,7 @@ void QMarkdownTextEdit::clearSearch() {
 void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
     lastMousePos = event->pos();
 
-    if (popup) {
-        if (popup->isVisible()) {
-            popup->hide();  // Hide popup when mouse moves
-        }
-    }
+    emit hideImage();
 
     timer->start(1000);  // Restart timer (1 sec delay)
     QPlainTextEdit::mouseMoveEvent(event);
@@ -1944,7 +1940,8 @@ void QMarkdownTextEdit::readBlock() {
                     qDebug() << "Markdown Image Detected: " << imagePath;
 
                     QPoint globalPos = mapToGlobal(lastMousePos);
-                    popup->showImageAt(imagePath, globalPos);
+                    // popup->showImageAt(imagePath, globalPos);
+                    emit showImageAt(imagePath, globalPos);
                 } else {
                     qDebug() << "Cursor is within the block, popup not shown.";
                 }

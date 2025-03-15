@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFile>
 
+
 class ProjectManager {
 public:
     // Constructor
@@ -18,6 +19,7 @@ public:
 
     // Variables
     bool haveBannedWordsFile;
+    bool haveWiki;
     bool isLoadedProject;
     
 private:
@@ -28,6 +30,7 @@ private:
     int maxiumBannedWordLength;
 
     void readBannedWords(const QString selectedProjectRoot);
+    void readWikiFiles(const QString& selectedProjectRoot);
 };
 
 #endif // PROJECTMANAGER_H

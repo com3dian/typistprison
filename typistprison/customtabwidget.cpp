@@ -103,11 +103,19 @@ void CustomTabWidget::createNewTab(const QString &filePath,
             qDebug() << "no project manager in customtabwidget";
         }
         newTab = new FictionViewTab(content, filePath, this, false, projectManager);
-        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType, this, &CustomTabWidget::updateFileType);
+        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType,
+                this, &CustomTabWidget::updateFileType);
+
     } else if (tabName.endsWith(".md")) {
         newTab = new MarkdownViewTab(content, filePath, this);
+        connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::showImageAt,
+                this, &CustomTabWidget::showImageAt);
+        connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::hideImage,
+                this, &CustomTabWidget::hideImage);
+
     } else {
         newTab = new PlaintextViewTab(content, filePath, this);
+
     }
 
     connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
@@ -127,6 +135,16 @@ void CustomTabWidget::closeWindowIfNoTabs(int index) {
     if (count() == 0) {
         emit lastTabClosed();
     }
+}
+
+void CustomTabWidget::showImageAt(const QString &imagePath, QPoint lastMousePos) {
+    qDebug() << "show image at function incustomtabwidget" ;
+    emit showImageAtSignal(imagePath, lastMousePos);
+    qDebug() << "show image at function incustomtabwidget" ;
+}
+
+void CustomTabWidget::hideImage() {
+    emit hideImageSignal();
 }
 
 void CustomTabWidget::switchToFictionView() {
