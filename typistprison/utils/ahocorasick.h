@@ -23,6 +23,10 @@ public:
     // Insert a string into the Trie
     void insert(const std::string& word, int index);
 
+    void remove(const std::string& word);
+    void removeMultiple(const std::vector<std::string>& words);
+    void removeWithoutRebuild(const std::string& word);
+
     // Build failure links using BFS
     void buildFailureLinks();
 

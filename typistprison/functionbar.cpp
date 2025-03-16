@@ -153,8 +153,6 @@ void CustomTabBarWidget::onTabClosedFromSyncedWidget(int index) {
         tabBar->removeTab(index);                                  // Remove the tab
         QApplication::processEvents();
 
-        qDebug() << "onTabClosedFromSyncedWidget =================================  2";
-
         syncedTabWidget->blockSignals(false);
     }
 }

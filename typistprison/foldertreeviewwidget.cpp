@@ -29,7 +29,7 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
     // Initialize layout and fileTreeView
     layout = new QVBoxLayout(this);
     // Set margins and spacing to zero
-    layout->setContentsMargins(32, 0, 0, 0);  // No margins
+    layout->setContentsMargins(16, 0, 0, 8);  // No margins
     layout->setSpacing(0);                    // No spacing between widgets
 
     fileTreeView = new QTreeView(this);
@@ -136,6 +136,9 @@ void FolderTreeViewWidget::setupFileTree() {
     fileTreeView->header()->hide();
     fileTreeView->setHeaderHidden(true);
 
+    // Disable horizontal scrollbar
+    fileTreeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     // Customize the appearance of the file tree view
     fileTreeView->setStyleSheet(
         "QTreeView { background-color: #1F2020; "
@@ -158,12 +161,12 @@ void FolderTreeViewWidget::setupFileTree() {
         "    margin: 0px 0px 0px 0px;"
         "}"
         "QScrollBar::handle:vertical {"
-        "    background: #4A515E;"
+        "    background: #262626;"
         "    min-height: 16px;"
         "    border-radius: 4px;"
         "}"
         "QScrollBar::handle:vertical:hover {"
-        "    background: #989A9C;"
+        "    background: #2C2C2C;"
         "}"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
         "    height: 0px;"

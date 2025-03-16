@@ -104,7 +104,6 @@ void CustomTabBar::paintEvent(QPaintEvent *event) {
                 // Draw a white vertical line at the right border
                 painter.fillRect(QRect(rect.right() - 2, rect.top() + 16.5, 2, rect.height() - 27), QColor("#3A3B3B"));
             }
-            
         }
 
         // Draw the tab text within the tab boundaries

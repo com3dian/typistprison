@@ -54,3 +54,51 @@ std::vector<std::pair<int, int>> AhoCorasick::search(const std::string& text) {
     }
     return result;
 }
+
+void AhoCorasick::remove(const std::string& word) {
+    removeWithoutRebuild(word);
+    // Rebuild failure links as they might be affected
+    buildFailureLinks();
+}
+
+void AhoCorasick::removeWithoutRebuild(const std::string& word) {
+    TrieNode* curr = root;
+    std::vector<std::pair<TrieNode*, char>> path;
+    
+    // Traverse to the end of the word
+    for (char c : word) {
+        if (!curr->children.count(c)) {
+            return; // Word not found
+        }
+        path.push_back({curr, c});
+        curr = curr->children[c];
+    }
+    
+    // Clear all indices from output
+    curr->output.clear();
+    
+    // If node has no children, remove it and its parents if possible
+    if (curr->children.empty()) {
+        for (int i = path.size() - 1; i >= 0; i--) {
+            TrieNode* parent = path[i].first;
+            char c = path[i].second;
+            TrieNode* child = parent->children[c];
+            
+            delete child;
+            parent->children.erase(c);
+            
+            // Stop if parent has other children or is an output node
+            if (!parent->children.empty() || !parent->output.empty()) {
+                break;
+            }
+        }
+    }
+}
+
+void AhoCorasick::removeMultiple(const std::vector<std::string>& words) {
+    for (const auto& word : words) {
+        removeWithoutRebuild(word);
+    }
+    // Rebuild failure links only once after all removals
+    buildFailureLinks();
+}

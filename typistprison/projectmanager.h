@@ -5,12 +5,15 @@
 #include "utils/ahocorasick.h"
 #include <QDir>
 #include <QFile>
+#include <QObject>
+#include <QTimer>
 
+class ProjectManager : public QObject {
+    Q_OBJECT  // Required macro for QObject subclasses
 
-class ProjectManager {
 public:
     // Constructor
-    ProjectManager();
+    explicit ProjectManager(QObject* parent = nullptr);
 
     // Member Functions
     void open(const QString selectedProjectRoot);
@@ -24,13 +27,17 @@ public:
     
 private:
     // Member Variables
-    
     std::vector<std::string> bannedWordsLines;
     AhoCorasick bannedWordsTrie;
     int maxiumBannedWordLength;
+    QTimer* bannedWordsTimer;
+    QString currentProjectRoot;
 
     void readBannedWords(const QString selectedProjectRoot);
     void readWikiFiles(const QString& selectedProjectRoot);
+    
+private slots:
+    void checkBannedWordsChanges();
 };
 
 #endif // PROJECTMANAGER_H

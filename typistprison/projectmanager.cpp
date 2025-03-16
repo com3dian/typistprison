@@ -1,20 +1,28 @@
 #include "projectmanager.h"
 #include <QDebug>
+#include <QTimer>
 
 // Constructor
-ProjectManager::ProjectManager()
-    : isLoadedProject(false)
+ProjectManager::ProjectManager(QObject* parent)
+    : QObject(parent)
+    , isLoadedProject(false)
     , haveBannedWordsFile(false)
     , maxiumBannedWordLength(0)
-
+    , bannedWordsTimer(new QTimer(this))
+    , currentProjectRoot("")
 {
-    // Initialization code, if needed
+    // Set up timer to check for banned words file changes
+    connect(bannedWordsTimer, &QTimer::timeout, this, &ProjectManager::checkBannedWordsChanges);
 }
 
 void ProjectManager::open(const QString selectedProjectRoot) {
+    currentProjectRoot = selectedProjectRoot;
     readBannedWords(selectedProjectRoot);
 
     isLoadedProject = true;
+    
+    // Start the timer to check for banned words changes every second
+    bannedWordsTimer->start(1000);
 
     return;
 }
@@ -103,7 +111,6 @@ QString ProjectManager::matchBannedWords(QString text) {
         int utf8BannedWordLength = bannedWordsLines[patternIndex].size();
         int end = match.second - backspace;
         int start = end - utf8BannedWordLength + 1;
-        qDebug() << "start position" << start;
 
         // Replace the range [start, end] with proper number of asterisks
         stdStringText.erase(start, utf8BannedWordLength);
@@ -176,3 +183,107 @@ When the banned words are updated, also reload the banned words
 // void ProjectManager::refreshBannedWords() {
 
 // }
+
+void ProjectManager::checkBannedWordsChanges() {
+    if (!isLoadedProject || currentProjectRoot.isEmpty()) {
+        return;
+    }
+
+    // Step 1: Locate all .txt files
+    QDir directory(currentProjectRoot);
+    QStringList txtFiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
+
+    // Step 2: Identify the file with the longest sequence of '*'
+    QString bestFile;
+    int maxStars = 0;
+
+    for (const QString& fileName : txtFiles) {
+        int starCount = fileName.count('*');
+        if (starCount > maxStars) {
+            maxStars = starCount;
+            bestFile = fileName;
+        }
+    }
+
+    // If no banned words file found, return
+    if (bestFile.isEmpty()) {
+        if (haveBannedWordsFile) {
+            // We had a banned words file before, but now it's gone
+            haveBannedWordsFile = false;
+            bannedWordsLines.clear();
+            // Create a new empty trie
+            AhoCorasick trie;
+            bannedWordsTrie = trie;
+            maxiumBannedWordLength = 0;
+        }
+        return;
+    }
+
+    // Read the current contents of the file
+    QFile file(directory.filePath(bestFile));
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Could not open file for checking changes:" << bestFile;
+        return;
+    }
+
+    QTextStream in(&file);
+    std::vector<std::string> currentLines;
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        currentLines.push_back(line.toStdString());
+    }
+    file.close();
+
+    // If this is the first time or the file has changed, update
+    if (!haveBannedWordsFile || currentLines != bannedWordsLines) {
+        qDebug() << "Banned words file has changed, updating...";
+        
+        // Find removed lines
+        std::vector<std::string> removedLines;
+        for (const auto& oldLine : bannedWordsLines) {
+            if (std::find(currentLines.begin(), currentLines.end(), oldLine) == currentLines.end()) {
+                removedLines.push_back(oldLine);
+            }
+        }
+        
+        // Find new lines
+        std::vector<std::string> newLines;
+        for (const auto& newLine : currentLines) {
+            if (std::find(bannedWordsLines.begin(), bannedWordsLines.end(), newLine) == bannedWordsLines.end()) {
+                newLines.push_back(newLine);
+            }
+        }
+        
+        // Remove words that are no longer in the file
+        if (!removedLines.empty()) {
+            bannedWordsTrie.removeMultiple(removedLines);
+        }
+        
+        // Add new words to the trie
+        for (size_t i = 0; i < newLines.size(); ++i) {
+            // Find the index in the current lines
+            auto it = std::find(currentLines.begin(), currentLines.end(), newLines[i]);
+            if (it != currentLines.end()) {
+                int index = std::distance(currentLines.begin(), it);
+                bannedWordsTrie.insert(newLines[i], index);
+            }
+        }
+        
+        // If there were any changes, rebuild failure links
+        if (!removedLines.empty() || !newLines.empty()) {
+            bannedWordsTrie.buildFailureLinks();
+        }
+        
+        // Update the stored lines
+        bannedWordsLines = currentLines;
+        
+        // Recalculate maximum banned word length
+        maxiumBannedWordLength = 0;
+        for (const auto& str : bannedWordsLines) {
+            QString banneWordQSR = QString::fromUtf8(str.c_str());
+            maxiumBannedWordLength = std::max(static_cast<int>(banneWordQSR.length()), maxiumBannedWordLength);
+        }
+        
+        haveBannedWordsFile = true;
+    }
+}
