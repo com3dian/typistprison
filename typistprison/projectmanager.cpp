@@ -1,6 +1,7 @@
 #include "projectmanager.h"
 #include <QDebug>
 #include <QTimer>
+#include <QDirIterator>  // Add this include for QDirIterator
 
 // Constructor
 ProjectManager::ProjectManager(QObject* parent)
@@ -18,6 +19,8 @@ ProjectManager::ProjectManager(QObject* parent)
 void ProjectManager::open(const QString selectedProjectRoot) {
     currentProjectRoot = selectedProjectRoot;
     readBannedWords(selectedProjectRoot);
+    readWikiFiles(selectedProjectRoot);
+    printWikiContent();
 
     isLoadedProject = true;
     
@@ -75,9 +78,6 @@ void ProjectManager::readBannedWords(const QString selectedProjectRoot) {
             maxiumBannedWordLength = std::max(static_cast<int>(banneWordQSR.length()), maxiumBannedWordLength);
         }
 
-        qDebug() << "3. bannedWordsLines" << bannedWordsQstringList;
-        qDebug() << "4. maxiumBannedWordLength" << maxiumBannedWordLength;
-
         AhoCorasick trie;
         for (size_t i = 0; i < lines.size(); ++i) {
             trie.insert(lines[i], i);
@@ -134,17 +134,40 @@ void ProjectManager::readWikiFiles(const QString& selectedProjectRoot) {
     QDir wikiDir(projectDir.filePath("wiki"));
 
     QStringList mdFiles;
+    wikiContentMap.clear(); // Clear previous content
 
     // Check if the "wiki" directory exists
     if (wikiDir.exists()) {
-        mdFiles = wikiDir.entryList(QStringList() << "*.md", QDir::Files);
+        // Use entryInfoList with QDir::AllEntries to get both files and directories
+        // Use QDir::NoDotAndDotDot to exclude "." and ".." entries
+        wikiDir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+        wikiDir.setNameFilters(QStringList() << "*.md");
+        QFileInfoList entries = wikiDir.entryInfoList();
+        
+        // First, add all .md files in the current directory
+        for (const QFileInfo& entry : entries) {
+            if (entry.isFile()) {
+                mdFiles.append(entry.filePath());
+            }
+        }
+        
+        // Then recursively search subdirectories
+        QDirIterator it(wikiDir.path(), QStringList() << "*.md", QDir::Files, 
+                        QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            QString filePath = it.next();
+            // Skip files already added from the root directory
+            if (!mdFiles.contains(filePath)) {
+                mdFiles.append(filePath);
+            }
+        }
     }
 
     // If no .md files in "wiki", check for wiki.md in root
     if (mdFiles.isEmpty()) {
         QFile wikiFile(projectDir.filePath("wiki.md"));
         if (wikiFile.exists()) {
-            mdFiles.append("wiki.md"); // Add wiki.md manually
+            mdFiles.append(projectDir.filePath("wiki.md"));
         }
     }
 
@@ -156,33 +179,123 @@ void ProjectManager::readWikiFiles(const QString& selectedProjectRoot) {
     }
 
     qDebug() << "Found wiki files:" << mdFiles;
+    haveWiki = true;
 
-    // Read and store content (if needed)
+    // Process each markdown file
     for (const QString& mdFile : mdFiles) {
-        QFile file(wikiDir.exists() ? wikiDir.filePath(mdFile) : projectDir.filePath(mdFile));
+        QFile file(mdFile);
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QTextStream in(&file);
             QString content = in.readAll();
             file.close();
-            qDebug() << "Contents of" << mdFile << ":" << content.left(100) << "..."; // Print only first 100 chars
+            
+            // Parse the markdown content to extract titles and sections
+            parseMarkdownContent(content, mdFile);
+            
+            qDebug() << "Processed file:" << mdFile;
         } else {
             qWarning() << "Could not open file:" << mdFile;
         }
     }
+    
+    qDebug() << "Total wiki sections extracted:" << wikiContentMap.size();
 }
 
-/* 
-TODO:
-When the banned words are updated, also reload the banned words
+void ProjectManager::parseMarkdownContent(const QString& content, const QString& filePath) {
+    QStringList lines = content.split('\n');
+    
+    // Create vectors to store titles and content at different levels (0-5 for h1-h6)
+    QVector<QString> currentTitles(6); // Array to store titles at different levels
+    QVector<QString> currentContents(6); // Array to store content at different levels
+    int newTitleLevel = 0;
+    bool isCodeBlock = false; // Flag to check if current block is a code block
+    
+    for (int i = 0; i < lines.size(); i++) {
+        QString line = lines[i];
+        
+        // Check if this line starts or ends a code block (```), toggle the flag
+        if (line.trimmed().startsWith("```")) {
+            isCodeBlock = !isCodeBlock;
+            
+            // Add this line to all active section contents
+            for (int j = 0; j < 6; j++) {
+                if (!currentTitles[j].isEmpty()) {
+                    currentContents[j] += line + "\n";
+                }
+            }
+            continue;
+        }
+        
+        // If we're inside a code block, just add the line to all active sections
+        // and don't try to match it as a heading
+        if (isCodeBlock) {
+            for (int j = 0; j < 6; j++) {
+                if (!currentTitles[j].isEmpty()) {
+                    currentContents[j] += line + "\n";
+                }
+            }
+            continue;
+        }
+        
+        // Check if this line is a title (starts with # to ######)
+        QRegularExpression titleRegex("^(#{1,6})\\s+(.+)$");
+        QRegularExpressionMatch match = titleRegex.match(line);
+        
+        if (match.hasMatch()) {
+            qDebug() << "Found title:" << line;
+            // Extract the new title and its level
+            QString hashMarks = match.captured(1);
+            newTitleLevel = hashMarks.length() - 1;
+            QString newTitle = match.captured(2).trimmed();
+            
+            // If we already have content at or higher than the current level, save it
+            // equal or more hash marks
+            for (int j = newTitleLevel; j < 6; j++) {
+                if (!currentContents[j].isEmpty()) {
+                    // Trim any trailing whitespace from the content
+                    currentContents[j] = currentContents[j].trimmed();
 
-*/
-// void ProjectManager::refreshBannedWords() {
+                    // Store the title and content in the map
+                    QString mapKey = filePath + "::" + currentTitles[j];
+                    wikiContentMap[mapKey] = currentContents[j];
+                    
+                    // Clear the title and content for this level
+                    currentTitles[j].clear();
+                    currentContents[j].clear();
+                }
+            }
 
-// }
-// for wiki
-// void ProjectManager::refreshBannedWords() {
+            for (int j = 0; j < newTitleLevel; j++) {
+                if (!currentTitles[j].isEmpty()) {
+                    currentContents[j] += line + "\n";
+                }
+            }
+            
+            // Update the current title level and set the new title
+            currentTitles[newTitleLevel] = newTitle;
+            
+            // Clear any existing content at this level
+            currentContents[newTitleLevel].clear();
+            currentContents[newTitleLevel] += line + "\n";
+        } else {
+            // If we have a current title, add this line to its content
+            for (int j = 0; j < 6; j++) {
+                if (!currentTitles[j].isEmpty()) {
+                    currentContents[j] += line + "\n";
+                }
+            }
+        }
+    }
 
-// }
+    // Don't forget to add the last sections
+    for (int j = 0; j < 6; j++) {
+        if (!currentTitles[j].isEmpty()) {
+            currentContents[j] = currentContents[j].trimmed();
+            QString mapKey = filePath + "::" + currentTitles[j];
+            wikiContentMap[mapKey] = currentContents[j];
+        }
+    }
+}
 
 void ProjectManager::checkBannedWordsChanges() {
     if (!isLoadedProject || currentProjectRoot.isEmpty()) {
@@ -286,4 +399,30 @@ void ProjectManager::checkBannedWordsChanges() {
         
         haveBannedWordsFile = true;
     }
+}
+
+// Add this method after readWikiFiles
+
+void ProjectManager::printWikiContent() {
+    if (!haveWiki || wikiContentMap.isEmpty()) {
+        qDebug() << "No wiki content available to print.";
+        return;
+    }
+
+    qDebug() << "=== Wiki Content Map ===";
+    qDebug() << "Total sections:" << wikiContentMap.size();
+    
+    // Iterate through all keys in the map
+    for (auto it = wikiContentMap.constBegin(); it != wikiContentMap.constEnd(); ++it) {
+        qDebug() << "---";
+        qDebug() << "Key:" << it.key();
+        
+        // Print a preview of the content (first 100 chars)
+        QString contentPreview = it.value();
+        if (contentPreview.length() > 100) {
+            contentPreview = contentPreview.left(100) + "...";
+        }
+        qDebug() << "Content preview:" << contentPreview;
+    }
+    qDebug() << "=== End of Wiki Content Map ===";
 }

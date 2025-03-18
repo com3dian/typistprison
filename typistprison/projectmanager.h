@@ -19,6 +19,8 @@ public:
     void open(const QString selectedProjectRoot);
     QString matchBannedWords(QString text);
     int getMaxiumBannedWordLength();
+    void parseMarkdownContent(const QString& content, const QString& filePath);
+    void printWikiContent(); // New method to print wiki content
 
     // Variables
     bool haveBannedWordsFile;
@@ -32,6 +34,7 @@ private:
     int maxiumBannedWordLength;
     QTimer* bannedWordsTimer;
     QString currentProjectRoot;
+    QMap<QString, QString> wikiContentMap; // Key: filePath::title, Value: content
 
     void readBannedWords(const QString selectedProjectRoot);
     void readWikiFiles(const QString& selectedProjectRoot);
