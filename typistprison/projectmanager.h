@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QObject>
 #include <QTimer>
+#include <unordered_set>
 
 class ProjectManager : public QObject {
     Q_OBJECT  // Required macro for QObject subclasses
@@ -21,6 +22,7 @@ public:
     int getMaxiumBannedWordLength();
     void parseMarkdownContent(const QString& content, const QString& filePath);
     void printWikiContent(); // New method to print wiki content
+    QMap<QString, QList<QPair<int, QString>>> matchWikiContent(const QString& keyword);
 
     // Variables
     bool haveBannedWordsFile;
@@ -31,6 +33,7 @@ private:
     // Member Variables
     std::vector<std::string> bannedWordsLines;
     AhoCorasick bannedWordsTrie;
+    AhoCorasick wikiTrie;
     int maxiumBannedWordLength;
     QTimer* bannedWordsTimer;
     QString currentProjectRoot;

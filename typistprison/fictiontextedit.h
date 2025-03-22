@@ -58,11 +58,14 @@ signals:
     void focusGained();
     void onSave();
     void keyboardInput();
+    void showWikiAt(const QString &wikiContent, QPoint lastMousePos);
+    void hideWiki();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void insertFromMimeData(const QMimeData *source) override;
     void focusInEvent(QFocusEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
     int getVisibleCenterY();
@@ -70,6 +73,7 @@ private:
     QTextBlock findBlockClosestToCenter();
     void refresh();
     void updateCursorPosition();
+    void readBlock();
     // void toggleCursorVisibility();
 
     int globalFontSize;
@@ -84,7 +88,8 @@ private:
     int previousCursorPosition;
     QString previousDocumentText;
     
-
+    QTimer *timer;
+    QPoint lastMousePos;
 };
 
 #endif // FICTIONTEXTEDIT_H

@@ -60,6 +60,12 @@ private:
     void updateWordcount();
     void activatePrisonerMode();
     void deactivatePrisonerMode();
+    void showWikiFunc(const QString &wikiContent, QPoint lastMousePos);
+    void hideWikiFunc();
+
+signals:
+    void showWikiAt(const QString &wikiContent, QPoint lastMousePos);
+    void hideWiki();
 
 // In the protected or public section of your class declaration:
 protected:

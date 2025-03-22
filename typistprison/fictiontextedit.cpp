@@ -40,6 +40,12 @@ FictionTextEdit::FictionTextEdit(QWidget *parent, ProjectManager *projectManager
     connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
     connect(this, &QTextEdit::cursorPositionChanged, this, &FictionTextEdit::updateCursorPosition);
 
+    // image popup
+    setMouseTracking(true);
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, this, &FictionTextEdit::readBlock);
+
 }
 
 void FictionTextEdit::setTopMargin(int margin)
@@ -267,9 +273,7 @@ void FictionTextEdit::load(const QString &text, bool keepCursorPlace)
 {
     // detach the FictionTextEdit::refresh to prevent slow out loading
     if (projectManager) {
-        if (!projectManager->isLoadedProject) {
-            disconnect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
-        }
+        disconnect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
     }
 
     // Clear existing content
@@ -350,9 +354,7 @@ void FictionTextEdit::load(const QString &text, bool keepCursorPlace)
 
     // attach the FictionTextEdit::refresh to textchanged() signal
     if (projectManager) {
-        if (!projectManager->isLoadedProject) {
-            connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
-        }
+        connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
     }
 }
 
@@ -499,8 +501,6 @@ int FictionTextEdit::checkVisibleCenterBlock(const QTextBlock &block) {
              block closest to the center of the visible area
 */
 QTextBlock FictionTextEdit::findBlockClosestToCenter() {
-    qDebug() << "\n\n\n\nfindBlockClosestToCenter\n";
-
     QTextDocument *doc = document();
     int centerY = getVisibleCenterY();
 
@@ -765,10 +765,16 @@ void FictionTextEdit::updateCursorPosition() {
 void FictionTextEdit::refresh() {
     if (projectManager) {
         if (projectManager->isLoadedProject) {
+            qDebug() << "==========================refresh==========================";
+            // detach the FictionTextEdit::refresh to prevent slow out loading
+            disconnect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
             
-            QString currentDocumentText = this->document()->toPlainText();
+            QString currentDocumentText = this->toPlainText();
             // if no text changes is loaded into document
             if (currentDocumentText == previousDocumentText) {
+                qDebug() << "currentDocumentText" << currentDocumentText;
+                qDebug() << "previousDocumentText" << previousDocumentText;
+                connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
                 return;
             }
 
@@ -828,10 +834,6 @@ void FictionTextEdit::refresh() {
                         right = mid - 1;                        // Try for a shorter prefix
                     }
                 }
-                qDebug() << ":))))))))))bestLength: " << bestLength;
-                qDebug() << ":))))))))))previousCursorPosition" << previousCursorPosition;
-                qDebug() << ":))))))))))" << std::min(previousCursorPosition, currentCursorPosition);
-
                 startIndex = bestLength - maxiumBannedWordLength;
                 endIndex = maxCursorIndex + maxiumBannedWordLength; // todo: better update
             }
@@ -844,16 +846,18 @@ void FictionTextEdit::refresh() {
                 endIndex = currentDocumentLength - 1;          // C
             }
 
+            qDebug() << "check point refresh()";
+
             QString subChangedText = currentDocumentText.mid(startIndex, endIndex - startIndex + 1);
+            qDebug() << "check point refresh(())";
             QString filteredText = projectManager->matchBannedWords(subChangedText);
 
             qDebug() << "subChangedText" << subChangedText;
+            qDebug() << " filteredText " <<  filteredText ;
 
             for (int index = startIndex; index <= endIndex; ++index) {
                 QChar subChangedChar = subChangedText.at(index - startIndex);
                 QChar filteredChar = filteredText.at(index - startIndex);
-
-                qDebug() << "for loop";
 
                 if (subChangedChar != filteredChar) {
                     qDebug() << "currentDocumentText.at(index)" << currentDocumentText.mid(index, 1);
@@ -870,6 +874,7 @@ void FictionTextEdit::refresh() {
 
                 }
             }
+            connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
         }
     }
     // to be used in next FictionTextEdit::refresh
@@ -878,4 +883,123 @@ void FictionTextEdit::refresh() {
     previousCursorPosition = cursor.position();
     previousDocumentText = this->document()->toPlainText();
     return;
+}
+
+void FictionTextEdit::mouseMoveEvent(QMouseEvent *event) {
+    lastMousePos = event->pos();
+
+    emit hideWiki();
+
+    timer->start(1000);  // Restart timer (1 sec delay)
+    QTextEdit::mouseMoveEvent(event);
+}
+
+void FictionTextEdit::readBlock() {
+    qDebug() << "readBlock()";
+    
+    // Get cursor at mouse position
+    QTextCursor cursor = cursorForPosition(lastMousePos);
+    QTextBlock block = cursor.block();
+    QString blockText = block.text();
+
+    if (blockText.isEmpty() || !projectManager) {
+        return;
+    }
+    
+    // Get matches from wikiTrie for the block text
+    QMap<QString, QList<QPair<int, QString>>> matches = projectManager->matchWikiContent(blockText);
+    
+    // Get the block's layout
+    QTextLayout* layout = block.layout();
+    
+    // Get the block's position in document coordinates
+    QPointF blockPos = document()->documentLayout()->blockBoundingRect(block).topLeft();
+    
+    // Iterate through the matches
+    for (const QString& wikiKey : matches.keys()) {
+        const QList<QPair<int, QString>>& matchesList = matches[wikiKey];
+        
+        for (const QPair<int, QString>& match : matchesList) {
+            int startPos = match.first;
+            QString matchedText = match.second;
+            int endPos = startPos + matchedText.length();
+            
+            // Iterate through each character in the matched text
+            QVector<QRectF> rects;
+            for (int pos = startPos; pos < endPos; ++pos) {
+                // Get the line containing this character
+                QTextLine line = layout->lineForTextPosition(pos - block.position());
+                if (!line.isValid()) continue;
+
+                // Get x-position for this character
+                int relativePos = pos - block.position();
+                int lineStartPos = line.textStart();
+                // int posInLine = relativePos - lineStartPos;
+                int posInLine = relativePos;
+                
+                // Skip if position is invalid
+                // if (posInLine < 0 || posInLine >= line.textLength()) continue;
+
+                qreal x = line.cursorToX(posInLine);
+                qreal nextX;
+                
+                // If this is the last character in the line, use the right edge
+                if (posInLine + 1 >= line.textLength()) {
+                    nextX = line.naturalTextWidth();
+                } else {
+                    nextX = line.cursorToX(posInLine + 1);
+                }
+                qDebug() << "-x" << x << "-nextX" << nextX;
+                // Create rectangle for this character
+                QRectF charRect(
+                    blockPos.x() + x,
+                    blockPos.y() + line.y(),
+                    nextX - x,
+                    line.height()
+                );
+
+                // Only add non-zero width rectangles
+                rects.append(charRect);
+                qDebug() << "  charRect" << charRect;
+            }
+
+            // Now merge rectangles that are on the same line
+            QVector<QRectF> mergedRects;
+            for (const QRectF& charRect : rects) {
+                if (mergedRects.isEmpty() || 
+                    qAbs(mergedRects.last().top() - charRect.top()) > 1) {
+                    // New line, add new rectangle
+                    mergedRects.append(charRect);
+                } else {
+                    // Same line, merge with previous rectangle
+                    QRectF& lastRect = mergedRects.last();
+                    lastRect.setRight(charRect.right());
+                }
+            }
+            rects = mergedRects;
+
+            // Check if mouse is over any of the rectangles
+            for (const QRectF& rect : rects) {
+                // Convert document coordinates to viewport coordinates
+                QRect viewportRect = viewport()->rect();
+                QPointF viewportOffset(horizontalScrollBar()->value(), verticalScrollBar()->value());
+                QRectF adjustedRect = rect.translated(-viewportOffset);
+                
+                // Add padding for easier hit detection
+                QRectF hitRect = adjustedRect.adjusted(-5, -5, 5, 5);
+                
+                if (hitRect.contains(lastMousePos)) {
+                    qDebug() << "Mouse is directly over the matched text!";
+                    qDebug() << "Match found:" << matchedText;
+                    qDebug() << "Wiki Key:" << wikiKey;
+                    qDebug() << "Text Rectangle:" << adjustedRect;
+                    qDebug() << "Mouse Position:" << lastMousePos;
+                    
+                    // Here you can trigger your tooltip or other UI elements
+                    break;
+                }
+            }
+            
+        }
+    }
 }

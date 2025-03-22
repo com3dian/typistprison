@@ -142,5 +142,4 @@ void MarkdownViewTab::showImageFunc(const QString &imagePath, QPoint lastMousePo
 
 void MarkdownViewTab::hideImageFunc() {
     emit hideImage();
-
 }

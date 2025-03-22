@@ -64,12 +64,6 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     prisonerButton = new HoverButton("Prisoner", QIcon(":/icons/prisoner.png"), this);
     prisonerButton->setLayoutDirection(Qt::RightToLeft);
 
-    if (projectManager) {
-        qDebug() << "project manager in FictionViewTab";
-    } else {
-        qDebug() << "no project manager in FictionViewTab";
-    }
-
     // sniper button
     sniperButton = new HoverButton("Sniper", QIcon(":/icons/sniper.png"), this);
     sniperButton->setLayoutDirection(Qt::RightToLeft);
@@ -405,4 +399,12 @@ void FictionViewTab::resizeEvent(QResizeEvent *event) {
     
     // Update the textEdit's minimum width
     textEdit->setMinimumWidth(newMinWidth);
+}
+
+void FictionViewTab::showWikiFunc(const QString &wikiContent, QPoint lastMousePos) {
+    emit showWikiAt(wikiContent, lastMousePos);
+}
+
+void FictionViewTab::hideWikiFunc() {
+    emit hideWiki();
 }
