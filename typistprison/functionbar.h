@@ -69,6 +69,8 @@ private:
 
 public slots:
     void toggleMenuBar();
+    void closeMenuBar();
+    void expandMenuBar();
     void showPaintCornerWidget();
     void hidePaintCornerWidget();
     void showPaintLeftEdgeWidget();

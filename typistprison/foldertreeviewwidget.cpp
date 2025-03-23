@@ -143,17 +143,14 @@ void FolderTreeViewWidget::setupFileTree() {
     fileTreeView->setStyleSheet(
         "QTreeView { background-color: #1F2020; "
         "            border: none; "
-        "            color: #C7C8CC;}"
-        "QTreeView::item:hover { background-color: #3a424f; "
-        "                        color: #C7C8CC; "
+        "            color: #BDBDBD;}"
+        "QTreeView::item { border-radius: 4px;} "
+        "QTreeView::item:hover { background-color: #1F2020; "
+        "                        color: #FFFFFF; "
         "                        border: none;}"
-        "QTreeView::item:selected { background-color: #3a424f; "
-        "                           color: #ff9c87; "
+        "QTreeView::item:selected { background-color: #262626; "
+        "                           color: #FFFFFF; "
         "                           border: none;}"
-        "QLineEdit { background-color: #3a424f;"
-        "            color: #ff9c87;"
-        "            selection-background-color: #ff9c87;"
-        "            selection-color: #3a424f;}"
         "QScrollBar:vertical {"
         "    border: none;"
         "    background: transparent;"
@@ -429,27 +426,15 @@ void FolderTreeViewWidget::onDoubleClicked(const QModelIndex &index)
 }
 
 void FolderTreeViewWidget::refresh(const QString &newFolderRoot) {
-    // // Clean up existing resources to prevent memory leaks
-    // if (fileModel) {
-    //     delete fileModel;
-    //     fileModel = nullptr;
-    // }
     if (fileTreeView) {
         delete fileTreeView;
         fileTreeView = nullptr;
     }
-    // if (layout) {
-    //     delete layout;
-    //     layout = nullptr;
-    // }
 
     // Update folderRoot with the new path (if provided)
     if (!newFolderRoot.isEmpty()) {
         folderRoot = newFolderRoot;
     }
-
-    // // Reinitialize fileModel
-    // fileModel = new CustomFileSystemModel(this);
 
     fileTreeView = new QTreeView(this);
     CustomTreeStyle *customStyle = new CustomTreeStyle(":/icons/angle_right.png", ":/icons/angle_down.png");

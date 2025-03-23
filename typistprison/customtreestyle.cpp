@@ -55,4 +55,3 @@ void CustomTreeStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
     // Fallback to default style if not the branch indicator
     QProxyStyle::drawPrimitive(element, option, painter, widget);
 }
-

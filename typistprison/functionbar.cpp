@@ -66,7 +66,7 @@ void CustomTabBarWidget::setupToggleButton() {
     );
 
     // Connect the toggle button click to toggleMenuBar()
-    connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::toggleMenuBar);
+    connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::expandMenuBar, Qt::UniqueConnection);
 }
 
 void CustomTabBarWidget::onTabGainedAttention(int index) {
@@ -322,6 +322,7 @@ void CustomTabBarWidget::toggleMenuBar() {
     animation->setEasingCurve(QEasingCurve::OutCubic);
 
     if (isExpanded) {
+        qDebug() << "CustomTabBarWidget::toggleMenuBar isExpanded";
         // Collapse menu bar
         animation->setStartValue(requiredWidth);  // Expanded width
         animation->setEndValue(0);      // Collapsed width
@@ -333,7 +334,10 @@ void CustomTabBarWidget::toggleMenuBar() {
             "border-image: url(:/icons/toggle_menu.png) 0 0 0 0 stretch stretch;"
             "}"
         );
+        disconnect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::closeMenuBar);
+        connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::expandMenuBar, Qt::UniqueConnection);
     } else {
+        qDebug() << "CustomTabBarWidget::toggleMenuBar not isExpanded";
         // Expand menu bar
         animation->setStartValue(0);    // Collapsed width
         animation->setEndValue(requiredWidth);    // Expanded width
@@ -345,10 +349,28 @@ void CustomTabBarWidget::toggleMenuBar() {
             "border-image: url(:/icons/toggle_menu_back.png) 0 0 0 0 stretch stretch;"
             "}"
         );
+        disconnect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::expandMenuBar);
+        connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::closeMenuBar, Qt::UniqueConnection);
     }
 
     animation->start();
     isExpanded = !isExpanded;  // Toggle the expanded state
+}
+
+void CustomTabBarWidget::closeMenuBar() {
+    if (not isExpanded) {
+        return;
+    }
+    this->toggleMenuBar();
+    connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::expandMenuBar, Qt::UniqueConnection);
+}
+
+void CustomTabBarWidget::expandMenuBar() {
+    if (isExpanded) {
+        return;
+    }
+    this->toggleMenuBar();
+    connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::closeMenuBar, Qt::UniqueConnection);
 }
 
 QList<QPushButton*> CustomTabBarWidget::getAllButtons() const {

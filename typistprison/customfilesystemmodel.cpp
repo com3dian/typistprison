@@ -7,7 +7,8 @@ file system model for file tree panel
 CustomFileSystemModel::CustomFileSystemModel(QObject *parent)
     : QFileSystemModel(parent)  // Call the base class constructor
 {
-    // Any additional initialization can be done here if needed
+    // Initialize folder icons
+    folderIcon = QIcon(":/icons/folder.png");
 }
 
 /*
@@ -16,23 +17,12 @@ override data method to show different file type with unique color
 */
 QVariant CustomFileSystemModel::data(const QModelIndex &index, int role) const {
     if (role == Qt::ForegroundRole) {
-        QString fileName = QFileSystemModel::fileName(index);
-        
-        // Different colors for different file types
-        if (fileName.endsWith(".txt")) {
-            return QColor("#87CEEB");
-        } else if (fileName.endsWith(".md")) {
-            return QColor("#98FB98");
-        } else if (fileName.endsWith(".cell.txt")) {
-            return QColor("#DDA0DD");
-        } else if (!isDir(index)) {
-            return QColor("#B8B8B8");  // Gray color for other file types
-        }
+        return QColor("#BDBDBD");
     }
     else if (role == Qt::DecorationRole) {
         // Check if it's a directory first
         if (isDir(index)) {
-            return QIcon(":/icons/folder.png");
+            return folderIcon;
         }
         // Then handle files
         QString fileName = QFileSystemModel::fileName(index);

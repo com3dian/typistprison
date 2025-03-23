@@ -367,12 +367,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
     
     // Now, handle all mouse press events in the application
-    if (event->type() == QEvent::MouseButtonPress)
-    {
-        if (obj == button1 || obj == button2 || obj == menuToggleButton) {
-            return QWidget::eventFilter(obj, event);
-        }
-
+    if (event->type() == QEvent::MouseButtonPress) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
         
         // Convert the global position to the main window's coordinates.
@@ -382,6 +377,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             // If the drop-down frame is visible, handle it
             if (existingFrame && existingFrame->isVisible())
             {
+                if (obj == menuToggleButton) {
+                    return true;
+                }
                 // Convert mouse position to MainWindow coordinates
                 QPoint posInMainWindow = this->mapFromGlobal(mouseEvent->globalPos());
                 
@@ -390,10 +388,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     
                     return false;
                 }
+                
+                if (button1->geometry().contains(posInMainWindow) or button2->geometry().contains(posInMainWindow)) {
+                    return true;
+                }
 
                 emit mouseClick();
                 handleFocusLeaveMenuButton();
-                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
                 
             }
         }
@@ -430,7 +432,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
 
     // Set up the layout for the frame with no margins and spacing between buttons.
     QVBoxLayout *frameLayout = new QVBoxLayout(newFrame);
-    frameLayout->setContentsMargins(8, 4, 6, 6);
+    frameLayout->setContentsMargins(10, 4, 6, 6);
     frameLayout->setSpacing(0);
 
     #ifdef Q_OS_MAC
@@ -445,7 +447,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonNew, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
             setupUntitledTab();
         });
         
@@ -454,7 +456,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonOpen, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
             openFile("");
         });
         
@@ -463,7 +465,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonSave, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
             saveFile();
         });
 
@@ -471,7 +473,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonSearch, &QPushButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
             searchFile();
         });
         
@@ -491,7 +493,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonOpen, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::toggleMenuBar);
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
             openProject();
         });
         MenuButton *frameButtonSaveAll = new MenuButton("Save All", "", newFrame);
@@ -531,7 +533,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
     newFrame->setGraphicsEffect(shadow);
 
     connect(this, &MainWindow::mouseClick,
-        tabBarWidget, &CustomTabBarWidget::toggleMenuBar,
+        tabBarWidget, &CustomTabBarWidget::closeMenuBar,
         Qt::UniqueConnection);
 }
 
