@@ -37,8 +37,6 @@ void ProjectManager::readBannedWords(const QString selectedProjectRoot) {
     QDir directory(selectedProjectRoot);
     QStringList txtFiles = directory.entryList(QStringList() << "*.txt", QDir::Files);
 
-    qDebug() << "1. selectedProjectRoot" << selectedProjectRoot;
-
     // Step 2: Identify the file with the longest sequence of '*'
     QString bestFile;
     int maxStars = 0;
@@ -50,8 +48,6 @@ void ProjectManager::readBannedWords(const QString selectedProjectRoot) {
             bestFile = fileName;
         }
     }
-
-    qDebug() << "2. best file banned" << bestFile;
 
     // Step 3: Read the contents of the selected file
     if (!bestFile.isEmpty()) {
@@ -148,7 +144,6 @@ QString ProjectManager::matchBannedWords(QString text) {
         // update backspace
         backspace += utf8BannedWordLength - actualBannedWordLength;
     }
-    qDebug() << "match banned words 3";
     QString filteredText = QString::fromStdString(stdStringText); 
 
     return filteredText;
@@ -206,7 +201,6 @@ void ProjectManager::checkBannedWordsChanges() {
 
     // If this is the first time or the file has changed, update
     if (!haveBannedWordsFile || currentLines != bannedWordsLines) {
-        qDebug() << "Banned words file has changed, updating...";
         
         // Find removed lines
         std::vector<std::string> removedLines;
@@ -305,12 +299,10 @@ void ProjectManager::readWikiFiles(const QString& selectedProjectRoot) {
 
     // If still no .md files, do nothing
     if (mdFiles.isEmpty()) {
-        qDebug() << "No wiki files found.";
         haveWiki = false;
         return;
     }
 
-    qDebug() << "Found wiki files:" << mdFiles;
     haveWiki = true;
 
     // Process each markdown file
@@ -324,13 +316,10 @@ void ProjectManager::readWikiFiles(const QString& selectedProjectRoot) {
             // Parse the markdown content to extract titles and sections
             parseMarkdownContent(content, mdFile);
             
-            qDebug() << "Processed file:" << mdFile;
         } else {
             qWarning() << "Could not open file:" << mdFile;
         }
     }
-    
-    qDebug() << "Total wiki sections extracted:" << wikiContentMap.size();
     
     // **Loop over `wikiContentMap` and insert section names into the Trie**
     int index = 0;
@@ -383,7 +372,6 @@ void ProjectManager::parseMarkdownContent(const QString& content, const QString&
         QRegularExpressionMatch match = titleRegex.match(line);
         
         if (match.hasMatch()) {
-            qDebug() << "Found title:" << line;
             // Extract the new title and its level
             QString hashMarks = match.captured(1);
             newTitleLevel = hashMarks.length() - 1;
@@ -397,8 +385,14 @@ void ProjectManager::parseMarkdownContent(const QString& content, const QString&
                     currentContents[j] = currentContents[j].trimmed();
 
                     // Store the title and content in the map
-                    QString mapKey = filePath + "::" + currentTitles[j];
-                    wikiContentMap[mapKey] = currentContents[j];
+                    QString mapKey = currentTitles[j];
+                    if (wikiContentMap.contains(mapKey)) {
+                        // If key exists, append the new content
+                        wikiContentMap[mapKey] = wikiContentMap[mapKey] + "\n" + currentContents[j];
+                    } else {
+                        // If key doesn't exist, create new entry
+                        wikiContentMap[mapKey] = currentContents[j];
+                    }
                     
                     // Clear the title and content for this level
                     currentTitles[j].clear();
@@ -435,7 +429,13 @@ void ProjectManager::parseMarkdownContent(const QString& content, const QString&
             // QString mapKey = filePath + "::" + currentTitles[j];
             QString mapKey = currentTitles[j];
 
-            wikiContentMap[mapKey] = currentContents[j];
+            if (wikiContentMap.contains(mapKey)) {
+                // If key exists, append the new content
+                wikiContentMap[mapKey] = wikiContentMap[mapKey] + "\n" + currentContents[j];
+            } else {
+                // If key doesn't exist, create new entry
+                wikiContentMap[mapKey] = currentContents[j];
+            }
         }
     }
 }
@@ -444,16 +444,13 @@ void ProjectManager::parseMarkdownContent(const QString& content, const QString&
 
 void ProjectManager::printWikiContent() {
     if (!haveWiki || wikiContentMap.isEmpty()) {
-        qDebug() << "No wiki content available to print.";
         return;
     }
-
-    qDebug() << "=== Wiki Content Map ===";
-    qDebug() << "Total sections:" << wikiContentMap.size();
     
+    qDebug() << "=== Wiki Content Debug ===";
     // Iterate through all keys in the map
     for (auto it = wikiContentMap.constBegin(); it != wikiContentMap.constEnd(); ++it) {
-        qDebug() << "---";
+        // Print the key
         qDebug() << "Key:" << it.key();
         
         // Print a preview of the content (first 100 chars)
@@ -461,16 +458,16 @@ void ProjectManager::printWikiContent() {
         if (contentPreview.length() > 100) {
             contentPreview = contentPreview.left(100) + "...";
         }
-        qDebug() << "Content preview:" << contentPreview;
+        qDebug() << "Content:" << contentPreview;
+        qDebug() << "-------------------";
     }
-    qDebug() << "=== End of Wiki Content Map ===";
+    qDebug() << "=== End Wiki Debug ===";
 }
 
 QMap<QString, QList<QPair<int, QString>>> ProjectManager::matchWikiContent(const QString& text) {
     QMap<QString, QList<QPair<int, QString>>> matches;
 
     if (!haveWiki || wikiContentMap.isEmpty()) {
-        qDebug() << "No wiki content available for search.";
         return matches;
     }
 
@@ -504,4 +501,18 @@ QMap<QString, QList<QPair<int, QString>>> ProjectManager::matchWikiContent(const
 
     qDebug() << "Total sections with matches:" << matches.size();
     return matches;
+}
+
+QString ProjectManager::getContentByKeys(QList<QString> matchedWikiKeys) {
+    QString content;
+    
+    // Check if we have any wiki content
+    if (!haveWiki || wikiContentMap.isEmpty()) {
+        return content;
+    }
+    
+    for (const auto& wikiKey : matchedWikiKeys) {
+        content += "--------------------------\n" + wikiContentMap[wikiKey];
+    }
+    return content;
 }

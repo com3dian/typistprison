@@ -914,10 +914,12 @@ void FictionTextEdit::readBlock() {
     
     // Get the block's position in document coordinates
     QPointF blockPos = document()->documentLayout()->blockBoundingRect(block).topLeft();
-    
+    QList<QString> matchedWikiKeys;
+
     // Iterate through the matches
     for (const QString& wikiKey : matches.keys()) {
         const QList<QPair<int, QString>>& matchesList = matches[wikiKey];
+        
         
         for (const QPair<int, QString>& match : matchesList) {
             int startPos = match.first;
@@ -928,26 +930,31 @@ void FictionTextEdit::readBlock() {
             QVector<QRectF> rects;
             for (int pos = startPos; pos < endPos; ++pos) {
                 // Get the line containing this character
-                QTextLine line = layout->lineForTextPosition(pos - block.position());
+                QTextLine line = layout->lineForTextPosition(pos);
                 if (!line.isValid()) continue;
 
                 // Get x-position for this character
-                int relativePos = pos - block.position();
+                int relativePos = pos;
                 int lineStartPos = line.textStart();
-                // int posInLine = relativePos - lineStartPos;
-                int posInLine = relativePos;
+                int posInLine = relativePos - lineStartPos;
                 
                 // Skip if position is invalid
-                // if (posInLine < 0 || posInLine >= line.textLength()) continue;
+                if (posInLine < 0 || posInLine >= line.textLength()) continue;
 
-                qreal x = line.cursorToX(posInLine);
+                // Get the block's left margin from its format
+                qreal leftMargin = block.blockFormat().leftMargin();
+
+                // Get x-position including margin
+                qreal x = line.cursorToX(relativePos);
                 qreal nextX;
                 
-                // If this is the last character in the line, use the right edge
+                // Get the right edge of the current character
                 if (posInLine + 1 >= line.textLength()) {
-                    nextX = line.naturalTextWidth();
+                    // For the last character in line, use the line's natural width plus margin
+                    nextX = line.naturalTextWidth() + leftMargin;
                 } else {
-                    nextX = line.cursorToX(posInLine + 1);
+                    // For all other characters, use the next character's position plus margin
+                    nextX = line.cursorToX(relativePos + 1);
                 }
                 qDebug() << "-x" << x << "-nextX" << nextX;
                 // Create rectangle for this character
@@ -989,17 +996,18 @@ void FictionTextEdit::readBlock() {
                 QRectF hitRect = adjustedRect.adjusted(-5, -5, 5, 5);
                 
                 if (hitRect.contains(lastMousePos)) {
-                    qDebug() << "Mouse is directly over the matched text!";
-                    qDebug() << "Match found:" << matchedText;
-                    qDebug() << "Wiki Key:" << wikiKey;
-                    qDebug() << "Text Rectangle:" << adjustedRect;
-                    qDebug() << "Mouse Position:" << lastMousePos;
+                    matchedWikiKeys.append(wikiKey);
                     
-                    // Here you can trigger your tooltip or other UI elements
-                    break;
                 }
             }
-            
         }
     }
+    // Here you can trigger your tooltip or other UI elements
+    QString fullMatchedContent = projectManager->getContentByKeys(matchedWikiKeys);
+    qDebug() << fullMatchedContent;
+    if (fullMatchedContent.isEmpty()) {
+        return;
+    }
+    QPoint globalPos = mapToGlobal(lastMousePos);
+    emit showWikiAt(fullMatchedContent, globalPos);
 }

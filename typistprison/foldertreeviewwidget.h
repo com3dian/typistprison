@@ -5,6 +5,9 @@
 #include <QFileSystemModel>
 #include <QTreeView>
 #include <QVBoxLayout>
+#include <QGraphicsDropShadowEffect>
+
+#include "utils/rightsideindicatordelegate.h"
 
 class FolderTreeViewWidget : public QWidget {
     Q_OBJECT

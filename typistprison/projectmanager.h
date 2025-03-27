@@ -23,6 +23,7 @@ public:
     void parseMarkdownContent(const QString& content, const QString& filePath);
     void printWikiContent(); // New method to print wiki content
     QMap<QString, QList<QPair<int, QString>>> matchWikiContent(const QString& keyword);
+    QString getContentByKeys(QList<QString> matchedWikiKeys);
 
     // Variables
     bool haveBannedWordsFile;

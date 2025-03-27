@@ -17,7 +17,6 @@
 #include <QPainter>
 #include <QPalette>
 #include <QTextEdit>
-#include <QTextBlock>
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QTextBlockFormat>

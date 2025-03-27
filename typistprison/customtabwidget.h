@@ -31,6 +31,8 @@ public slots:
     void handleFileRenamed(const QString &originalFilePath, const QString &newFilePath);
     void showImageAt(const QString &imagePath, QPoint lastMousePos);
     void hideImage();
+    void showWikiAt(const QString &wikiContent, QPoint lastMousePos);
+    void hideWiki();
 
 private:
     int untitledCount;
@@ -56,6 +58,8 @@ signals:
     void updatedTabTitleSignal(int currentIndex, QString newTitle);
     void showImageAtSignal(const QString &imagePath, QPoint lastMousePos);
     void hideImageSignal();
+    void showWikiAtSignal(const QString &imagePath, QPoint lastMousePos);
+    void hideWikiSignal();
 
 };
 

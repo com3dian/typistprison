@@ -1915,7 +1915,6 @@ void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void QMarkdownTextEdit::readBlock() {
-    qDebug() << "lastMousePos" << lastMousePos;
     QTextCursor cursor = cursorForPosition(lastMousePos);
     QTextBlock block = cursor.block();
     QString blockText = block.text();

@@ -51,7 +51,7 @@ void PrisonerFictionTextEdit::keyPressEvent(QKeyEvent *event)
                 return;
             }
         } else if (event->key() == Qt::Key_Escape) {
-            qDebug() << "escapeing!";
+            qDebug() << "escaping!";
             emit onEscape();
         }
         // // QTextEdit::keyPressEvent(event);

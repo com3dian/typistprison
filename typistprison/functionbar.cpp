@@ -140,10 +140,8 @@ void CustomTabBarWidget::onTabInserted(int index, const QString &label) {
 }
 
 void CustomTabBarWidget::onTabClosedFromSyncedWidget(int index) {
-    qDebug() << "onTabClosedFromSyncedWidget =================================";
     if (syncedTabWidget) {
         syncedTabWidget->blockSignals(true);
-        qDebug() << "onTabClosedFromSyncedWidget =================================  index" << index;
 
         if (index >= 0 && index < tabBar->count()) {
             qDebug() << "onTabClosedFromSyncedWidget =================================  count()" << tabBar->count();

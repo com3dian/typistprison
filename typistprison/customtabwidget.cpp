@@ -95,6 +95,10 @@ void CustomTabWidget::createNewTab(const QString &filePath,
         newTab = new FictionViewTab(content, filePath, this, false, projectManager);
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType,
                 this, &CustomTabWidget::updateFileType);
+        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::showWikiAt,
+                this, &CustomTabWidget::showWikiAt);
+        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::hideWiki,
+                this, &CustomTabWidget::hideWiki);
 
     } else if (tabName.endsWith(".md")) {
         newTab = new MarkdownViewTab(content, filePath, this);
@@ -135,6 +139,16 @@ void CustomTabWidget::showImageAt(const QString &imagePath, QPoint lastMousePos)
 
 void CustomTabWidget::hideImage() {
     emit hideImageSignal();
+}
+
+void CustomTabWidget::showWikiAt(const QString &imagePath, QPoint lastMousePos) {
+    qDebug() << "show wiki at function incustomtabwidget" ;
+    emit showWikiAtSignal(imagePath, lastMousePos);
+    qDebug() << "show wiki at function incustomtabwidget" ;
+}
+
+void CustomTabWidget::hideWiki() {
+    emit hideWikiSignal();
 }
 
 void CustomTabWidget::switchToFictionView() {

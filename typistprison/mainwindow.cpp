@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     , untitledCount(1)
     , previousSplitterPosition(0.166)
     , imageFrame(nullptr)
+    , wikiFrame(nullptr)
 {
     projectManager = new ProjectManager();
     ui->setupUi(this);
@@ -112,6 +113,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(customTabWidget, &CustomTabWidget::lastTabClosed, this, &MainWindow::onLastTabClosed);
     connect(customTabWidget, &CustomTabWidget::showImageAtSignal, this, &MainWindow::showMarkdownImage);
     connect(customTabWidget, &CustomTabWidget::hideImageSignal, this, &MainWindow::hideMarkdownImage);
+    connect(customTabWidget, &CustomTabWidget::showWikiAtSignal, this, &MainWindow::showWiki);
+    connect(customTabWidget, &CustomTabWidget::hideWikiSignal, this, &MainWindow::hideWiki);
 
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
     connect(folderTreeView, &FolderTreeViewWidget::fileDeleted, customTabWidget, &CustomTabWidget::handleFileDeleted);
@@ -564,8 +567,7 @@ void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos
         imageFrame->resize(frameSize);
 
         // Adjust position relative to the mouse or reference point
-        QPoint popupPos = this->mapFromGlobal(lastMousePos);
-        qDebug() << "popupPos: " << popupPos;
+        QPoint popupPos = this->mapFromGlobal(lastMousePos) + QPoint(0, 0);
         imageFrame->move(popupPos);
 
         // Create and configure the drop shadow effect
@@ -586,5 +588,47 @@ void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos
 void MainWindow::hideMarkdownImage() {
     if (imageFrame) {
         imageFrame->hide();  // Hide the frame
+    }
+}
+
+void MainWindow::showWiki(const QString &wikiContent, QPoint lastMousePos) {
+    // Create WikiFrame if it doesn't exist
+    if (!wikiFrame) {
+        wikiFrame = new WikiFrame(this);
+    }
+
+    // Set the wiki content
+    wikiFrame->setContent(wikiContent);
+
+    // Position the frame relative to the mouse position with offset
+    QPoint popupPos = this->mapFromGlobal(lastMousePos);
+
+    // Ensure the frame stays within window bounds
+    QSize frameSize = wikiFrame->size();
+    QSize windowSize = this->size();
+
+    // Adjust x-coordinate if needed
+    if (popupPos.x() + frameSize.width() > windowSize.width()) {
+        popupPos.setX(windowSize.width() - frameSize.width());
+    }
+    if (popupPos.x() < 0) {
+        popupPos.setX(0);
+    }
+
+    // Adjust y-coordinate if needed
+    if (popupPos.y() + frameSize.height() > windowSize.height()) {
+        popupPos.setY(windowSize.height() - frameSize.height());
+    }
+    if (popupPos.y() < 0) {
+        popupPos.setY(0);
+    }
+
+    wikiFrame->move(popupPos);
+    wikiFrame->show();
+}
+
+void MainWindow::hideWiki() {
+    if (wikiFrame) {
+        wikiFrame->hide();
     }
 }

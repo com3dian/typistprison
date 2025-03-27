@@ -24,7 +24,6 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
     // Initialize fileModel with the custom file system model
     fileModel = new CustomFileSystemModel(this);
     fileModel->setRootPath(folderRoot);
-    qDebug() << "folderRoot refreshed ========================= " << folderRoot;
 
     // Initialize layout and fileTreeView
     layout = new QVBoxLayout(this);
@@ -141,16 +140,25 @@ void FolderTreeViewWidget::setupFileTree() {
 
     // Customize the appearance of the file tree view
     fileTreeView->setStyleSheet(
-        "QTreeView { background-color: #1F2020; "
-        "            border: none; "
-        "            color: #BDBDBD;}"
-        "QTreeView::item { border-radius: 4px;} "
-        "QTreeView::item:hover { background-color: #1F2020; "
-        "                        color: #FFFFFF; "
-        "                        border: none;}"
-        "QTreeView::item:selected { background-color: #262626; "
-        "                           color: #FFFFFF; "
-        "                           border: none;}"
+        "QTreeView { "
+        "    background-color: #1F2020; "
+        "    border: none; "
+        "    color: #BDBDBD;"
+        "}"
+        "QTreeView::item { "
+        "    border: none; "
+        "    border-radius: 0px; "
+        "    padding: 0px; "
+        "    margin: 0px; " // Add a small margin to prevent overlapping
+        "}"
+        "QTreeView::item:hover { "
+        "    background-color: #1F2020; "
+        "    color: #FFFFFF; "
+        "}"
+        "QTreeView::item:selected { "
+        "    background-color: #1F2020; " //#262626
+        "    color: #84e0a5; "
+        "}"
         "QScrollBar:vertical {"
         "    border: none;"
         "    background: transparent;"
@@ -197,6 +205,34 @@ void FolderTreeViewWidget::toggleFileTreeView() {
 void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
     // Create a context menu
     QMenu contextMenu(this);
+    
+    // Set custom style for the context menu
+    contextMenu.setStyleSheet(
+        "QMenu {"
+        "    background-color: #2D2D2D;"  // Dark background color
+        "    border-radius: 8px;"         // Rounded corners
+        "    padding: 0px;"
+        "    border: 0px solid #3D3D3D;"  // Subtle border
+        "}"
+        "QMenu::item {"
+        "    background-color: transparent;"
+        "    padding: 2px 20px;"
+        "    border-radius: 4px;"
+        "    color: #BDBDBD;"             // White text
+        "    margin: 2px;"
+        "}"
+        "QMenu::item:selected {"
+        "    color: #FFFFFF;"  // Slightly lighter background for hover
+        "}"
+    );
+    // Create and configure the drop shadow effect
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
+    shadow->setBlurRadius(24);   // Increase for a softer, larger shadow
+    shadow->setColor(QColor("#1F2020")); // Shadow color
+    shadow->setOffset(0, 0);     // Zero offset to get shadow on all sides
+
+    // Apply the effect to your frame
+    contextMenu.setGraphicsEffect(shadow);
 
     // Get the index of the item that was clicked
     QModelIndex index = fileTreeView->indexAt(point);
@@ -215,7 +251,6 @@ void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
 
         // Show the context menu at the cursor's global position
         QAction *selectedAction = contextMenu.exec(QCursor::pos());
-
 
         // Handle the action triggered
         if (selectedAction == deleteActionFolder) {

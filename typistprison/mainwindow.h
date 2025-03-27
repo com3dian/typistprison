@@ -27,7 +27,9 @@
 #include "basetextedittab.h"
 #include "searchWidget.h"
 #include "popups/imageframe.h"
+#include "popups/wikiframe.h"
 #include "functionbar/menubutton.h"
+#include "qmarkdowntextedit.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -51,6 +53,8 @@ public slots:
     void saveProject();
     void showMarkdownImage(const QString &imagePath, QPoint pos);
     void hideMarkdownImage();
+    void showWiki(const QString &wikiContent, QPoint lastMousePos);
+    void hideWiki();
 
 private:
     Ui::MainWindow *ui;
@@ -68,6 +72,7 @@ private:
     CustomTabBarWidget *tabBarWidget;
     ImageFrame *imageFrame;
     QLabel *imageLabel;
+    WikiFrame *wikiFrame;
 
     void setupUntitledTab();
     void setupMenuButtons(CustomTabBarWidget *tabBarWidget);

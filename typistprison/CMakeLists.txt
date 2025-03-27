@@ -75,6 +75,8 @@ set(PROJECT_SOURCES
     popups/imagepopup.cpp
     popups/imagepopup.h
     popups/imageframe.h
+    popups/wikiframe.h
+    popups/wikiframe.cpp
     ${TS_FILES}
 )
 

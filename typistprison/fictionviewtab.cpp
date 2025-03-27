@@ -99,14 +99,14 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // bottomLeftSpacer->setMaxWidth(160);
     QWidget *spacerWidgetLeft = new QWidget();
     spacerWidgetLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
+    // spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
     // spacerWidgetLeft->setMinimumWidth(10);
 
     // add stupid fucking word count
     QLayout *spaceAndCounterLayout = new QVBoxLayout();
     QWidget *spaceAndCounterWidget = new QWidget(this);
     spaceAndCounterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    spaceAndCounterWidget->setMaximumWidth(320);
+    // spaceAndCounterWidget->setMaximumWidth(320);
     // spaceAndCounterWidget->setMinimumWidth(10);
 
     spaceAndCounterLayout->setSpacing(0);
@@ -155,6 +155,8 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     connect(searchWidget, &SearchWidget::onClear, textEdit, &FictionTextEdit::clearSearch);
     connect(searchWidget, &SearchWidget::onSearchPrev, textEdit, &FictionTextEdit::searchPrev);
     connect(textEdit, &FictionTextEdit::textChanged, this, &FictionViewTab::updateWordcount);
+    connect(textEdit, &FictionTextEdit::showWikiAt, this, &FictionViewTab::showWikiFunc);
+    connect(textEdit, &FictionTextEdit::hideWiki, this, &FictionViewTab::hideWikiFunc);
 
     if (isPrisoner) {
         // // Connect signals unique to PrisonerTextEdit
