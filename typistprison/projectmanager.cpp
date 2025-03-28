@@ -471,6 +471,23 @@ QMap<QString, QList<QPair<int, QString>>> ProjectManager::matchWikiContent(const
         return matches;
     }
 
+    // Create a mapping from UTF-8 positions to QString positions
+    QByteArray utf8Text = text.toUtf8();
+    QVector<int> positionMap;
+    positionMap.reserve(utf8Text.size() + 1);
+    
+    // Build the position mapping
+    int qstringPos = 0;
+    for (int i = 0; i < text.length(); ++i) {
+        QByteArray charUtf8 = text.mid(i, 1).toUtf8();
+        for (int j = 0; j < charUtf8.size(); ++j) {
+            positionMap.append(i);
+        }
+        qstringPos++;
+    }
+    // Add one more for the end position
+    positionMap.append(text.length());
+    
     // Convert QString to std::string for AhoCorasick
     std::string stdStringText = text.toStdString();
     
@@ -480,15 +497,21 @@ QMap<QString, QList<QPair<int, QString>>> ProjectManager::matchWikiContent(const
     // Process matches
     for (const auto& match : trieMatches) {
         int patternIndex = match.first;  // Index of the matched pattern
-        int position = match.second;     // Position in the text where match ends
+        int utf8Position = match.second;  // Position in the UTF-8 text where match ends
+        
+        // Map the UTF-8 position back to QString position
+        int qstringPosition = (utf8Position < positionMap.size()) ? positionMap[utf8Position] : text.length() - 1;
         
         // Get the wiki content key from the pattern index
         QString wikiKey = wikiContentMap.keys()[patternIndex];
         
         // Get the matched text
-        QString matchedText = QString::fromStdString(wikiContentMap.keys()[patternIndex].toStdString());
+        QString matchedText = wikiContentMap.keys()[patternIndex];
         int matchLength = matchedText.length();
-        int startPos = position - matchLength + 1;
+        int startPos = qstringPosition - matchLength + 1;
+        
+        // Ensure startPos is not negative
+        startPos = qMax(0, startPos);
         
         // If this section doesn't have a list yet, create one
         if (!matches.contains(wikiKey)) {

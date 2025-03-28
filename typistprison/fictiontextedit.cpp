@@ -918,6 +918,10 @@ void FictionTextEdit::readBlock() {
 
     // Iterate through the matches
     for (const QString& wikiKey : matches.keys()) {
+        qDebug() << "wikiKey: " << wikiKey;
+        qDebug() << "matches[wikiKey]: " << matches[wikiKey];
+        qDebug() << "matches[wikiKey].size(): " << matches[wikiKey].size();
+        qDebug() << "matches[wikiKey][0].first: " << matches[wikiKey][0].first;
         const QList<QPair<int, QString>>& matchesList = matches[wikiKey];
         
         
@@ -925,6 +929,9 @@ void FictionTextEdit::readBlock() {
             int startPos = match.first;
             QString matchedText = match.second;
             int endPos = startPos + matchedText.length();
+            qDebug() << "startPos: " << startPos;
+            qDebug() << "matchedText: " << matchedText;
+            qDebug() << "endPos: " << endPos;
             
             // Iterate through each character in the matched text
             QVector<QRectF> rects;
