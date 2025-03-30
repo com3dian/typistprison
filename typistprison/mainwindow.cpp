@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 
+// Add this to your MainWindow constructor initialization list
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -8,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     , previousSplitterPosition(0.166)
     , imageFrame(nullptr)
     , wikiFrame(nullptr)
+    , contextMenuFrame(nullptr)
 {
     projectManager = new ProjectManager();
     ui->setupUi(this);
@@ -119,6 +121,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
     connect(folderTreeView, &FolderTreeViewWidget::fileDeleted, customTabWidget, &CustomTabWidget::handleFileDeleted);
     connect(folderTreeView, &FolderTreeViewWidget::fileRenamed, customTabWidget, &CustomTabWidget::handleFileRenamed);
+    connect(folderTreeView, &FolderTreeViewWidget::showContextMenuInMainWindow, this, &MainWindow::showContextMenu);
 
     // set up side panel button
     sidePanelButton->setEnabled(false);
@@ -378,8 +381,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         if (this->rect().contains(posInMainWindow))
         {
             // If the drop-down frame is visible, handle it
-            if (existingFrame && existingFrame->isVisible())
-            {
+            if (existingFrame && existingFrame->isVisible()) {
                 if (obj == menuToggleButton) {
                     return true;
                 }
@@ -400,6 +402,15 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 handleFocusLeaveMenuButton();
                 disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
                 
+            }
+            if (contextMenuFrame && contextMenuFrame->isVisible()) {
+                QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+                QPoint posInMainWindow = this->mapFromGlobal(mouseEvent->globalPos());
+                
+                if (!contextMenuFrame->geometry().contains(posInMainWindow)) {
+                    contextMenuFrame->hide();
+                    return true;
+                }
             }
         }
     }
@@ -631,4 +642,95 @@ void MainWindow::hideWiki() {
     if (wikiFrame) {
         wikiFrame->hide();
     }
+}
+
+// Add these methods to MainWindow class
+void MainWindow::showContextMenu(const QStringList &options, const QModelIndex &index, bool isDir) {
+    // Store the index and type for later use
+    currentContextMenuIndex = index;
+    isContextMenuForDir = isDir;
+    
+    // Create a frame for the context menu if it doesn't exist
+    if (!contextMenuFrame) {
+        contextMenuFrame = new QFrame(this);
+        contextMenuFrame->setFrameShape(QFrame::NoFrame);
+        contextMenuFrame->setStyleSheet(
+            "QFrame {"
+            "    background-color: #2c2c2c;"
+            "    border-radius: 4px;"
+            "    padding: 4px 4px 6px 4px;"
+            "    border: 0px solid #1F2020;"
+            "}"
+            "QPushButton {"
+            "    background-color: transparent;"  // Explicitly transparent
+            "    padding: 2px 24px 2px 7px;"
+            "    color: #BDBDBD;"
+            "    text-align: left;"
+            "    margin: 0px;"
+            "    border: none;"  // Remove any default borders
+            "}"
+            "QPushButton:hover {"
+            "    color: #FFFFFF;"
+            "    background-color: transparent;"  // Keep transparent on hover
+            "}"
+        );
+        
+        // Add drop shadow effect
+        QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
+        shadow->setBlurRadius(24);
+        shadow->setColor(QColor("#1F2020"));
+        shadow->setOffset(0, 0);
+        contextMenuFrame->setGraphicsEffect(shadow);
+    }
+    
+    // Clear any existing layout
+    if (contextMenuFrame->layout()) {
+        QLayoutItem *item;
+        while ((item = contextMenuFrame->layout()->takeAt(0)) != nullptr) {
+            if (item->widget()) {
+                item->widget()->deleteLater();
+            }
+            delete item;
+        }
+        delete contextMenuFrame->layout();
+    }
+    
+    // Create a new layout
+    QVBoxLayout *layout = new QVBoxLayout(contextMenuFrame);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(0);
+    
+    // Add buttons for each option
+    for (const QString &option : options) {
+        QPushButton *button = new QPushButton(option, contextMenuFrame);
+        button->setCursor(Qt::PointingHandCursor);
+        connect(button, &QPushButton::clicked, this, [this, option]() {
+            handleContextMenuSelection(option);
+        });
+        layout->addWidget(button);
+    }
+    
+    // Position the frame at the cursor position
+    QPoint pos = this->mapFromGlobal(QCursor::pos());
+    contextMenuFrame->move(pos);
+    
+    // Size the frame appropriately
+    contextMenuFrame->adjustSize();
+    
+    // Show the frame
+    contextMenuFrame->raise();
+    contextMenuFrame->show();
+    
+    // Install event filter to close the menu when clicked outside
+    qApp->installEventFilter(this);
+}
+
+void MainWindow::handleContextMenuSelection(const QString &action) {
+    // Hide the context menu frame
+    if (contextMenuFrame) {
+        contextMenuFrame->hide();
+    }
+    
+    // Forward the action to the folder tree view
+    folderTreeView->handleContextMenuAction(action, currentContextMenuIndex, isContextMenuForDir);
 }

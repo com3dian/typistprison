@@ -56,6 +56,9 @@ public slots:
     void showWiki(const QString &wikiContent, QPoint lastMousePos);
     void hideWiki();
 
+private slots:
+    void showContextMenu(const QStringList &options, const QModelIndex &index, bool isDir);
+    void handleContextMenuSelection(const QString &action);
 private:
     Ui::MainWindow *ui;
     int untitledCount;
@@ -73,6 +76,9 @@ private:
     ImageFrame *imageFrame;
     QLabel *imageLabel;
     WikiFrame *wikiFrame;
+    QFrame *contextMenuFrame;
+    QModelIndex currentContextMenuIndex;
+    bool isContextMenuForDir;
 
     void setupUntitledTab();
     void setupMenuButtons(CustomTabBarWidget *tabBarWidget);

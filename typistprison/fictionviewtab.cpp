@@ -334,6 +334,14 @@ void FictionViewTab::updateWordcount() {
 }
 
 void FictionViewTab::activatePrisonerMode() {
+    // create a dialog for setting goal and time limit
+    // if user click cancel, do nothing
+    // if user click ok, save the content and activate prisoner mode
+    if (saveContent()) {
+        
+    }
+
+
     // new FictionViewTab
     qDebug() << "activate prisoner mode";
     QString content = textEdit->toPlainText();

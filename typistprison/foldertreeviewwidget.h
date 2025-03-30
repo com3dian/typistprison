@@ -6,8 +6,7 @@
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QGraphicsDropShadowEffect>
-
-#include "utils/rightsideindicatordelegate.h"
+#include <QCursor>
 
 class FolderTreeViewWidget : public QWidget {
     Q_OBJECT
@@ -16,11 +15,13 @@ public:
     explicit FolderTreeViewWidget(QWidget *parent = nullptr, const QString folderRoot = "");  // Constructor
     void toggleFileTreeView();
     void refresh(const QString &newFolderRoot);
+    void handleContextMenuAction(const QString &action, const QModelIndex &index, bool isDir);
 
 signals:
+    void showContextMenuInMainWindow(const QStringList &options, const QModelIndex &index, bool isDir);
+    void doubleClickedOnFile(const QString &filePath);
     void fileDeleted(const QString &filePath);
     void fileRenamed(const QString &originalFilePath, const QString &newFilePath);
-    void doubleClickedOnFile(const QString &filePath);
 
 private:
     void setupFileTree();           // Function to set up the file tree

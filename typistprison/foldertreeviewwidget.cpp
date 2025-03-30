@@ -159,6 +159,18 @@ void FolderTreeViewWidget::setupFileTree() {
         "    background-color: #1F2020; " //#262626
         "    color: #84e0a5; "
         "}"
+        "QTreeView QLineEdit { "              // Editor widget styling
+        "    background-color: #2c2c2c; "
+        "    color: #FFFFFF; "
+        "    border: 1px solid #2c2c2c; "
+        "    border-radius: 4px; "
+        "    padding: 0px 5px; "
+        "    selection-background-color: #84e0a5; "  // Selection color
+        "    selection-color: #2c2c2c; "
+        "}"
+        "QTreeView QLineEdit:focus { "
+        "    border: 1px solid #2c2c2c; "    // Accent color for focus state
+        "}"
         "QScrollBar:vertical {"
         "    border: none;"
         "    background: transparent;"
@@ -203,37 +215,10 @@ void FolderTreeViewWidget::toggleFileTreeView() {
 }
 
 void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
-    // Create a context menu
-    QMenu contextMenu(this);
-    
-    // Set custom style for the context menu
-    contextMenu.setStyleSheet(
-        "QMenu {"
-        "    background-color: #2D2D2D;"  // Dark background color
-        "    border-radius: 8px;"         // Rounded corners
-        "    padding: 0px;"
-        "    border: 0px solid #3D3D3D;"  // Subtle border
-        "}"
-        "QMenu::item {"
-        "    background-color: transparent;"
-        "    padding: 2px 20px;"
-        "    border-radius: 4px;"
-        "    color: #BDBDBD;"             // White text
-        "    margin: 2px;"
-        "}"
-        "QMenu::item:selected {"
-        "    color: #FFFFFF;"  // Slightly lighter background for hover
-        "}"
-    );
-    // Create and configure the drop shadow effect
-    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
-    shadow->setBlurRadius(24);   // Increase for a softer, larger shadow
-    shadow->setColor(QColor("#1F2020")); // Shadow color
-    shadow->setOffset(0, 0);     // Zero offset to get shadow on all sides
-
-    // Apply the effect to your frame
-    contextMenu.setGraphicsEffect(shadow);
-
+    //  get the range of the clicked item
+    QRect widgetRect = this->rect();
+    qDebug() << "Widget area:" << widgetRect;
+    qDebug() << "Custom context menu requested at:" << point;
     // Get the index of the item that was clicked
     QModelIndex index = fileTreeView->indexAt(point);
 
@@ -241,64 +226,52 @@ void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
         return;  // If no valid item was clicked, return
     }
 
-    if (fileModel->isDir(fileTreeView->currentIndex())) {
-        // Add actions to the menu
-        QAction *deleteActionFolder = contextMenu.addAction("Delete");
-        // rename folder action
-        QAction *renameActionFolder = contextMenu.addAction("Rename");
-        QAction *newFileActionFolder = contextMenu.addAction("New file");
-        QAction *copyPathActionFolder = contextMenu.addAction("Copy Path");
+    // Use the clicked index instead of currentIndex()
+    bool isDir = fileModel->isDir(index);
+    QStringList menuOptions;
+    
+    if (isDir) {
+        // Directory options
+        menuOptions << "Delete" << "Rename" << "New file" << "Copy Path";
+    } else {
+        // File options
+        menuOptions << "Open" << "Delete" << "Rename" << "Copy Path";
+    }
+    
+    emit showContextMenuInMainWindow(menuOptions, index, isDir);
+}
 
-        // Show the context menu at the cursor's global position
-        QAction *selectedAction = contextMenu.exec(QCursor::pos());
-
-        // Handle the action triggered
-        if (selectedAction == deleteActionFolder) {
-            // Delete the folder
+// Add these methods to handle the action selected from MainWindow
+void FolderTreeViewWidget::handleContextMenuAction(const QString &action, const QModelIndex &index, bool isDir) {
+    if (isDir) {
+        // Handle directory actions
+        if (action == "Delete") {
             QFileInfo fileInfo(fileModel->filePath(index));
             auto answer = QMessageBox::question(nullptr, "Confirm Delete", 
-                                      "Are you sure you want to delete '" + fileInfo.fileName() + "'?",
-                                      QMessageBox::Yes | QMessageBox::No);
+                                  "Are you sure you want to delete '" + fileInfo.fileName() + "'?",
+                                  QMessageBox::Yes | QMessageBox::No);
             if (answer == QMessageBox::Yes) {
                 QDir dir(fileInfo.filePath());
                 if (!dir.removeRecursively()) {
                     QMessageBox::critical(nullptr, "Error", "Failed to delete directory");
                 }
             }
-
-        } else if (selectedAction == renameActionFolder) {
-            // Rename the folder
+        } else if (action == "Rename") {
             fileTreeView->edit(index);
-
-        } else if (selectedAction == newFileActionFolder) {
-            // new file
+        } else if (action == "New file") {
             QString dirPath = fileModel->filePath(index);
             this->addFile(dirPath);
-
-        } else if (selectedAction == copyPathActionFolder) {
-            // copy the path
+        } else if (action == "Copy Path") {
             QString dirPath = fileModel->filePath(index);
             QClipboard *clipboard = QGuiApplication::clipboard();
             clipboard->setText(dirPath);
         }
     } else {
-        QAction *openActionFile = contextMenu.addAction("Open");
-        QAction *deleteActionFile = contextMenu.addAction("Delete");
-        QAction *renameActionFile = contextMenu.addAction("Rename");
-        QAction *copyPathActionFile = contextMenu.addAction("Copy Path");
-
-        // Show the context menu at the cursor's global position
-        QAction *selectedAction = contextMenu.exec(QCursor::pos());
-
-
-        // Handle the action triggered
-        if (selectedAction == openActionFile) {
-            // Open the file
-            // Get the file path and emit the signal
+        // Handle file actions
+        if (action == "Open") {
             QString filePath = fileModel->filePath(index);
             emit doubleClickedOnFile(filePath);
-        } else if (selectedAction == deleteActionFile) {
-            // Delete the file
+        } else if (action == "Delete") {
             QString filePath = fileModel->filePath(index);
             QMessageBox::StandardButton reply = QMessageBox::question(
                 this, 
@@ -319,17 +292,12 @@ void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
                     QMessageBox::warning(this, "Error", "Failed to delete the file");
                 }
             }
-        } else if (selectedAction == renameActionFile) {
-            // Store the original file path before editing
+        } else if (action == "Rename") {
             QString originalFilePath = fileModel->filePath(index);
-            
-            // Rename the file
             fileTreeView->edit(index);
             
-            // Connect to the commitData signal which is emitted when editing is finished
             connect(fileTreeView->itemDelegate(), &QAbstractItemDelegate::commitData, this, 
                 [this, index, originalFilePath](QWidget *editor) {
-                    // Get the updated file path
                     QString newFilePath = fileModel->filePath(index);
                     qDebug() << "File renamed from:" << originalFilePath << "to:" << newFilePath;
                     
@@ -339,8 +307,7 @@ void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
                     // Disconnect to prevent multiple signals
                     disconnect(fileTreeView->itemDelegate(), &QAbstractItemDelegate::commitData, this, nullptr);
                 });
-        } else if (selectedAction == copyPathActionFile) {
-            // copy the path
+        } else if (action == "Copy Path") {
             QString dirPath = fileModel->filePath(index);
             QClipboard *clipboard = QGuiApplication::clipboard();
             clipboard->setText(dirPath);
