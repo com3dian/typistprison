@@ -18,7 +18,7 @@ public:
             "    color: transparent;"
             "    background-color: transparent;"
             "    border: 1px solid transparent;"
-            "    border-radius: 2px;"
+            "    border-radius: 4px;"
             "    text-align: left;"
             "}"
         );
@@ -35,7 +35,7 @@ protected:
             "    color: #FFFFFF;"
             "    background-color: transparent;"
             "    border: 1px solid #BDBDBD;"
-            "    border-radius: 2px;"
+            "    border-radius: 4px;"
             "    text-align: left;"
             "}"
         );
@@ -51,7 +51,7 @@ protected:
             "    color: transparent;"
             "    background-color: transparent;"
             "    border: 1px solid transparent;"
-            "    border-radius: 2px;"
+            "    border-radius: 4px;"
             "    text-align: left;"
             "}"
         );

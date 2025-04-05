@@ -23,6 +23,7 @@
 #include "projectmanager.h"
 #include "basetextedittab.h"
 #include "utils/hoverbutton.h"
+#include "popups/prisonerdialog.h"
 
 
 class FictionViewTab : public BaseTextEditTab {

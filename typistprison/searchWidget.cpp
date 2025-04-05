@@ -23,8 +23,8 @@ SearchWidget::SearchWidget(QWidget *parent)
     palette.setColor(QPalette::HighlightedText, QColor("#2C2C2C"));
     lineEdit->setPalette(palette);
 
-    button = new QPushButton(this);
-    button->setStyleSheet(
+    searchButton = new QPushButton(this);
+    searchButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
             "border-image: url(:/icons/emptyicon.png) 0 0 0 0 stretch stretch;"
@@ -36,13 +36,13 @@ SearchWidget::SearchWidget(QWidget *parent)
     bottomLine->setStyleSheet("background-color: transparent;");
 
     connect(lineEdit, &QLineEdit::returnPressed, this, [this]() { handleSearch(lineEdit->text()); });
-    connect(button, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
+    connect(searchButton, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
 
     hLayout = new QHBoxLayout;
     hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(0);
     hLayout->addWidget(lineEdit);
-    hLayout->addWidget(button);
+    hLayout->addWidget(searchButton);
 
     vLayout = new QVBoxLayout(this);
     vLayout->setContentsMargins(0, 0, 0, 0);
@@ -75,7 +75,7 @@ void SearchWidget::handleSearch(const QString &text)
 
         lineEdit->selectAll();
 
-        button->setStyleSheet(
+        searchButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
             "border-image: url(:/icons/clearsearch_silent.png) 0 0 0 0 stretch stretch;"
@@ -87,10 +87,10 @@ void SearchWidget::handleSearch(const QString &text)
             "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
             "}"
         );
-        button->setFixedSize(16, 16);
+        searchButton->setFixedSize(16, 16);
 
-        disconnect(button, &QPushButton::clicked, this, nullptr);
-        connect(button, &QPushButton::clicked, this, &SearchWidget::handleClear);
+        disconnect(searchButton, &QPushButton::clicked, this, nullptr);
+        connect(searchButton, &QPushButton::clicked, this, &SearchWidget::handleClear);
         qDebug() << "SearchWidget::handleSearch!" ;
         connect(lineEdit, &QLineEdit::textChanged, this, &SearchWidget::handleReSearch); // previously not empty and text changed
 
@@ -107,7 +107,7 @@ void SearchWidget::handleClear()
     lineEdit->clear();
     qDebug() << "SearchWidget::handleClear()";
     emit onClear();
-    button->setStyleSheet(
+    searchButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
             "border-image: url(:/icons/search_silent.png) 0 0 0 0 stretch stretch;"
@@ -119,10 +119,10 @@ void SearchWidget::handleClear()
             "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
             "}"
     );
-    button->setFixedSize(16, 16);
+    searchButton->setFixedSize(16, 16);
 
-    disconnect(button, &QPushButton::clicked, this, nullptr);
-    connect(button, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
+    disconnect(searchButton, &QPushButton::clicked, this, nullptr);
+    connect(searchButton, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
     disconnect(lineEdit, &QLineEdit::textChanged, this, nullptr);
     isOnSearch = false;
     updateBottomLine();
@@ -131,7 +131,7 @@ void SearchWidget::handleClear()
 void SearchWidget::handleReSearch()
 {
 
-    button->setStyleSheet(
+    searchButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
             "border-image: url(:/icons/search_silent.png) 0 0 0 0 stretch stretch;"
@@ -143,11 +143,11 @@ void SearchWidget::handleReSearch()
             "border-image: url(:/icons/search_clicked.png) 0 0 0 0 stretch stretch;"
             "}"
     );
-    button->setFixedSize(16, 16);
+    searchButton->setFixedSize(16, 16);
 
     emit onClear();
-    disconnect(button, &QPushButton::clicked, this, nullptr);
-    connect(button, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
+    disconnect(searchButton, &QPushButton::clicked, this, nullptr);
+    connect(searchButton, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
     disconnect(lineEdit, &QLineEdit::textChanged, this, nullptr);
     isOnSearch = false;
     updateBottomLine();
@@ -210,7 +210,7 @@ void SearchWidget::updateBottomLine()
     if (isOnSearch) {
         bottomLine->setStyleSheet("background-color: #FFFFFF;");
 
-        button->setStyleSheet(
+        searchButton->setStyleSheet(
                 "QPushButton {"
                 "border: none;"
                 "border-image: url(:/icons/tab_close.png) 0 0 0 0 stretch stretch;"
@@ -222,12 +222,12 @@ void SearchWidget::updateBottomLine()
                 "border-image: url(:/icons/tab_hover.png) 0 0 0 0 stretch stretch;"
                 "}"
         );
-        button->setFixedSize(16, 16);
+        searchButton->setFixedSize(16, 16);
     }
     else if (isHovered || !lineEdit->text().isEmpty() || lineEdit->hasFocus()) {
         bottomLine->setStyleSheet("background-color: #C0C0C0;");
 
-        button->setStyleSheet(
+        searchButton->setStyleSheet(
                 "QPushButton {"
                 "border: none;"
                 "border-image: url(:/icons/search_silent.png) 0 0 0 0 stretch stretch;"
@@ -239,15 +239,15 @@ void SearchWidget::updateBottomLine()
                 "border-image: url(:/icons/search_hover.png) 0 0 0 0 stretch stretch;"
                 "}"
         );
-        button->setFixedSize(16, 16);
+        searchButton->setFixedSize(16, 16);
     } else {
-        button->setStyleSheet(
+        searchButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
             "border-image: url(:/icons/emptyicon.png) 0 0 0 0 stretch stretch;"
             "}"
         );
-        button->setFixedSize(16, 16);
+        searchButton->setFixedSize(16, 16);
         bottomLine->setStyleSheet("background-color: transparent;");
     }
 }

@@ -30,7 +30,7 @@ protected:
 
 private:
     QLineEdit *lineEdit;
-    QPushButton *button;
+    QPushButton *searchButton;
     QWidget *bottomLine;
     QHBoxLayout *hLayout;
     QVBoxLayout *vLayout;

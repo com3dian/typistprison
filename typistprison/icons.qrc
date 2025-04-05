@@ -35,6 +35,8 @@
         <file>icons/toggle_menu_back.png</file>
         <file>icons/prisoner.png</file>
         <file>icons/sniper.png</file>
+        <file>icons/right_arrow.png</file>
+        <file>icons/escape_icon.png</file>
 
     </qresource>
 </RCC>

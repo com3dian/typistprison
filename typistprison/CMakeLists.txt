@@ -77,6 +77,7 @@ set(PROJECT_SOURCES
     popups/imageframe.h
     popups/wikiframe.h
     popups/wikiframe.cpp
+    popups/prisonerdialog.h
     ${TS_FILES}
 )
 

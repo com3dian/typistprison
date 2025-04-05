@@ -337,10 +337,18 @@ void FictionViewTab::activatePrisonerMode() {
     // create a dialog for setting goal and time limit
     // if user click cancel, do nothing
     // if user click ok, save the content and activate prisoner mode
-    if (saveContent()) {
-        
+
+    // Save content before showing dialog
+    if (!saveContent()) {
+        return;  // If save failed or was cancelled, don't proceed
     }
 
+    // // Create and show the prisoner dialog
+    PrisonerDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted) {
+        return;  // User cancelled the dialog
+    }
+    
 
     // new FictionViewTab
     qDebug() << "activate prisoner mode";
