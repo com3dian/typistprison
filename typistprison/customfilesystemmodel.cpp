@@ -27,12 +27,12 @@ QVariant CustomFileSystemModel::data(const QModelIndex &index, int role) const {
         // Then handle files
         QString fileName = QFileSystemModel::fileName(index);
         
-        if (fileName.endsWith(".txt")) {
-            return QIcon(":/icons/txt_icon.png");
+        if (fileName.endsWith("cell.txt")) {
+            return QIcon(":/icons/cell_icon.png");
         } else if (fileName.endsWith(".md")) {
             return QIcon(":/icons/md_icon.png");
-        } else if (fileName.endsWith(".cell.txt")) {
-            return QIcon(":/icons/cell_icon.png");
+        } else if (fileName.endsWith(".txt")) {
+            return QIcon(":/icons/txt_icon.png");
         } else {
             return QIcon(":/icons/file.png");  // Default icon for other file types
         }

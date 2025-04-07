@@ -32,23 +32,23 @@ SearchWidget::SearchWidget(QWidget *parent)
     );
 
     bottomLine = new QWidget(this);
-    bottomLine->setFixedHeight(1);
     bottomLine->setStyleSheet("background-color: transparent;");
 
     connect(lineEdit, &QLineEdit::returnPressed, this, [this]() { handleSearch(lineEdit->text()); });
     connect(searchButton, &QPushButton::clicked, this, [this]() { handleSearch(lineEdit->text()); });
 
     hLayout = new QHBoxLayout;
-    hLayout->setContentsMargins(0, 0, 0, 0);
+    hLayout->setContentsMargins(4, 0, 4, 0);
     hLayout->setSpacing(0);
     hLayout->addWidget(lineEdit);
     hLayout->addWidget(searchButton);
 
+    bottomLine->setLayout(hLayout);  // Set hLayout as bottomLine's layout
+
     vLayout = new QVBoxLayout(this);
     vLayout->setContentsMargins(0, 0, 0, 0);
     vLayout->setSpacing(0);
-    vLayout->addLayout(hLayout);
-    vLayout->addWidget(bottomLine);
+    vLayout->addWidget(bottomLine);  // Only add bottomLine to vLayout
 
     setLayout(vLayout);
 
@@ -91,7 +91,6 @@ void SearchWidget::handleSearch(const QString &text)
 
         disconnect(searchButton, &QPushButton::clicked, this, nullptr);
         connect(searchButton, &QPushButton::clicked, this, &SearchWidget::handleClear);
-        qDebug() << "SearchWidget::handleSearch!" ;
         connect(lineEdit, &QLineEdit::textChanged, this, &SearchWidget::handleReSearch); // previously not empty and text changed
 
         isOnSearch = true;
@@ -105,7 +104,7 @@ void SearchWidget::handleSearch(const QString &text)
 void SearchWidget::handleClear()
 {
     lineEdit->clear();
-    qDebug() << "SearchWidget::handleClear()";
+    lineEdit->clearFocus();
     emit onClear();
     searchButton->setStyleSheet(
             "QPushButton {"
@@ -208,7 +207,7 @@ bool SearchWidget::eventFilter(QObject *obj, QEvent *event)
 void SearchWidget::updateBottomLine()
 {
     if (isOnSearch) {
-        bottomLine->setStyleSheet("background-color: #FFFFFF;");
+        bottomLine->setStyleSheet("border: 1px solid #BDBDBD; border-radius: 4px;");
 
         searchButton->setStyleSheet(
                 "QPushButton {"
@@ -225,7 +224,7 @@ void SearchWidget::updateBottomLine()
         searchButton->setFixedSize(16, 16);
     }
     else if (isHovered || !lineEdit->text().isEmpty() || lineEdit->hasFocus()) {
-        bottomLine->setStyleSheet("background-color: #C0C0C0;");
+        bottomLine->setStyleSheet("border: 1px solid #BDBDBD; border-radius: 4px;");
 
         searchButton->setStyleSheet(
                 "QPushButton {"
@@ -248,7 +247,7 @@ void SearchWidget::updateBottomLine()
             "}"
         );
         searchButton->setFixedSize(16, 16);
-        bottomLine->setStyleSheet("background-color: transparent;");
+        bottomLine->setStyleSheet("border: 1px solid transparent; border-radius: 4px;");
     }
 }
 

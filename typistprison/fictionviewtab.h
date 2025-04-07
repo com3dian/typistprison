@@ -46,7 +46,7 @@ private:
     QLabel *wordCountLabel;
     QString oldTextContent;
     bool isPrisoner;
-    QDialog *prisonerDialog;
+    QFrame* prisonerFrame = nullptr;  // instead of QDialog* prisonerDialog
     FictionViewTab *prisonerFictionViewTab;
     PrisonerFictionTextEdit* fullScreenPrisonerTextEdit;
     ProjectManager *projectManager;

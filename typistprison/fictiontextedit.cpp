@@ -895,7 +895,7 @@ void FictionTextEdit::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void FictionTextEdit::readBlock() {
-    qDebug() << "readBlock()";
+    qDebug() << "readBlock() <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
     
     // Get cursor at mouse position
     QTextCursor cursor = cursorForPosition(lastMousePos);

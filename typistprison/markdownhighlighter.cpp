@@ -202,7 +202,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character formats for headlines
     format = QTextCharFormat();
-    QString colorString("#F1E7E7"); // #FF8A8A #FF9EAA
+    QString colorString("#a1c2b2"); // #F6F1DE
     format.setForeground(QColor(colorString));
     format.setFontWeight(QFont::Bold);
     format.setFontPointSize(defaultFontSize * 1.6);
@@ -251,7 +251,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
 
     // set character format for links
     format = QTextCharFormat();
-    QString colorLink("#FF9EAA");
+    QString colorLink("#ACD3A8");
     format.setForeground(QColor(colorLink));
     format.setFontUnderline(true);
     _formats[Link] = std::move(format);

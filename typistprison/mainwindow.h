@@ -55,7 +55,8 @@ public slots:
     void hideMarkdownImage();
     void showWiki(const QString &wikiContent, QPoint lastMousePos);
     void hideWiki();
-
+    void openFileTreeView();
+    void closeFileTreeView();
 private slots:
     void showContextMenu(const QStringList &options, const QModelIndex &index, bool isDir);
     void handleContextMenuSelection(const QString &action);

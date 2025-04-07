@@ -78,6 +78,8 @@ set(PROJECT_SOURCES
     popups/wikiframe.h
     popups/wikiframe.cpp
     popups/prisonerdialog.h
+    popups/utilsprisonerdialog.h
+    popups/utilsprisonerdialog.cpp
     ${TS_FILES}
 )
 

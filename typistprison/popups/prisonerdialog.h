@@ -1,3 +1,6 @@
+#ifndef PRISONERDIALOG_H
+#define PRISONERDIALOG_H
+
 #include <QApplication>
 #include <QDialog>
 #include <QVBoxLayout>
@@ -18,69 +21,13 @@
 #include <QPushButton>
 #include <QTextDocument>
 
-class CustomSplitterHandle : public QSplitterHandle {
-public:
-    CustomSplitterHandle(Qt::Orientation orientation, QSplitter *parent)
-        : QSplitterHandle(orientation, parent) {}
-
-protected:
-    void paintEvent(QPaintEvent *event) override {
-        QPainter painter(this);
-        painter.setRenderHint(QPainter::Antialiasing);
-
-        // Set the handle color to match the text edit
-        painter.setBrush(QBrush(QColor("#1F2020"))); // Dark gray
-        painter.setPen(Qt::NoPen);
-
-        // Draw a rounded rectangle with rounded corners only on the right side
-        QRect r = rect();
-        QPainterPath path;
-        path.moveTo(r.left(), r.top());
-        path.lineTo(r.right() - 4, r.top());
-        path.arcTo(r.right() - 8, r.top(), 8, 8, 90, -90);
-        path.lineTo(r.right(), r.bottom() - 2);
-        path.arcTo(r.right() - 8, r.bottom() - 7, 8, 8, 0, -90);
-        path.lineTo(r.left(), r.bottom()+1);
-        path.closeSubpath();
-
-        painter.drawPath(path);
-
-        QPainterPath secondPath;
-        int inset = 4;  // Adjust inset for positioning
-        QRect innerRect(r.left() + inset, r.top()+r.height()/3, 2, r.height()/3);
-        secondPath.addRoundedRect(innerRect, 1, 1);
-        painter.setBrush(QBrush(QColor("#BDBDBD")));
-        painter.drawPath(secondPath);
-    }
-};
-
-class CustomSplitter : public QSplitter {
-public:
-    CustomSplitter(Qt::Orientation orientation, QWidget *parent = nullptr)
-        : QSplitter(orientation, parent) {}
-
-protected:
-    QSplitterHandle *createHandle() override {
-        return new CustomSplitterHandle(orientation(), this);
-    }
-};
-
-class RoundedWidget : public QWidget {
-public:
-    explicit RoundedWidget(QWidget *parent = nullptr) : QWidget(parent) {
-        setStyleSheet("background-color: #f0f0f0; border-radius: 6px;");
-    }
-protected:
-    void paintEvent(QPaintEvent *event) override {
-        QPainter painter(this);
-        painter.setRenderHint(QPainter::Antialiasing);
-        QBrush brush(Qt::lightGray);
-        painter.setBrush(brush);
-        painter.setPen(Qt::NoPen);
-    }
-};
+#include "utilsprisonerdialog.h"
 
 class PrisonerDialog : public QDialog {
+    Q_OBJECT
+signals:
+    void prisonerSettings(int wordGoal, int timeLimit);
+
 public:
     PrisonerDialog(QWidget *parent = nullptr) : QDialog(parent) {
         setWindowTitle("Prisoner Dialog");
@@ -331,6 +278,18 @@ public:
             }
         )");
 
+        connect(actionButton, &QPushButton::clicked, this, [=]() {
+            // Get word goal from lineEdit
+            QString numericText = lineEdit->text().remove(QRegularExpression("[^0-9]"));
+            int wordGoal = numericText.toInt();
+            
+            // Get time limit from slider
+            double ratio = slider->value() / 100.0;
+            int timeLimit = (ratio == 1.0) ? -1 : mapToTime(ratio);  // -1 for unlimited
+            
+            emit prisonerSettings(wordGoal, timeLimit);
+            accept();
+        });
         connect(actionButton, &QPushButton::clicked, this, &QDialog::accept);
         
         mainLayout->addSpacing(32);
@@ -490,3 +449,4 @@ private slots:
         lineEdit->setText(QString::number(numericValue));
     }
 };
+#endif // PRISONERDIALOG_H

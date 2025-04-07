@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->addWidget(editorWidget);
     centralSplitter->setCollapsible(1, false);
     centralSplitter->setSizes(QList<int>({0, centralSplitter->size().width()}));
+    centralSplitter->handle(1)->setEnabled(false);  // Disable handle dragging
 
     // Add splitter to its container layout
     splitterLayout->addWidget(centralSplitter);
@@ -290,9 +291,9 @@ void MainWindow::openProject() {
     // Re-initialize folderTreeView
     folderTreeView->refresh(selectedProjectRoot);
 
-    sidePanelButton->setEnabled(true);
-    toggleFileTreeView();
+    openFileTreeView();
     sidePanelButton->setVisible(true);
+    sidePanelButton->setEnabled(true);
     return;
 }
 
@@ -733,4 +734,18 @@ void MainWindow::handleContextMenuSelection(const QString &action) {
     
     // Forward the action to the folder tree view
     folderTreeView->handleContextMenuAction(action, currentContextMenuIndex, isContextMenuForDir);
+}
+
+void MainWindow::openFileTreeView() {
+    QList<int> sizes = centralSplitter->sizes();
+    if (sizes[0] == 0) {  // Only open if it's currently closed
+        toggleFileTreeView();
+    }
+}
+
+void MainWindow::closeFileTreeView() {
+    QList<int> sizes = centralSplitter->sizes();
+    if (sizes[0] != 0) {  // Only close if it's currently open
+        toggleFileTreeView();
+    }
 }
