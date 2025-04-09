@@ -71,6 +71,12 @@ MainWindow::MainWindow(QWidget *parent)
     tabBarWidget = new CustomTabBarWidget(this, customTabWidget);
     setupMenuButtons(tabBarWidget);
 
+    editorTopSpacerWidget = new QWidget(this);
+    // set height as 8 px for editor top spacer
+    editorTopSpacerWidget->setFixedHeight(8);
+    editorTopSpacerWidget->setVisible(false);
+    editorLayout->addWidget(editorTopSpacerWidget);
+
     editorLayout->addWidget(tabBarWidget);
     editorLayout->addWidget(customTabWidgetHolder);
     editorWidget->setLayout(editorLayout);
@@ -90,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Set main container as the central widget
     setCentralWidget(mainContainer);
-
+    
     // ---- Create the Floating Side Panel Button ----
     sidePanelButton = new QPushButton(this);
     sidePanelButton->setStyleSheet(
@@ -132,6 +138,8 @@ MainWindow::MainWindow(QWidget *parent)
     setupActions();
 
     qApp->installEventFilter(this);
+    // activatePrisonerModeFunc();
+    // deactivatePrisonerModeFunc();
 }
 
 void MainWindow::setupActions() {
@@ -176,10 +184,29 @@ void MainWindow::setupActions() {
     connect(actionSaveAllProject, &QAction::triggered, this, [this]() {
         saveProject();
     });
+}
 
-    // Keep the invisible buttons for any other purpose if needed
-    // but they're not necessary for shortcuts anymore
-    // invisibleButtonHolder->setVisible(false);
+void MainWindow::createAndOpenProject()
+{
+    QString dirPath = QFileDialog::getExistingDirectory(this, tr("Select or Create Project Directory"),
+                                                      QDir::homePath(),
+                                                      QFileDialog::ShowDirsOnly);
+    
+    if (!dirPath.isEmpty()) {
+        // Prompt for folder name and create directory
+        bool ok;
+        QString folderName = QInputDialog::getText(this, tr("Create Project"), 
+            tr("Enter project folder name:"), QLineEdit::Normal, "", &ok);
+        
+        if (ok && !folderName.isEmpty()) {
+            QDir dir(dirPath);
+            dir.mkdir(folderName);
+            QString projectPath = dirPath + '/' + folderName;
+            
+            // Open the project
+            openProject(projectPath);
+        }
+    }
 }
 
 // ---- Override resizeEvent to Keep Button in Bottom-Left ----
@@ -272,30 +299,41 @@ void MainWindow::searchFile()
     }
 }
 
-void MainWindow::openProject() {
-    QString selectedProjectRoot = QFileDialog::getExistingDirectory(
-        this, 
-        tr("Open Project Folder"), 
-        QDir::homePath(), 
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
-    );
+void MainWindow::openProject(const QString &path)
+{
+    QString projectPath = path;
+    QString selectedProjectRoot;
+    if (projectPath.isEmpty()) {
+        selectedProjectRoot = QFileDialog::getExistingDirectory(
+            this, 
+            tr("Open Project Folder"), 
+            QDir::homePath(), 
+            QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+        );
+    } else {
+        selectedProjectRoot = projectPath;
+    }
 
     if (selectedProjectRoot.isEmpty()) {
         QMessageBox::warning(this, tr("No Folder Selected"), tr("No project folder was selected."));
         return;
     }
-
+    
     // project manager load
     projectManager->open(selectedProjectRoot);
     
     // Re-initialize folderTreeView
     folderTreeView->refresh(selectedProjectRoot);
 
+    // Enable splitter handle dragging
+    centralSplitter->handle(1)->setEnabled(true);
+
     openFileTreeView();
     sidePanelButton->setVisible(true);
     sidePanelButton->setEnabled(true);
     return;
 }
+
 
 void MainWindow::saveProject() {
     for (int i = 0; i < customTabWidget->count(); ++i) {
@@ -503,6 +541,14 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         frameLayout->addWidget(frameButtonSearch);
     }
     else if (button == button2) {
+        MenuButton *frameButtonNew = new MenuButton("New", "", newFrame);
+        connect(frameButtonNew, &MenuButton::clicked, this, [this]() {
+            emit mouseClick();
+            handleFocusLeaveMenuButton();
+            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+            createAndOpenProject();
+        });
+
         // Create buttons for Button 2's frame.
         MenuButton *frameButtonOpen = new MenuButton("Open", "", newFrame);
         connect(frameButtonOpen, &MenuButton::clicked, this, [this]() {
@@ -513,18 +559,17 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         });
         MenuButton *frameButtonSaveAll = new MenuButton("Save All", "", newFrame);
         MenuButton *frameButtonSwitch = new MenuButton("Switch...", "", newFrame);
-        MenuButton *frameButtonEdit = new MenuButton("Paste", "", newFrame);
 
         // Set fixed sizes and unique background colors.
         frameButtonOpen->setFixedSize(108, 28);
         frameButtonSaveAll->setFixedSize(108, 28);
         frameButtonSwitch->setFixedSize(108, 28);
-        frameButtonEdit->setFixedSize(108, 28);
+        frameButtonNew->setFixedSize(108, 28);
 
+        frameLayout->addWidget(frameButtonNew);
         frameLayout->addWidget(frameButtonOpen);
         frameLayout->addWidget(frameButtonSaveAll);
         frameLayout->addWidget(frameButtonSwitch);
-        frameLayout->addWidget(frameButtonEdit);
     }
 
     // Resize the frame to fit its contents.
@@ -748,4 +793,50 @@ void MainWindow::closeFileTreeView() {
     if (sizes[0] != 0) {  // Only close if it's currently open
         toggleFileTreeView();
     }
+}
+
+void MainWindow::activatePrisonerModeFunc() {
+    // Close side panel
+    closeFileTreeView();
+    
+    // Make handler non-draggable
+    centralSplitter->handle(1)->setEnabled(false);
+    
+    // Hide custom tab bar
+    tabBarWidget->setVisible(false);
+    
+    // Hide side panel button
+    sidePanelButton->setVisible(false);
+    
+    // Show editor top spacer
+    editorTopSpacerWidget->setVisible(true);
+
+    // make the window maximum
+    this->showMaximized();
+}
+
+void MainWindow::deactivatePrisonerModeFunc() {
+    // Show custom tab bar
+    tabBarWidget->setVisible(true);
+    
+    // Hide editor top spacer
+    editorTopSpacerWidget->setVisible(false);
+
+    // First ensure window is not maximized
+    if (isMaximized()) {
+        showNormal();
+    }
+    
+    if (!projectManager->isLoadedProject) {
+        return;
+    }
+    
+    // Restore side panel
+    openFileTreeView();
+    
+    // Make handler draggable again
+    centralSplitter->handle(1)->setEnabled(true);
+    
+    // Show side panel button
+    sidePanelButton->setVisible(true);
 }

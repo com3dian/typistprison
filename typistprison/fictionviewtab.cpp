@@ -126,7 +126,6 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     spaceAndCounterLayout->addWidget(wordCountHolder);
     spaceAndCounterWidget->setLayout(spaceAndCounterLayout);
 
-
     QWidget *textEditWidget = new QWidget();
     QVBoxLayout *textEditLayout = new QVBoxLayout;
     textEditLayout->addWidget(textEdit);
@@ -138,7 +137,6 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     bottomLeftLayout->addWidget(spacerWidgetLeft);
     bottomLeftLayout->addWidget(textEdit);
     bottomLeftLayout->addWidget(spaceAndCounterWidget);
-
 
     leftLayout->addWidget(topLeftWidget);
     leftLayout->addLayout(bottomLeftLayout);

@@ -17,6 +17,7 @@
 #include <QMessageBox>
 #include <QStackedWidget>
 #include <QGraphicsDropShadowEffect>
+#include <QInputDialog>
 
 #include "customtabwidget.h"
 #include "ui_mainwindow.h"
@@ -49,7 +50,7 @@ public slots:
     void openFile(const QString &filePath = ""); // Declaration of the openFile slot
     void saveFile();
     void searchFile();
-    void openProject();
+    void openProject(const QString &path = QString()); // Updated openProject declaration
     void saveProject();
     void showMarkdownImage(const QString &imagePath, QPoint pos);
     void hideMarkdownImage();
@@ -57,6 +58,9 @@ public slots:
     void hideWiki();
     void openFileTreeView();
     void closeFileTreeView();
+    void createAndOpenProject();
+    void activatePrisonerModeFunc();
+    void deactivatePrisonerModeFunc();
 private slots:
     void showContextMenu(const QStringList &options, const QModelIndex &index, bool isDir);
     void handleContextMenuSelection(const QString &action);
@@ -77,6 +81,7 @@ private:
     ImageFrame *imageFrame;
     QLabel *imageLabel;
     WikiFrame *wikiFrame;
+    QWidget *editorTopSpacerWidget;
     QFrame *contextMenuFrame;
     QModelIndex currentContextMenuIndex;
     bool isContextMenuForDir;
@@ -94,6 +99,9 @@ private:
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
+
+private:
+    QPoint m_dragPosition;
 
 signals:
     void mouseClick();

@@ -29,13 +29,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    // QScreen *screen = QGuiApplication::primaryScreen(); // Use QGuiApplication to get the primary screen
-    // qreal scalingFactor = screen->devicePixelRatio(); // Correctly call devicePixelRatio()
-    // qDebug() << "scalingFactor: " << scalingFactor;
-
     app.setWindowIcon(QIcon(":/icons/typrison_icon.png"));
 
     MainWindow w;
+    w.setWindowTitle("Typrison");
 
     QString notoSansLightFamily = FontManager::instance().getNotoSansLightFamily();
     QString notoSansDemiLightFamily = FontManager::instance().getNotoSansDemiLightFamily();
