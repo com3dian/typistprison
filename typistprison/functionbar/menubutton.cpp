@@ -33,10 +33,12 @@ void MenuButton::enterEvent(QEnterEvent *event) {
     findChild<QLabel *>()->setStyleSheet("color: #FFFFFF;");
     findChildren<QLabel *>().last()->setStyleSheet("color: #656565;");
     QPushButton::enterEvent(event);
+    emit hovered();
 }
 
 void MenuButton::leaveEvent(QEvent *event) {
     findChild<QLabel *>()->setStyleSheet("color: #BDBDBD;");
     findChildren<QLabel *>().last()->setStyleSheet("color: transparent;");
     QPushButton::leaveEvent(event);
+    emit notHovered();
 }

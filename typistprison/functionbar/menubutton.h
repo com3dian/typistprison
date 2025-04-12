@@ -10,12 +10,14 @@ class MenuButton : public QPushButton {
     Q_OBJECT
 
 public:
-    explicit MenuButton(const QString &leftText, const QString &rightText, QWidget *parent = nullptr);
+    explicit MenuButton(const QString &leftText = QString(), const QString &rightText = QString(), QWidget *parent = nullptr);
 
     void setTexts(const QString &leftText, const QString &rightText);
 
 signals:
     void mouseClick();  // Custom signal
+    void hovered();
+    void notHovered();
 
 protected:
     void enterEvent(QEnterEvent *event) override;

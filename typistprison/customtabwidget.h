@@ -20,6 +20,9 @@ public:
     CustomTabWidget(QWidget *parent = nullptr, ProjectManager *projectManager = nullptr);
 
     void createNewTab(const QString &filePath, bool isUntitled = false, int tabIndex = -1);
+    void createFictionTab(const QString &filePath = "", bool isUntitled = true, int tabIndex = -1);
+    void createPlainTextTab(const QString &filePath = "", bool isUntitled = true, int tabIndex = -1);
+    void createMarkdownTab(const QString &filePath = "", bool isUntitled = true, int tabIndex = -1);
     void switchToFictionView();
 
 public slots:

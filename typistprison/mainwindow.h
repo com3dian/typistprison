@@ -18,6 +18,7 @@
 #include <QStackedWidget>
 #include <QGraphicsDropShadowEffect>
 #include <QInputDialog>
+#include <QTimer>
 
 #include "customtabwidget.h"
 #include "ui_mainwindow.h"
@@ -43,6 +44,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    // Enum for tab types
+    enum TabType {
+        FICTION_TAB,
+        PLAINTEXT_TAB,
+        MARKDOWN_TAB
+    };
+
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
@@ -77,6 +85,7 @@ private:
     QPushButton *button2;
     QPushButton *menuToggleButton;
     QFrame *existingFrame = nullptr;
+    QFrame *subMenuFrame = nullptr;  // New submenu frame for hover functionality
     CustomTabBarWidget *tabBarWidget;
     ImageFrame *imageFrame;
     QLabel *imageLabel;
@@ -86,7 +95,7 @@ private:
     QModelIndex currentContextMenuIndex;
     bool isContextMenuForDir;
 
-    void setupUntitledTab();
+    void setupUntitledTab(TabType tabType = FICTION_TAB);
     void setupMenuButtons(CustomTabBarWidget *tabBarWidget);
     void createNewTab(const QString &tabName);
     void onLastTabClosed();

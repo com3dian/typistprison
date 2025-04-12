@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     , imageFrame(nullptr)
     , wikiFrame(nullptr)
     , contextMenuFrame(nullptr)
+    , subMenuFrame(nullptr)  // Add this line
 {
     projectManager = new ProjectManager();
     ui->setupUi(this);
@@ -134,7 +135,7 @@ MainWindow::MainWindow(QWidget *parent)
     sidePanelButton->setEnabled(false);
     connect(sidePanelButton, &QPushButton::clicked, this, &MainWindow::toggleFileTreeView);
     
-    setupUntitledTab();
+    setupUntitledTab(FICTION_TAB);
     setupActions();
 
     qApp->installEventFilter(this);
@@ -170,7 +171,7 @@ void MainWindow::setupActions() {
         openFile("");
     });
     connect(actionNewFile, &QAction::triggered, this, [this]() {
-        setupUntitledTab();
+        setupUntitledTab(FICTION_TAB);
     });
     connect(actionSaveFile, &QAction::triggered, this, [this]() {
         saveFile();
@@ -239,10 +240,23 @@ void MainWindow::setupMenuButtons(CustomTabBarWidget *tabBarWidget) {
     button2->installEventFilter(this);
 }
 
-void MainWindow::setupUntitledTab()
+void MainWindow::setupUntitledTab(TabType tabType)
 {
-    // Create the default untitled tab
-    customTabWidget->createNewTab("", true);
+    // Create the default untitled tab based on the specified type
+    switch (tabType) {
+    case FICTION_TAB:
+        customTabWidget->createFictionTab();
+        break;
+    case PLAINTEXT_TAB:
+        customTabWidget->createPlainTextTab();
+        break;
+    case MARKDOWN_TAB:
+        customTabWidget->createMarkdownTab();
+        break;
+    default:
+        customTabWidget->createFictionTab();
+        break;
+    }
 }
 
 void MainWindow::openFile(const QString &filePath)  // No default argument here
@@ -432,7 +446,13 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     
                     return false;
                 }
-                
+
+                if (subMenuFrame && subMenuFrame->isVisible()) {
+                    if (subMenuFrame->geometry().contains(posInMainWindow)) {
+                        return false;
+                    }
+                }
+
                 if (button1->geometry().contains(posInMainWindow) or button2->geometry().contains(posInMainWindow)) {
                     return true;
                 }
@@ -462,6 +482,13 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         existingFrame->setParent(nullptr);
         existingFrame->deleteLater();
         existingFrame = nullptr;
+    }
+
+    if (subMenuFrame) {
+        subMenuFrame->setVisible(false);
+        subMenuFrame->setParent(nullptr);
+        subMenuFrame->deleteLater();
+        subMenuFrame = nullptr;
     }
 
     // Create a new frame for the hovered button.
@@ -496,12 +523,119 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
 
     if (button == button1) {
         // Create buttons for Button 1's frame.
-        MenuButton *frameButtonNew = new MenuButton("New", CONTROL_SYMBOL "N", this);
+        MenuButton *frameButtonNew = new MenuButton("New...", "+", this);
         connect(frameButtonNew, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
             disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
-            setupUntitledTab();
+            setupUntitledTab(FICTION_TAB);
+        });
+        
+        // Connect hover signals for submenu
+        connect(frameButtonNew, &MenuButton::hovered, this, [this, frameButtonNew]() {
+            if (subMenuFrame && subMenuFrame->isVisible()) {
+                subMenuFrame->setVisible(false);
+            }
+
+            // Create submenu frame on hover
+            subMenuFrame = new QFrame(this);
+            subMenuFrame->setFrameShape(QFrame::StyledPanel);
+            subMenuFrame->setStyleSheet(
+                "QFrame {   "
+                "    margin: 0px; "
+                "    padding: 0px; "
+                "    background-color: #1F2020;"
+                "    border: 1px solid #1F2020; "
+                "    border-radius: 4px; "
+                "}"
+                "QMenuButton { "
+                "    margin: 0px; "
+                "    padding: 0px; "
+                "    border: none; "
+                "    background-color: transparent; "
+                "}  "
+            );
+            
+            QVBoxLayout *subMenuLayout = new QVBoxLayout(subMenuFrame);
+            subMenuLayout->setContentsMargins(10, 4, 6, 6);
+            subMenuLayout->setSpacing(0);
+            
+            // Create submenu buttons
+            MenuButton *newTextFileButton = new MenuButton(".txt", "", subMenuFrame);
+            MenuButton *newCellFileButton = new MenuButton(".cell.txt", CONTROL_SYMBOL "N", subMenuFrame);
+            MenuButton *newMarkdownButton = new MenuButton(".md", "", subMenuFrame);
+
+            // Connect submenu button signals
+            connect(newTextFileButton, &MenuButton::clicked, this, [this]() {
+                emit mouseClick();
+                handleFocusLeaveMenuButton();
+                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+                setupUntitledTab(PLAINTEXT_TAB); // Use existing function for now
+            });
+
+            connect(newCellFileButton, &MenuButton::clicked, this, [this]() {
+                emit mouseClick();
+                handleFocusLeaveMenuButton();
+                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+                setupUntitledTab(FICTION_TAB); // Use existing function for now
+            });
+            
+            connect(newMarkdownButton, &MenuButton::clicked, this, [this]() {
+                emit mouseClick();
+                handleFocusLeaveMenuButton();
+                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+                setupUntitledTab(MARKDOWN_TAB); // Use existing function for now
+            });
+            
+            // Set fixed sizes for submenu buttons
+            newTextFileButton->setFixedSize(128, 28);
+            newCellFileButton->setFixedSize(128, 28);
+            newMarkdownButton->setFixedSize(128, 28);
+            
+            // Add buttons to submenu layout
+            subMenuLayout->addWidget(newTextFileButton);
+            subMenuLayout->addWidget(newCellFileButton);
+            subMenuLayout->addWidget(newMarkdownButton);
+            
+            // Add proper spacing between buttons and set alignment
+            subMenuLayout->setSpacing(0);  // Add spacing between buttons
+            subMenuLayout->setAlignment(Qt::AlignLeft);  // Align buttons to the left
+            
+            // Force the layout to calculate the proper size
+            subMenuLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
+            
+            // Create and configure the drop shadow effect
+            QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
+            shadow->setBlurRadius(24);   // Increase for a softer, larger shadow
+            shadow->setColor(QColor("#1F2020")); // Shadow color
+            shadow->setOffset(0, 0);     // Zero offset to get shadow on all sides
+
+            // Apply the effect to your frame
+            subMenuFrame->setGraphicsEffect(shadow);
+
+            // Position the submenu to the right of the button
+            // get layout margins
+            int marginRight = subMenuFrame->layout()->contentsMargins().right() + 7;
+            int marginTop = subMenuFrame->layout()->contentsMargins().top();
+            
+            // Position the submenu to the right of the button
+            QPoint buttonTopRight = frameButtonNew->mapToGlobal(QPoint(
+                frameButtonNew->width() + marginRight, 
+                -marginTop - 1));
+            subMenuFrame->move(this->mapFromGlobal(buttonTopRight));
+            
+            // Show the submenu
+            subMenuFrame->show();
+        });
+        
+        connect(frameButtonNew, &MenuButton::notHovered, this, [this]() {
+            // Use a timer to allow moving the mouse to the submenu
+            QTimer::singleShot(200, this, [this]() {
+                // Check if mouse is over the submenu
+                if (subMenuFrame && !subMenuFrame->underMouse()) {
+                    subMenuFrame->hide();
+                }
+            });
         });
         
         // Open file button
@@ -511,7 +645,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
             handleFocusLeaveMenuButton();
             disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
             openFile("");
-        });
+        });            
         
         // Save file button
         MenuButton *frameButtonSave = new MenuButton("Save", CONTROL_SYMBOL "S", newFrame);
@@ -530,10 +664,10 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
             searchFile();
         });
         
-        frameButtonNew->setFixedSize(108, 28);
-        frameButtonOpen->setFixedSize(108, 28);
-        frameButtonSave->setFixedSize(108, 28);
-        frameButtonSearch->setFixedSize(108, 28);
+        frameButtonNew->setFixedSize(128, 28);
+        frameButtonOpen->setFixedSize(128, 28);
+        frameButtonSave->setFixedSize(128, 28);
+        frameButtonSearch->setFixedSize(128, 28);
 
         frameLayout->addWidget(frameButtonNew);
         frameLayout->addWidget(frameButtonOpen);
@@ -561,10 +695,10 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         MenuButton *frameButtonSwitch = new MenuButton("Switch...", "", newFrame);
 
         // Set fixed sizes and unique background colors.
-        frameButtonOpen->setFixedSize(108, 28);
-        frameButtonSaveAll->setFixedSize(108, 28);
-        frameButtonSwitch->setFixedSize(108, 28);
-        frameButtonNew->setFixedSize(108, 28);
+        frameButtonOpen->setFixedSize(128, 28);
+        frameButtonSaveAll->setFixedSize(128, 28);
+        frameButtonSwitch->setFixedSize(128, 28);
+        frameButtonNew->setFixedSize(128, 28);
 
         frameLayout->addWidget(frameButtonNew);
         frameLayout->addWidget(frameButtonOpen);
@@ -598,9 +732,11 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
 }
 
 void MainWindow::handleFocusLeaveMenuButton() {
-    if (existingFrame)
-    {
+    if (existingFrame) {
         existingFrame->setVisible(false);
+    }
+    if (subMenuFrame) {
+        subMenuFrame->setVisible(false);
     }
 }
 
@@ -629,11 +765,11 @@ void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos
 
         // Create and configure the drop shadow effect
         QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
-        shadow->setBlurRadius(24);   // Softer, larger shadow
+        shadow->setBlurRadius(24);   // Increase for a softer, larger shadow
         shadow->setColor(QColor("#1F2020")); // Shadow color
-        shadow->setOffset(0, 0);     // Zero offset for uniform shadow
+        shadow->setOffset(0, 0);     // Zero offset to get shadow on all sides
 
-        // Apply the effect to the frame
+        // Apply the effect to your frame
         imageFrame->setGraphicsEffect(shadow);
 
         imageFrame->show();

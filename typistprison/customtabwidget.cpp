@@ -91,7 +91,7 @@ void CustomTabWidget::createNewTab(const QString &filePath,
     }
     
     // Create a new tab with the file name as the tab text
-    if (tabName.endsWith(".cell.txt") || isUntitled) {
+    if (tabName.endsWith(".cell.txt") || (isUntitled && filePath.isEmpty())) {
         newTab = new FictionViewTab(content, filePath, this, false, projectManager);
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType,
                 this, &CustomTabWidget::updateFileType);
@@ -100,7 +100,7 @@ void CustomTabWidget::createNewTab(const QString &filePath,
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::hideWiki,
                 this, &CustomTabWidget::hideWiki);
 
-    } else if (tabName.endsWith(".md")) {
+    } else if (tabName.endsWith(".md") || (isUntitled && filePath.endsWith(".md"))) {
         newTab = new MarkdownViewTab(content, filePath, this);
         connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::showImageAt,
                 this, &CustomTabWidget::showImageAt);
@@ -109,7 +109,6 @@ void CustomTabWidget::createNewTab(const QString &filePath,
 
     } else {
         newTab = new PlaintextViewTab(content, filePath, this);
-
     }
 
     connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, this, &CustomTabWidget::updateTabTitle);
@@ -119,6 +118,136 @@ void CustomTabWidget::createNewTab(const QString &filePath,
     } else {
         int newIndex = insertTab(tabIndex, newTab, tabName); 
         // TODO: set cursor positioin and scroll bar maybe
+    }
+    
+    setCurrentWidget(newTab);
+}
+
+void CustomTabWidget::createFictionTab(const QString &filePath, bool isUntitled, int tabIndex) {
+    QWidget *newTab;
+    QString tabName;
+    QString content = "";
+    
+    if (!filePath.isEmpty() && !isUntitled) {
+        if (this->checkIdenticalOpenedFile(filePath) != -1) {
+            return;
+        }
+        
+        // Load file content
+        QFile file(filePath);
+        tabName = QFileInfo(filePath).fileName();
+        
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            content = in.readAll();
+            file.close();
+        }
+    } else {
+        tabName = "untitled-" + QString::number(untitledCount++);
+    }
+    
+    // Create a fiction view tab
+    newTab = new FictionViewTab(content, filePath, this, false, projectManager);
+    connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType,
+            this, &CustomTabWidget::updateFileType);
+    connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::showWikiAt,
+            this, &CustomTabWidget::showWikiAt);
+    connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::hideWiki,
+            this, &CustomTabWidget::hideWiki);
+    
+    connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, 
+            this, &CustomTabWidget::updateTabTitle);
+    
+    if (tabIndex == -1) {
+        int newIndex = addTab(newTab, tabName);
+    } else {
+        int newIndex = insertTab(tabIndex, newTab, tabName);
+    }
+    
+    setCurrentWidget(newTab);
+}
+
+void CustomTabWidget::createPlainTextTab(const QString &filePath, bool isUntitled, int tabIndex) {
+    QWidget *newTab;
+    QString tabName;
+    QString content = "";
+    
+    if (!filePath.isEmpty() && !isUntitled) {
+        if (this->checkIdenticalOpenedFile(filePath) != -1) {
+            return;
+        }
+        
+        // Load file content
+        QFile file(filePath);
+        tabName = QFileInfo(filePath).fileName();
+        
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            content = in.readAll();
+            file.close();
+        }
+    } else {
+        tabName = "untitled-" + QString::number(untitledCount++);
+    }
+    
+    // Create a plaintext view tab
+    newTab = new PlaintextViewTab(content, filePath, this);
+    
+    connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, 
+            this, &CustomTabWidget::updateTabTitle);
+    
+    if (tabIndex == -1) {
+        int newIndex = addTab(newTab, tabName);
+    } else {
+        int newIndex = insertTab(tabIndex, newTab, tabName);
+    }
+    
+    setCurrentWidget(newTab);
+}
+
+void CustomTabWidget::createMarkdownTab(const QString &filePath, bool isUntitled, int tabIndex) {
+    QWidget *newTab;
+    QString tabName;
+    QString content = "";
+    QString actualFilePath = filePath;
+    
+    // For untitled markdown files, we need to ensure they have a .md extension
+    if (isUntitled && filePath.isEmpty()) {
+        actualFilePath = "untitled.md";
+    }
+    
+    if (!actualFilePath.isEmpty() && !isUntitled) {
+        if (this->checkIdenticalOpenedFile(actualFilePath) != -1) {
+            return;
+        }
+        
+        // Load file content
+        QFile file(actualFilePath);
+        tabName = QFileInfo(actualFilePath).fileName();
+        
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            content = in.readAll();
+            file.close();
+        }
+    } else {
+        tabName = "untitled-" + QString::number(untitledCount++);
+    }
+    
+    // Create a markdown view tab
+    newTab = new MarkdownViewTab(content, actualFilePath, this);
+    connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::showImageAt,
+            this, &CustomTabWidget::showImageAt);
+    connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::hideImage,
+            this, &CustomTabWidget::hideImage);
+    
+    connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, 
+            this, &CustomTabWidget::updateTabTitle);
+    
+    if (tabIndex == -1) {
+        int newIndex = addTab(newTab, tabName);
+    } else {
+        int newIndex = insertTab(tabIndex, newTab, tabName);
     }
     
     setCurrentWidget(newTab);
