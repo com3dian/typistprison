@@ -12,13 +12,16 @@
 
 int main(int argc, char *argv[])
 {
-    // Warning: ‘Qt::AA_EnableHighDpiScaling’ is deprecated: High-DPI scaling is always enabled. 
-    // This attribute no longer has any effect.
-    // QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    // QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication app(argc, argv);
     app.setStyle(QStyleFactory::create("Fusion"));
-
+    
+    // Enable translucent background for the application
+    app.setAttribute(Qt::AA_EnableHighDpiScaling);
+    app.setAttribute(Qt::AA_UseHighDpiPixmaps);
+    
+    // Add this line for macOS to enable custom window styling
+    // app.setAttribute(Qt::AA_MacWindowToolBar, false);
+    
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {

@@ -18,8 +18,12 @@
 FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
     : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr)
 {
-    // QScreen *screen = QGuiApplication::primaryScreen();
-    // scalingFactor = screen->devicePixelRatio();
+    this->setStyleSheet(
+        "FolderTreeViewWidget {"
+        "    background-color: #1F2020;"
+        "    border: none;"
+        "}"
+    );
 
     // Initialize fileModel with the custom file system model
     fileModel = new CustomFileSystemModel(this);

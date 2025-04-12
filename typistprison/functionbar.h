@@ -32,7 +32,15 @@ public:
 
     QList<QPushButton*> getAllButtons() const;
 
+protected:
+    // Add these protected methods for window dragging
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
 private:
+    bool isDragging;
+    QPoint dragStartPosition;
     QFrame *menuBar;
     QPushButton *toggleButton;
 

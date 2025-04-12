@@ -10,10 +10,15 @@ MainWindow::MainWindow(QWidget *parent)
     , imageFrame(nullptr)
     , wikiFrame(nullptr)
     , contextMenuFrame(nullptr)
-    , subMenuFrame(nullptr)  // Add this line
+    , subMenuFrame(nullptr)
 {
+    // Hide window traffic lights (close, minimize, maximize buttons)
+    this->setWindowFlags(Qt::FramelessWindowHint);
+    this->setAttribute(Qt::WA_TranslucentBackground);
+    
     projectManager = new ProjectManager();
     ui->setupUi(this);
+    
     this->addAction(ui->actionOpen_File);   // add action for open file
     this->addAction(ui->actionNew_File);   // add action for new file
 
@@ -25,21 +30,29 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Create a wrapper for the splitter (to ensure full expansion)
     QWidget *splitterContainer = new QWidget(mainContainer);
+    splitterContainer->setObjectName("splitterContainer");  // Add this line
+    splitterContainer->setStyleSheet(
+        "QWidget#splitterContainer {"  // Target only this specific widget
+        "    background-color: #1F2020;"
+        "    border-radius: 8px;"
+        "}"
+    );
+
     QVBoxLayout *splitterLayout = new QVBoxLayout(splitterContainer);
-    splitterLayout->setContentsMargins(0, 0, 0, 0);
+    splitterLayout->setContentsMargins(8, 0, 8, 0);
     splitterLayout->setSpacing(0);
 
     // Create the splitter
     centralSplitter = new QSplitter(splitterContainer);
     centralSplitter->setStyleSheet(
-    "QSplitter { background-color: #1F2020; }"  // Background of the splitter itself
+    "QSplitter { background-color: #1F2020;}"  // Background of the splitter itself
     "QSplitter::handle {"
     "    background-color: #1F2020;"
     "}"
     );
     centralSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     // Make the handle always visible by preventing complete collapse
-    centralSplitter->setHandleWidth(8);  // Set the physical handle width to match CSS
+    centralSplitter->setHandleWidth(0);  // Set the physical handle width to match CSS
 
     folderTreeView = new FolderTreeViewWidget;
     centralSplitter->addWidget(folderTreeView);  
@@ -65,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     );
     // Create layout for the holder
     QVBoxLayout *tabWidgetLayout = new QVBoxLayout(customTabWidgetHolder);
-    tabWidgetLayout->setContentsMargins(0, 0, 8, 8); // Left, Right, Bottom margins (No top margin)
+    tabWidgetLayout->setContentsMargins(0, 0, 0, 8); // Bottom margin
     tabWidgetLayout->setSpacing(0); // Optional, to avoid extra spacing
     tabWidgetLayout->addWidget(customTabWidget);
 

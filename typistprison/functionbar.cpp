@@ -1,8 +1,11 @@
 #include "functionbar.h"
 
 CustomTabBarWidget::CustomTabBarWidget(QWidget *parent, CustomTabWidget *syncedTabWidget)
-    : QWidget(parent), syncedTabWidget(syncedTabWidget), isExpanded(false) {
-
+    : QWidget(parent)
+    , syncedTabWidget(syncedTabWidget)
+    , isExpanded(false)
+    , isDragging(false)  // Add this initialization
+{
     // Main container layout
     mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -413,4 +416,28 @@ void CustomTabBarWidget::hideBothPaintCornerWidget() {
 
 void CustomTabBarWidget::notHideBothPaintCornerWidget() {
     isScrollbuttonActive = false;
+}
+
+
+// Add these three methods after the existing code
+void CustomTabBarWidget::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        isDragging = true;
+        dragStartPosition = event->globalPos() - window()->frameGeometry().topLeft();
+        event->accept();
+    }
+}
+
+void CustomTabBarWidget::mouseMoveEvent(QMouseEvent *event) {
+    if (isDragging && (event->buttons() & Qt::LeftButton)) {
+        window()->move(event->globalPos() - dragStartPosition);
+        event->accept();
+    }
+}
+
+void CustomTabBarWidget::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        isDragging = false;
+        event->accept();
+    }
 }
