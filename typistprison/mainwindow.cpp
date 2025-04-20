@@ -853,12 +853,12 @@ void MainWindow::showContextMenu(const QStringList &options, const QModelIndex &
             "QFrame {"
             "    background-color: #2c2c2c;"
             "    border-radius: 4px;"
-            "    padding: 4px 4px 6px 4px;"
-            "    border: 0px solid #1F2020;"
+            "    padding: 2px 4px 4px 4px;"
+            "    border: 1px solid #1F2020;"
             "}"
             "QPushButton {"
             "    background-color: transparent;"  // Explicitly transparent
-            "    padding: 2px 24px 2px 7px;"
+            "    padding: 0px 24px 0px 4px;"
             "    color: #BDBDBD;"
             "    text-align: left;"
             "    margin: 0px;"
@@ -892,12 +892,13 @@ void MainWindow::showContextMenu(const QStringList &options, const QModelIndex &
     
     // Create a new layout
     QVBoxLayout *layout = new QVBoxLayout(contextMenuFrame);
-    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setContentsMargins(6, 2, 6, 2);
     layout->setSpacing(0);
     
     // Add buttons for each option
     for (const QString &option : options) {
         QPushButton *button = new QPushButton(option, contextMenuFrame);
+        button->setFixedSize(108, 28);
         button->setCursor(Qt::PointingHandCursor);
         connect(button, &QPushButton::clicked, this, [this, option]() {
             handleContextMenuSelection(option);

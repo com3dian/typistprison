@@ -12,13 +12,10 @@
         <file>icons/tab_clicked.png</file>
         <file>icons/newfile_silent.png</file>
         <file>icons/newfile_hover.png</file>
-        <file>icons/newfile_clicked.png</file>
         <file>icons/newfolder_silent.png</file>
         <file>icons/newfolder_hover.png</file>
-        <file>icons/newfolder_clicked.png</file>
         <file>icons/refresh_silent.png</file>
         <file>icons/refresh_hover.png</file>
-        <file>icons/refresh_clicked.png</file>
         <file>icons/search_silent.png</file>
         <file>icons/search_hover.png</file>
         <file>icons/search_clicked.png</file>

@@ -14,6 +14,7 @@
 #include <QTextBrowser>
 #include <QFileDialog>
 #include <QClipboard>
+#include <QLabel>
 
 FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
     : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr)
@@ -32,7 +33,7 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
     // Initialize layout and fileTreeView
     layout = new QVBoxLayout(this);
     // Set margins and spacing to zero
-    layout->setContentsMargins(16, 0, 0, 8);  // No margins
+    layout->setContentsMargins(6, 0, 8, 8);   // margins
     layout->setSpacing(0);                    // No spacing between widgets
 
     fileTreeView = new QTreeView(this);
@@ -46,11 +47,33 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
 }
 
 void FolderTreeViewWidget::setupButton() {
-    buttonWidget = new QWidget;
-    buttonWidget->setStyleSheet("background-color: #1F2020;");
-    buttonWidget->setFixedHeight(24);
+    if (buttonWidget) {
+        delete buttonWidget;
+        buttonWidget = nullptr;
+    }
 
-    QSpacerItem *topSpacerLeft = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
+    buttonWidget = new QWidget(this);
+    buttonWidget->setStyleSheet("background-color: #1F2020;");
+    buttonWidget->setFixedHeight(48);
+    qDebug() << "folderRoot: " << folderRoot;
+
+    // Add a label before the buttons
+    QString path = QDir::toNativeSeparators(folderRoot);
+    QString deepestFolder = path.split(QDir::separator()).last();  // Get the last folder name
+    QString firstLetter = deepestFolder.isEmpty() ? QString("E") : deepestFolder.at(0);
+    QLabel *titleLabel = new QLabel(firstLetter, this);
+    titleLabel->setStyleSheet(
+        "QLabel {"
+        "    color: #545555;"
+        "    font-size: 12px;"
+        "    border: 1px solid #545555;"
+        "    border-radius: 2px;"
+        "}"
+    );
+    titleLabel->setFixedSize(16, 16);
+    titleLabel->setAlignment(Qt::AlignCenter);  // Center the text both horizontally and vertically
+
+    QSpacerItem *topSpacerMiddle = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
 
     QPushButton *newFileButton = new QPushButton(this);
     newFileButton->setStyleSheet(
@@ -61,12 +84,12 @@ void FolderTreeViewWidget::setupButton() {
             "QPushButton:hover {"
             "border-image: url(:/icons/newfile_hover.png) 0 0 0 0 stretch stretch;"
             "}"
-            "QPushButton:pressed {"
-            "border-image: url(:/icons/newfile_clicked.png) 0 0 0 0 stretch stretch;"
-            "}"
+            // "QPushButton:pressed {"
+            // "border-image: url(:/icons/newfile_clicked.png) 0 0 0 0 stretch stretch;"
+            // "}"
             "   padding: 10px;"
     );
-    newFileButton->setFixedSize(16, 16);
+    newFileButton->setFixedSize(13, 13);
     connect(newFileButton, &QPushButton::clicked, this, [this]() {
         addFile(); // Call without parameters (uses default behavior)
     });
@@ -80,12 +103,12 @@ void FolderTreeViewWidget::setupButton() {
             "QPushButton:hover {"
             "border-image: url(:/icons/newfolder_hover.png) 0 0 0 0 stretch stretch;"
             "}"
-            "QPushButton:pressed {"
-            "border-image: url(:/icons/newfolder_clicked.png) 0 0 0 0 stretch stretch;"
-            "}"
+            // "QPushButton:pressed {"
+            // "border-image: url(:/icons/newfolder_clicked.png) 0 0 0 0 stretch stretch;"
+            // "}"
             "   padding: 10px;"
     );
-    newFolderButton->setFixedSize(16, 16);
+    newFolderButton->setFixedSize(13, 13);
     connect(newFolderButton, &QPushButton::clicked, this, [this]() {
         addFolder(); // Call without parameters (uses default behavior)
     });
@@ -99,20 +122,21 @@ void FolderTreeViewWidget::setupButton() {
             "QPushButton:hover {"
             "border-image: url(:/icons/refresh_hover.png) 0 0 0 0 stretch stretch;"
             "}"
-            "QPushButton:pressed {"
-            "border-image: url(:/icons/refresh_clicked.png) 0 0 0 0 stretch stretch;"
-            "}"
+            // "QPushButton:pressed {"
+            // "border-image: url(:/icons/refresh_clicked.png) 0 0 0 0 stretch stretch;"
+            // "}"
             "   padding: 10px;"
     );
-    refreshButton->setFixedSize(16, 16);
+    refreshButton->setFixedSize(13, 13);
 
     // Create a horizontal layout to add buttons
     QHBoxLayout *buttonWidgetLayout = new QHBoxLayout;
-    buttonWidgetLayout->setContentsMargins(0, 0, 8, 0);  // Remove margins to fit buttons neatly
+    buttonWidgetLayout->setContentsMargins(2, 0, 8, 0);  // Remove margins to fit buttons neatly
     buttonWidgetLayout->setSpacing(12);  // Optional: set spacing between buttons
     
     // Add text to the layout
-    buttonWidgetLayout->addItem(topSpacerLeft);
+    buttonWidgetLayout->addWidget(titleLabel);
+    buttonWidgetLayout->addItem(topSpacerMiddle);
 
     // Add buttons to the layout
     buttonWidgetLayout->addWidget(newFileButton);
@@ -145,15 +169,15 @@ void FolderTreeViewWidget::setupFileTree() {
     // Customize the appearance of the file tree view
     fileTreeView->setStyleSheet(
         "QTreeView { "
-        "    background-color: #1F2020; "
+        "    background-color: transparent; "
         "    border: none; "
         "    color: #BDBDBD;"
         "}"
         "QTreeView::item { "
         "    border: none; "
         "    border-radius: 0px; "
-        "    padding: 0px; "
-        "    margin: 0px; " // Add a small margin to prevent overlapping
+        "    padding: 1px 0px; "
+        "    margin: 0px; "
         "}"
         "QTreeView::item:hover { "
         "    background-color: #1F2020; "
@@ -221,8 +245,7 @@ void FolderTreeViewWidget::toggleFileTreeView() {
 void FolderTreeViewWidget::onCustomContextMenu(const QPoint &point) {
     //  get the range of the clicked item
     QRect widgetRect = this->rect();
-    qDebug() << "Widget area:" << widgetRect;
-    qDebug() << "Custom context menu requested at:" << point;
+
     // Get the index of the item that was clicked
     QModelIndex index = fileTreeView->indexAt(point);
 
@@ -448,5 +471,6 @@ void FolderTreeViewWidget::refresh(const QString &newFolderRoot) {
 
     qDebug() << "folderRoot" << folderRoot;
     fileModel->setRootPath(folderRoot);
+    setupButton();
     setupFileTree();
 }

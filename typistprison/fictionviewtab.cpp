@@ -23,7 +23,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // Add wordcount label
     wordCountLabel = new QLabel(this);
     wordCountLabel->setAlignment(Qt::AlignRight | Qt::AlignBottom);
-    wordCountLabel->setStyleSheet("QLabel { color: #656565; background-color: #1F2020; border-radius: 4px; }");
+    wordCountLabel->setStyleSheet("QLabel { color: #BDBDBD; background-color: #1F2020; border-radius: 4px; }");
     QFont font = wordCountLabel->font();  // Get the current font of the QLabel
     // font.setBold(true);                   // Set the font to bold
     // Apply the font to the QLabel
@@ -236,6 +236,10 @@ void FictionViewTab::syncScrollBar() {
 void FictionViewTab::activateSniperMode() {
     textEdit->activateSniperMode();
     disconnect(textEdit, &QTextEdit::textChanged, this, &FictionViewTab::updateWordcount);
+    this->updateWordcount(); // update word count immediately after switching mode
+    if(wordCountLabel->isVisible()) {
+        wordCountLabel->setVisible(false);
+    }
     qDebug() << "activateHighlightMode";
     disconnect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
@@ -243,6 +247,10 @@ void FictionViewTab::activateSniperMode() {
 
 void FictionViewTab::deactivateSniperMode() {
     textEdit->deactivateSniperMode();
+    connect(textEdit, &QTextEdit::textChanged, this, &FictionViewTab::updateWordcount);
+    if(!wordCountLabel->isVisible()) {
+        wordCountLabel->setVisible(true);
+    }
     qDebug() << "DeactivateHighlightMode";
     disconnect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
@@ -292,6 +300,7 @@ void FictionViewTab::editContent() {
 }
 
 void FictionViewTab::updateWordcount() {
+    qDebug() << "updateWordcount -----------";
     // if word count label is not visible, make it visible
     if (!wordCountLabel->isVisible()) {
         wordCountLabel->setVisible(true);
