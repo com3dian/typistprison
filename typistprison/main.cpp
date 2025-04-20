@@ -12,6 +12,7 @@
 
 int main(int argc, char *argv[])
 {
+    qDebug() << "Running on " << QSysInfo::productType();
     QApplication app(argc, argv);
     app.setStyle(QStyleFactory::create("Fusion"));
     

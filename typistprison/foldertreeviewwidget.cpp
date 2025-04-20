@@ -17,7 +17,7 @@
 #include <QLabel>
 
 FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
-    : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr)
+    : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr), buttonWidget(nullptr)
 {
     this->setStyleSheet(
         "FolderTreeViewWidget {"
@@ -47,8 +47,11 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
 }
 
 void FolderTreeViewWidget::setupButton() {
-    if (buttonWidget) {
-        delete buttonWidget;
+
+    if (buttonWidget && layout) {
+        layout->removeWidget(buttonWidget);
+        buttonWidget->hide();
+        buttonWidget->deleteLater();
         buttonWidget = nullptr;
     }
 

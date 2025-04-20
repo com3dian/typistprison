@@ -53,9 +53,11 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     // Make the handle always visible by preventing complete collapse
     centralSplitter->setHandleWidth(0);  // Set the physical handle width to match CSS
+    qDebug() << "Central splitter created";
 
     folderTreeView = new FolderTreeViewWidget;
-    centralSplitter->addWidget(folderTreeView);  
+    centralSplitter->addWidget(folderTreeView);
+    qDebug() << "Folder tree view added to splitter";
 
     QWidget *editorWidget = new QWidget(this);
     QVBoxLayout *editorLayout = new QVBoxLayout;
@@ -320,7 +322,6 @@ void MainWindow::searchFile()
         // Find the search widget within the tab and give it focus
         SearchWidget* searchWidget = textEditTab->findChild<SearchWidget*>();
         if (searchWidget) {
-            qDebug() << "SearchWidget";
             searchWidget->handleSearch("");
         }
     }
@@ -377,8 +378,6 @@ void MainWindow::onLastTabClosed() {
 }
 
 void MainWindow::toggleFileTreeView() {
-    // qDebug() << "--------------";
-    // qDebug() << "void MainWindow::toggleFileTreeView()";
     QList<int> sizes = centralSplitter->sizes(); // Get current splitter sizes
     
     // Only calculate the previousSplitterPosition if sizes[0] is non-zero (i.e., left widget is visible)
