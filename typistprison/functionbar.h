@@ -1,5 +1,5 @@
-#ifndef CUSTOMTABBARWIDGET_H
-#define CUSTOMTABBARWIDGET_H
+#ifndef FunctionBar_H
+#define FunctionBar_H
 
 #include <QWidget>
 #include <QFrame>
@@ -21,14 +21,15 @@
 #include "functionbar/customtabbar.h"
 #include "functionbar/paintcornerwidget.h"
 #include "functionbar/paintleftedgewidget.h"
+#include "functionbar/trafficlightwidget.h"
 
 
-class CustomTabBarWidget : public QWidget {
+class FunctionBar : public QWidget {
     Q_OBJECT
 
 public:
-    explicit CustomTabBarWidget(QWidget *parent = nullptr, CustomTabWidget *syncedTabWidget = nullptr);
-    ~CustomTabBarWidget();
+    explicit FunctionBar(QWidget *parent = nullptr, CustomTabWidget *syncedTabWidget = nullptr);
+    ~FunctionBar();
 
     QList<QPushButton*> getAllButtons() const;
 
@@ -75,6 +76,11 @@ private:
     void onTabMoved(int from, int to);
     void onTabTitleUpdated(int index, QString newTitle);
 
+signals:
+    void minimalButtonClicked();
+    void maximalButtonClicked();
+    void closeButtonClicked();
+
 public slots:
     void toggleMenuBar();
     void closeMenuBar();
@@ -87,4 +93,4 @@ public slots:
     void notHideBothPaintCornerWidget();
 };
 
-#endif // CUSTOMTABBARWIDGET_H
+#endif // FunctionBar_H

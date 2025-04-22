@@ -78,13 +78,13 @@ void SearchWidget::handleSearch(const QString &text)
         searchButton->setStyleSheet(
             "QPushButton {"
             "border: none;"
-            "border-image: url(:/icons/clearsearch_silent.png) 0 0 0 0 stretch stretch;"
+            "border-image: url(:/icons/tab_close.png) 0 0 0 0 stretch stretch;"
             "}"
             "QPushButton:hover {"
-            "border-image: url(:/icons/clearsearch_hover.png) 0 0 0 0 stretch stretch;"
+            "border-image: url(:/icons/tab_hover.png) 0 0 0 0 stretch stretch;"
             "}"
             "QPushButton:pressed {"
-            "border-image: url(:/icons/clearsearch_clicked.png) 0 0 0 0 stretch stretch;"
+            "border-image: url(:/icons/tab_hover.png) 0 0 0 0 stretch stretch;"
             "}"
         );
         searchButton->setFixedSize(16, 16);

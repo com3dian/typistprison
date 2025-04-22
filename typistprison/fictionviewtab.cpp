@@ -10,6 +10,7 @@ mot
 FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent, bool isPrisoner, ProjectManager *projectManager)
     : BaseTextEditTab(content, filePath, parent), 
       vScrollBar(new QScrollBar(Qt::Vertical, this)),
+      wordCountSpacerRight(nullptr),
       oldTextContent(""),
       isPrisoner(isPrisoner),
       projectManager(projectManager)
@@ -34,13 +35,19 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // Create a holder widget for the word count label
     QWidget *wordCountHolder = new QWidget(this);
     QHBoxLayout *wordCountLayout = new QHBoxLayout(wordCountHolder);
-    wordCountLayout->setContentsMargins(0, 0, 0, 0);
+    wordCountLayout->setContentsMargins(0, 0, 0, 8);
     wordCountLayout->setSpacing(0);
     
     // Add spacer to push the label to the right
-    QSpacerItem *wordCountSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    wordCountLayout->addItem(wordCountSpacer);
+    QSpacerItem *wordCountSpacerLeft = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    wordCountLayout->addItem(wordCountSpacerLeft);
     wordCountLayout->addWidget(wordCountLabel);
+    
+    // Replace spacer item with widget
+    wordCountSpacerRight = new QWidget(this);
+    wordCountSpacerRight->setFixedWidth(8);
+    wordCountSpacerRight->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+    wordCountLayout->addWidget(wordCountSpacerRight);
     
     // Set the holder widget's policy to expand
     wordCountHolder->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -110,15 +117,11 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // spaceAndCounterWidget->setMinimumWidth(10);
 
     spaceAndCounterLayout->setSpacing(0);
+    spaceAndCounterLayout->setContentsMargins(0, 0, 0, 0);
     spaceAndCounterWidget->setContentsMargins(0, 0, 0, 0);
 
-    // QSpacerItem *bottomRightSpacer = new QSpacerItem(64, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
-    // bottomRightSpacer->setMaxWidth(150);
-    // spaceAndCounterLayout->addItem(bottomRightSpacer);
     QWidget *spacerWidgetRight = new QWidget();
     spacerWidgetRight->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
-    // spacerWidgetRight->setMaximumWidth(320); // Limit the max width of the spacer widget
-    // spacerWidgetRight->setMinimumWidth(10);
 
     spaceAndCounterLayout->addWidget(spacerWidgetRight);
     QSpacerItem *verticalSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -230,7 +233,9 @@ void FictionViewTab::syncScrollBar() {
     vScrollBar->setRange(internalScrollBar->minimum(), internalScrollBar->maximum());
     vScrollBar->setPageStep(internalScrollBar->pageStep());
     vScrollBar->setValue(internalScrollBar->value());
-    vScrollBar->setVisible(internalScrollBar->minimum() != internalScrollBar->maximum());
+    bool isScrollBarVisible = internalScrollBar->minimum() != internalScrollBar->maximum();
+    vScrollBar->setVisible(isScrollBarVisible);
+    wordCountSpacerRight->setVisible(!isScrollBarVisible);
 }
 
 void FictionViewTab::activateSniperMode() {
@@ -240,7 +245,6 @@ void FictionViewTab::activateSniperMode() {
     if(wordCountLabel->isVisible()) {
         wordCountLabel->setVisible(false);
     }
-    qDebug() << "activateHighlightMode";
     disconnect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
 }
@@ -251,7 +255,6 @@ void FictionViewTab::deactivateSniperMode() {
     if(!wordCountLabel->isVisible()) {
         wordCountLabel->setVisible(true);
     }
-    qDebug() << "DeactivateHighlightMode";
     disconnect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::deactivateSniperMode);
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
 }
@@ -300,7 +303,6 @@ void FictionViewTab::editContent() {
 }
 
 void FictionViewTab::updateWordcount() {
-    qDebug() << "updateWordcount -----------";
     // if word count label is not visible, make it visible
     if (!wordCountLabel->isVisible()) {
         wordCountLabel->setVisible(true);

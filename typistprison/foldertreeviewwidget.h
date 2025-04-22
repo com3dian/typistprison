@@ -38,6 +38,12 @@ private:
     QVBoxLayout *layout;            // Pointer to the QVBoxLayout
     qreal scalingFactor;            // Correctly call devicePixelRatio()
     QString folderRoot;       // project root
+    QWidget* overlayWidget;
+    
+protected:
+    void enterEvent(QEnterEvent* event) override;
+    void leaveEvent(QEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 };
 
 #endif // FOLDERTREEVIEWWIDGET_H

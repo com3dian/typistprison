@@ -84,8 +84,11 @@ MainWindow::MainWindow(QWidget *parent)
     tabWidgetLayout->setSpacing(0); // Optional, to avoid extra spacing
     tabWidgetLayout->addWidget(customTabWidget);
 
-    tabBarWidget = new CustomTabBarWidget(this, customTabWidget);
-    setupMenuButtons(tabBarWidget);
+    functionBar = new FunctionBar(this, customTabWidget);
+    setupMenuButtons(functionBar);
+    connect(functionBar, &FunctionBar::minimalButtonClicked, this, &MainWindow::minimizeWindow);
+    connect(functionBar, &FunctionBar::maximalButtonClicked, this, &MainWindow::maximizeWindow);
+    connect(functionBar, &FunctionBar::closeButtonClicked, this, &MainWindow::closeWindow);
 
     editorTopSpacerWidget = new QWidget(this);
     // set height as 8 px for editor top spacer
@@ -93,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
     editorTopSpacerWidget->setVisible(false);
     editorLayout->addWidget(editorTopSpacerWidget);
 
-    editorLayout->addWidget(tabBarWidget);
+    editorLayout->addWidget(functionBar);
     editorLayout->addWidget(customTabWidgetHolder);
     editorWidget->setLayout(editorLayout);
 
@@ -244,8 +247,8 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::setupMenuButtons(CustomTabBarWidget *tabBarWidget) {
-    QList<QPushButton*> buttonList = tabBarWidget->getAllButtons();
+void MainWindow::setupMenuButtons(FunctionBar *functionBar) {
+    QList<QPushButton*> buttonList = functionBar->getAllButtons();
     if (buttonList.size() >= 3) {
         menuToggleButton = buttonList.at(0);
         button1 = buttonList.at(1);
@@ -426,6 +429,22 @@ void MainWindow::toggleFileTreeView() {
     }
 }
 
+void MainWindow::minimizeWindow() {
+    this->showMinimized();
+}
+
+void MainWindow::maximizeWindow() {
+    if (isFullScreen()) {
+        this->showNormal();
+    } else {
+        this->showFullScreen();
+    }
+}
+
+void MainWindow::closeWindow() {
+    this->close();
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     // Check if the event is for one of our menu bar buttons
@@ -471,7 +490,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
                 emit mouseClick();
                 handleFocusLeaveMenuButton();
-                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+                disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
                 
             }
             if (contextMenuFrame && contextMenuFrame->isVisible()) {
@@ -539,7 +558,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonNew, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+            disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
             setupUntitledTab(FICTION_TAB);
         });
         
@@ -581,21 +600,21 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
             connect(newTextFileButton, &MenuButton::clicked, this, [this]() {
                 emit mouseClick();
                 handleFocusLeaveMenuButton();
-                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+                disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
                 setupUntitledTab(PLAINTEXT_TAB); // Use existing function for now
             });
 
             connect(newCellFileButton, &MenuButton::clicked, this, [this]() {
                 emit mouseClick();
                 handleFocusLeaveMenuButton();
-                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+                disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
                 setupUntitledTab(FICTION_TAB); // Use existing function for now
             });
             
             connect(newMarkdownButton, &MenuButton::clicked, this, [this]() {
                 emit mouseClick();
                 handleFocusLeaveMenuButton();
-                disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+                disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
                 setupUntitledTab(MARKDOWN_TAB); // Use existing function for now
             });
             
@@ -655,7 +674,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonOpen, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+            disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
             openFile("");
         });            
         
@@ -664,7 +683,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonSave, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+            disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
             saveFile();
         });
 
@@ -672,7 +691,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonSearch, &QPushButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+            disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
             searchFile();
         });
         
@@ -691,7 +710,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonNew, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+            disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
             createAndOpenProject();
         });
 
@@ -700,7 +719,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         connect(frameButtonOpen, &MenuButton::clicked, this, [this]() {
             emit mouseClick();
             handleFocusLeaveMenuButton();
-            disconnect(this, &MainWindow::mouseClick, tabBarWidget, &CustomTabBarWidget::closeMenuBar);
+            disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
             openProject();
         });
         MenuButton *frameButtonSaveAll = new MenuButton("Save All", "", newFrame);
@@ -739,7 +758,7 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
     newFrame->setGraphicsEffect(shadow);
 
     connect(this, &MainWindow::mouseClick,
-        tabBarWidget, &CustomTabBarWidget::closeMenuBar,
+        functionBar, &FunctionBar::closeMenuBar,
         Qt::UniqueConnection);
 }
 
@@ -891,13 +910,13 @@ void MainWindow::showContextMenu(const QStringList &options, const QModelIndex &
     
     // Create a new layout
     QVBoxLayout *layout = new QVBoxLayout(contextMenuFrame);
-    layout->setContentsMargins(6, 2, 6, 2);
+    layout->setContentsMargins(4, 2, 6, 2);
     layout->setSpacing(0);
     
     // Add buttons for each option
     for (const QString &option : options) {
         QPushButton *button = new QPushButton(option, contextMenuFrame);
-        button->setFixedSize(108, 28);
+        button->setFixedSize(108, 25);
         button->setCursor(Qt::PointingHandCursor);
         connect(button, &QPushButton::clicked, this, [this, option]() {
             handleContextMenuSelection(option);
@@ -952,7 +971,7 @@ void MainWindow::activatePrisonerModeFunc() {
     centralSplitter->handle(1)->setEnabled(false);
     
     // Hide custom tab bar
-    tabBarWidget->setVisible(false);
+    functionBar->setVisible(false);
     
     // Hide side panel button
     sidePanelButton->setVisible(false);
@@ -966,7 +985,7 @@ void MainWindow::activatePrisonerModeFunc() {
 
 void MainWindow::deactivatePrisonerModeFunc() {
     // Show custom tab bar
-    tabBarWidget->setVisible(true);
+    functionBar->setVisible(true);
     
     // Hide editor top spacer
     editorTopSpacerWidget->setVisible(false);

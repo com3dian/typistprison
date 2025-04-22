@@ -86,7 +86,7 @@ private:
     QPushButton *menuToggleButton;
     QFrame *existingFrame = nullptr;
     QFrame *subMenuFrame = nullptr;  // New submenu frame for hover functionality
-    CustomTabBarWidget *tabBarWidget;
+    FunctionBar *functionBar;
     ImageFrame *imageFrame;
     QLabel *imageLabel;
     WikiFrame *wikiFrame;
@@ -96,10 +96,13 @@ private:
     bool isContextMenuForDir;
 
     void setupUntitledTab(TabType tabType = FICTION_TAB);
-    void setupMenuButtons(CustomTabBarWidget *tabBarWidget);
+    void setupMenuButtons(FunctionBar *tabBarWidget);
     void createNewTab(const QString &tabName);
     void onLastTabClosed();
     void toggleFileTreeView();
+    void minimizeWindow();
+    void maximizeWindow();
+    void closeWindow();
     void resizeEvent(QResizeEvent *event) override;
     void adjustButtonPosition();
     void handleMouseEnterMenuButton(QPushButton *button);

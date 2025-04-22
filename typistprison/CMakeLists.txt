@@ -69,6 +69,8 @@ set(PROJECT_SOURCES
     functionbar/paintleftedgewidget.h
     functionbar/menubutton.cpp
     functionbar/menubutton.h
+    functionbar/trafficlightwidget.cpp
+    functionbar/trafficlightwidget.h
     utils/ahocorasick.cpp
     utils/ahocorasick.h
     utils/hoverbutton.h

@@ -44,6 +44,8 @@ private:
     QHBoxLayout *topLeftLayout;
     QHBoxLayout *bottomLeftLayout;
     QLabel *wordCountLabel;
+    // Add to private member variables
+    QWidget *wordCountSpacerRight;  // Change from QSpacerItem* to QWidget*
     QString oldTextContent;
     bool isPrisoner;
     QFrame* prisonerFrame = nullptr;  // instead of QDialog* prisonerDialog

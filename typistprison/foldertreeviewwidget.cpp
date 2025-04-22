@@ -44,6 +44,65 @@ FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
     // Set up file tree view and add it to layout
     setupFileTree();
     this->setLayout(layout);
+
+    // Add overlay widget
+    overlayWidget = new QWidget(this);
+    overlayWidget->setStyleSheet("background-color: rgba(31, 32, 32, 0.33);"); // Semi-transparent dark overlay
+    overlayWidget->setAttribute(Qt::WA_TransparentForMouseEvents); // Allow mouse events to pass through
+    overlayWidget->raise(); // Ensure it's on top
+    overlayWidget->setGeometry(this->rect()); // Set initial geometry
+    
+    // Enable mouse tracking for the main widget
+    this->setMouseTracking(true);
+}
+
+// Add this method to handle resize events
+void FolderTreeViewWidget::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    if (overlayWidget) {
+        overlayWidget->setGeometry(this->rect());
+    }
+}
+
+void FolderTreeViewWidget::enterEvent(QEnterEvent* event)
+{
+    overlayWidget->hide();
+    QWidget::enterEvent(event);
+}
+
+void FolderTreeViewWidget::leaveEvent(QEvent* event)
+{
+    overlayWidget->show();
+    QWidget::leaveEvent(event);
+}
+
+// In the refresh method, ensure the overlay is properly handled
+void FolderTreeViewWidget::refresh(const QString &newFolderRoot) {
+    if (fileTreeView) {
+        delete fileTreeView;
+        fileTreeView = nullptr;
+    }
+
+    // Update folderRoot with the new path (if provided)
+    if (!newFolderRoot.isEmpty()) {
+        folderRoot = newFolderRoot;
+    }
+
+    fileTreeView = new QTreeView(this);
+    CustomTreeStyle *customStyle = new CustomTreeStyle(":/icons/angle_right.png", ":/icons/angle_down.png");
+    fileTreeView->setStyle(customStyle);
+
+    qDebug() << "folderRoot" << folderRoot;
+    fileModel->setRootPath(folderRoot);
+    setupButton();
+    setupFileTree();
+    
+    // Ensure overlay remains on top after refresh
+    if (overlayWidget) {
+        overlayWidget->raise();
+        overlayWidget->setGeometry(this->rect());
+    }
 }
 
 void FolderTreeViewWidget::setupButton() {
@@ -68,7 +127,7 @@ void FolderTreeViewWidget::setupButton() {
     titleLabel->setStyleSheet(
         "QLabel {"
         "    color: #545555;"
-        "    font-size: 12px;"
+        "    font-size: 10px;"
         "    border: 1px solid #545555;"
         "    border-radius: 2px;"
         "}"
@@ -457,23 +516,23 @@ void FolderTreeViewWidget::onDoubleClicked(const QModelIndex &index)
     emit doubleClickedOnFile(clickedfilePath);
 }
 
-void FolderTreeViewWidget::refresh(const QString &newFolderRoot) {
-    if (fileTreeView) {
-        delete fileTreeView;
-        fileTreeView = nullptr;
-    }
+// void FolderTreeViewWidget::refresh(const QString &newFolderRoot) {
+//     if (fileTreeView) {
+//         delete fileTreeView;
+//         fileTreeView = nullptr;
+//     }
 
-    // Update folderRoot with the new path (if provided)
-    if (!newFolderRoot.isEmpty()) {
-        folderRoot = newFolderRoot;
-    }
+//     // Update folderRoot with the new path (if provided)
+//     if (!newFolderRoot.isEmpty()) {
+//         folderRoot = newFolderRoot;
+//     }
 
-    fileTreeView = new QTreeView(this);
-    CustomTreeStyle *customStyle = new CustomTreeStyle(":/icons/angle_right.png", ":/icons/angle_down.png");
-    fileTreeView->setStyle(customStyle);
+//     fileTreeView = new QTreeView(this);
+//     CustomTreeStyle *customStyle = new CustomTreeStyle(":/icons/angle_right.png", ":/icons/angle_down.png");
+//     fileTreeView->setStyle(customStyle);
 
-    qDebug() << "folderRoot" << folderRoot;
-    fileModel->setRootPath(folderRoot);
-    setupButton();
-    setupFileTree();
-}
+//     qDebug() << "folderRoot" << folderRoot;
+//     fileModel->setRootPath(folderRoot);
+//     setupButton();
+//     setupFileTree();
+// }

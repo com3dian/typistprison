@@ -1,6 +1,6 @@
 #include "functionbar.h"
 
-CustomTabBarWidget::CustomTabBarWidget(QWidget *parent, CustomTabWidget *syncedTabWidget)
+FunctionBar::FunctionBar(QWidget *parent, CustomTabWidget *syncedTabWidget)
     : QWidget(parent)
     , syncedTabWidget(syncedTabWidget)
     , isExpanded(false)
@@ -39,6 +39,11 @@ CustomTabBarWidget::CustomTabBarWidget(QWidget *parent, CustomTabWidget *syncedT
     transparentRightWidget->setAttribute(Qt::WA_TranslucentBackground), transparentRightWidget->setFixedWidth(24);
     transparentRightWidget->setVisible(false);
 
+    TrafficLightWidget *trafficLightWidget = new TrafficLightWidget(this);
+    connect(trafficLightWidget, &TrafficLightWidget::minimalButtonClicked, this, &FunctionBar::minimalButtonClicked);
+    connect(trafficLightWidget, &TrafficLightWidget::maximalButtonClicked, this, &FunctionBar::maximalButtonClicked);
+    connect(trafficLightWidget, &TrafficLightWidget::closeButtonClicked, this, &FunctionBar::closeButtonClicked);
+
     // Add toggle button, menu bar, and tab bar to the main layout
     mainLayout->addWidget(menuBar);            // Menu bar in the left
     mainLayout->addItem(fixedSpacer1);         // Spacer between menu bar & toggle button
@@ -50,15 +55,16 @@ CustomTabBarWidget::CustomTabBarWidget(QWidget *parent, CustomTabWidget *syncedT
     mainLayout->addWidget(paintCornerWidget);  // corner painting for last tab
     mainLayout->addWidget(transparentRightWidget);
     mainLayout->addItem(spacer);
+    mainLayout->addWidget(trafficLightWidget);
 
     isScrollbuttonActive = false;
 }
 
-CustomTabBarWidget::~CustomTabBarWidget() {
+FunctionBar::~FunctionBar() {
     // Cleanup if necessary
 }
 
-void CustomTabBarWidget::setupToggleButton() {
+void FunctionBar::setupToggleButton() {
     // Create the toggle button
     toggleButton = new QPushButton(this);
     toggleButton->setFixedSize(32, 32);
@@ -69,10 +75,10 @@ void CustomTabBarWidget::setupToggleButton() {
     );
 
     // Connect the toggle button click to toggleMenuBar()
-    connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::expandMenuBar, Qt::UniqueConnection);
+    connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::expandMenuBar, Qt::UniqueConnection);
 }
 
-void CustomTabBarWidget::onTabGainedAttention(int index) {
+void FunctionBar::onTabGainedAttention(int index) {
     if (syncedTabWidget) {
         syncedTabWidget->blockSignals(true);
 
@@ -82,7 +88,7 @@ void CustomTabBarWidget::onTabGainedAttention(int index) {
     }
 }
 
-void CustomTabBarWidget::onTabInserted(int index, const QString &label) {
+void FunctionBar::onTabInserted(int index, const QString &label) {
     if (syncedTabWidget) {
         syncedTabWidget->blockSignals(true);
 
@@ -142,7 +148,7 @@ void CustomTabBarWidget::onTabInserted(int index, const QString &label) {
     }
 }
 
-void CustomTabBarWidget::onTabClosedFromSyncedWidget(int index) {
+void FunctionBar::onTabClosedFromSyncedWidget(int index) {
     if (syncedTabWidget) {
         syncedTabWidget->blockSignals(true);
 
@@ -158,13 +164,13 @@ void CustomTabBarWidget::onTabClosedFromSyncedWidget(int index) {
     }
 }
 
-void CustomTabBarWidget::onTabRemoved(int index) {
+void FunctionBar::onTabRemoved(int index) {
     if (syncedTabWidget) {
         syncedTabWidget->closeWindowIfNoTabs(index);
     }
 }
 
-void CustomTabBarWidget::onTabMoved(int from, int to) {
+void FunctionBar::onTabMoved(int from, int to) {
     if (syncedTabWidget) {
         syncedTabWidget->blockSignals(true);
 
@@ -178,11 +184,11 @@ void CustomTabBarWidget::onTabMoved(int from, int to) {
     }
 }
 
-void CustomTabBarWidget::onTabTitleUpdated(int index, QString newTitle) {
+void FunctionBar::onTabTitleUpdated(int index, QString newTitle) {
     tabBar->setTabText(index, newTitle);
 }
 
-void CustomTabBarWidget::setupTabBar() {
+void FunctionBar::setupTabBar() {
     // Create the tab bar
     tabBar = new CustomTabBar(this);
     tabBar->setFixedHeight(48);
@@ -203,49 +209,49 @@ void CustomTabBarWidget::setupTabBar() {
     tabBar->setExpanding(true);  // Tabs expand to fill available space
     tabBar->setMovable(true);
 
-    connect(syncedTabWidget, &CustomTabWidget::tabInsertedSignal, this, &CustomTabBarWidget::onTabInserted);
-    connect(syncedTabWidget, &CustomTabWidget::tabClosedFromSyncedTabWidgetSignal, this, &CustomTabBarWidget::onTabClosedFromSyncedWidget);
-    connect(syncedTabWidget, &CustomTabWidget::updatedTabTitleSignal, this, &CustomTabBarWidget::onTabTitleUpdated);
+    connect(syncedTabWidget, &CustomTabWidget::tabInsertedSignal, this, &FunctionBar::onTabInserted);
+    connect(syncedTabWidget, &CustomTabWidget::tabClosedFromSyncedTabWidgetSignal, this, &FunctionBar::onTabClosedFromSyncedWidget);
+    connect(syncedTabWidget, &CustomTabWidget::updatedTabTitleSignal, this, &FunctionBar::onTabTitleUpdated);
 
-    connect(tabBar, &QTabBar::tabBarClicked, this, &CustomTabBarWidget::onTabGainedAttention);
-    connect(tabBar, &QTabBar::tabCloseRequested, this, &CustomTabBarWidget::onTabRemoved);
-    connect(tabBar, &QTabBar::tabMoved, this, &CustomTabBarWidget::onTabMoved);
+    connect(tabBar, &QTabBar::tabBarClicked, this, &FunctionBar::onTabGainedAttention);
+    connect(tabBar, &QTabBar::tabCloseRequested, this, &FunctionBar::onTabRemoved);
+    connect(tabBar, &QTabBar::tabMoved, this, &FunctionBar::onTabMoved);
 
     // right out-border painting
     connect(tabBar, &CustomTabBar::lastTabFocus,
-        this, &CustomTabBarWidget::showPaintCornerWidget,
+        this, &FunctionBar::showPaintCornerWidget,
         Qt::UniqueConnection);
     connect(tabBar, &CustomTabBar::lastTabNoFocus,
-        this, &CustomTabBarWidget::hidePaintCornerWidget,
+        this, &FunctionBar::hidePaintCornerWidget,
         Qt::UniqueConnection);
 
     // left out-border painting 
     connect(tabBar, &CustomTabBar::firstTabFocus,
-        this, &CustomTabBarWidget::showPaintLeftEdgeWidget,
+        this, &FunctionBar::showPaintLeftEdgeWidget,
         Qt::UniqueConnection);
     connect(tabBar, &CustomTabBar::firstTabNoFocus,
-        this, &CustomTabBarWidget::hidePaintLeftEdgeWidget,
+        this, &FunctionBar::hidePaintLeftEdgeWidget,
         Qt::UniqueConnection);
 
     connect(tabBar, &CustomTabBar::firstTabFocus,
-        this, &CustomTabBarWidget::showPaintLeftEdgeWidget,
+        this, &FunctionBar::showPaintLeftEdgeWidget,
         Qt::UniqueConnection);
     connect(tabBar, &CustomTabBar::firstTabNoFocus,
-        this, &CustomTabBarWidget::hidePaintLeftEdgeWidget,
+        this, &FunctionBar::hidePaintLeftEdgeWidget,
         Qt::UniqueConnection);
 
     connect(tabBar, &CustomTabBar::scrollbuttonActivate,
-        this, &CustomTabBarWidget::hideBothPaintCornerWidget,
+        this, &FunctionBar::hideBothPaintCornerWidget,
         Qt::UniqueConnection);
     connect(tabBar, &CustomTabBar::scrollbuttonInactivate,
-        this, &CustomTabBarWidget::notHideBothPaintCornerWidget,
+        this, &FunctionBar::notHideBothPaintCornerWidget,
         Qt::UniqueConnection);
 
 
     return;
 }
 
-void CustomTabBarWidget::setupMenuBar() {
+void FunctionBar::setupMenuBar() {
     menuBar = new QFrame(this);
     menuBar->setStyleSheet("background-color: transparent; border: 0px solid #cccccc;");
     menuBar->setFixedHeight(48);  // set height to 56
@@ -306,12 +312,12 @@ void CustomTabBarWidget::setupMenuBar() {
     menuBar->setLayout(menuLayout);
 }
 
-void CustomTabBarWidget::showMenu() {
+void FunctionBar::showMenu() {
 }
 
-void CustomTabBarWidget::toggleMenuBar() {
+void FunctionBar::toggleMenuBar() {
 
-    qDebug() << "CustomTabBarWidget::toggleMenuBar";
+    qDebug() << "FunctionBar::toggleMenuBar";
 
     int buttonWidth1 = button1->sizeHint().width();
     int buttonWidth2 = button2->sizeHint().width();
@@ -323,7 +329,7 @@ void CustomTabBarWidget::toggleMenuBar() {
     animation->setEasingCurve(QEasingCurve::OutCubic);
 
     if (isExpanded) {
-        qDebug() << "CustomTabBarWidget::toggleMenuBar isExpanded";
+        qDebug() << "FunctionBar::toggleMenuBar isExpanded";
         // Collapse menu bar
         animation->setStartValue(requiredWidth);  // Expanded width
         animation->setEndValue(0);      // Collapsed width
@@ -335,10 +341,10 @@ void CustomTabBarWidget::toggleMenuBar() {
             "border-image: url(:/icons/toggle_menu.png) 0 0 0 0 stretch stretch;"
             "}"
         );
-        disconnect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::closeMenuBar);
-        connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::expandMenuBar, Qt::UniqueConnection);
+        disconnect(toggleButton, &QPushButton::clicked, this, &FunctionBar::closeMenuBar);
+        connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::expandMenuBar, Qt::UniqueConnection);
     } else {
-        qDebug() << "CustomTabBarWidget::toggleMenuBar not isExpanded";
+        qDebug() << "FunctionBar::toggleMenuBar not isExpanded";
         // Expand menu bar
         animation->setStartValue(0);    // Collapsed width
         animation->setEndValue(requiredWidth);    // Expanded width
@@ -350,37 +356,37 @@ void CustomTabBarWidget::toggleMenuBar() {
             "border-image: url(:/icons/toggle_menu_back.png) 0 0 0 0 stretch stretch;"
             "}"
         );
-        disconnect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::expandMenuBar);
-        connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::closeMenuBar, Qt::UniqueConnection);
+        disconnect(toggleButton, &QPushButton::clicked, this, &FunctionBar::expandMenuBar);
+        connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::closeMenuBar, Qt::UniqueConnection);
     }
 
     animation->start();
     isExpanded = !isExpanded;  // Toggle the expanded state
 }
 
-void CustomTabBarWidget::closeMenuBar() {
+void FunctionBar::closeMenuBar() {
     if (not isExpanded) {
         return;
     }
     this->toggleMenuBar();
-    connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::expandMenuBar, Qt::UniqueConnection);
+    connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::expandMenuBar, Qt::UniqueConnection);
 }
 
-void CustomTabBarWidget::expandMenuBar() {
+void FunctionBar::expandMenuBar() {
     if (isExpanded) {
         return;
     }
     this->toggleMenuBar();
-    connect(toggleButton, &QPushButton::clicked, this, &CustomTabBarWidget::closeMenuBar, Qt::UniqueConnection);
+    connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::closeMenuBar, Qt::UniqueConnection);
 }
 
-QList<QPushButton*> CustomTabBarWidget::getAllButtons() const {
+QList<QPushButton*> FunctionBar::getAllButtons() const {
     QList<QPushButton*> buttons;
     buttons << toggleButton << button1 << button2;
     return buttons;
 }
 
-void CustomTabBarWidget::showPaintCornerWidget() {
+void FunctionBar::showPaintCornerWidget() {
     if (isScrollbuttonActive) {
         return;
     }
@@ -388,7 +394,7 @@ void CustomTabBarWidget::showPaintCornerWidget() {
     transparentRightWidget->setVisible(false);
 }
 
-void CustomTabBarWidget::hidePaintCornerWidget() {
+void FunctionBar::hidePaintCornerWidget() {
     if (isScrollbuttonActive) {
         return;
     }
@@ -396,31 +402,31 @@ void CustomTabBarWidget::hidePaintCornerWidget() {
     transparentRightWidget->setVisible(true);
 }
 
-void CustomTabBarWidget::showPaintLeftEdgeWidget() {
+void FunctionBar::showPaintLeftEdgeWidget() {
     paintLeftEdgeWidget->setVisible(true);
     transparentLeftWidget->setVisible(false);
 }
 
-void CustomTabBarWidget::hidePaintLeftEdgeWidget() {
+void FunctionBar::hidePaintLeftEdgeWidget() {
     paintLeftEdgeWidget->setVisible(false);
     transparentLeftWidget->setVisible(true);
 }
 
-void CustomTabBarWidget::hideBothPaintCornerWidget() {
-    qDebug() << "CustomTabBarWidget::hideBothPaintCornerWidget()";
+void FunctionBar::hideBothPaintCornerWidget() {
+    qDebug() << "FunctionBar::hideBothPaintCornerWidget()";
     paintCornerWidget->setVisible(false);
     transparentRightWidget->setVisible(false);
 
     isScrollbuttonActive = true;
 }
 
-void CustomTabBarWidget::notHideBothPaintCornerWidget() {
+void FunctionBar::notHideBothPaintCornerWidget() {
     isScrollbuttonActive = false;
 }
 
 
 // Add these three methods after the existing code
-void CustomTabBarWidget::mousePressEvent(QMouseEvent *event) {
+void FunctionBar::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         isDragging = true;
         dragStartPosition = event->globalPos() - window()->frameGeometry().topLeft();
@@ -428,14 +434,14 @@ void CustomTabBarWidget::mousePressEvent(QMouseEvent *event) {
     }
 }
 
-void CustomTabBarWidget::mouseMoveEvent(QMouseEvent *event) {
+void FunctionBar::mouseMoveEvent(QMouseEvent *event) {
     if (isDragging && (event->buttons() & Qt::LeftButton)) {
         window()->move(event->globalPos() - dragStartPosition);
         event->accept();
     }
 }
 
-void CustomTabBarWidget::mouseReleaseEvent(QMouseEvent *event) {
+void FunctionBar::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         isDragging = false;
         event->accept();
