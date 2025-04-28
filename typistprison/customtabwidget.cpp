@@ -148,8 +148,8 @@ void CustomTabWidget::createFictionTab(const QString &filePath, bool isUntitled,
     
     // Create a fiction view tab
     newTab = new FictionViewTab(content, filePath, this, false, projectManager);
-    connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::onChangeFileType,
-            this, &CustomTabWidget::updateFileType);
+    connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeFileType,
+        this, &CustomTabWidget::updateFileType);
     connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::showWikiAt,
             this, &CustomTabWidget::showWikiAt);
     connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::hideWiki,
@@ -192,7 +192,8 @@ void CustomTabWidget::createPlainTextTab(const QString &filePath, bool isUntitle
     
     // Create a plaintext view tab
     newTab = new PlaintextViewTab(content, filePath, this);
-    
+    connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeFileType,
+        this, &CustomTabWidget::updateFileType);
     connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, 
             this, &CustomTabWidget::updateTabTitle);
     
@@ -210,11 +211,6 @@ void CustomTabWidget::createMarkdownTab(const QString &filePath, bool isUntitled
     QString tabName;
     QString content = "";
     QString actualFilePath = filePath;
-    
-    // For untitled markdown files, we need to ensure they have a .md extension
-    if (isUntitled && filePath.isEmpty()) {
-        actualFilePath = "untitled.md";
-    }
     
     if (!actualFilePath.isEmpty() && !isUntitled) {
         if (this->checkIdenticalOpenedFile(actualFilePath) != -1) {
@@ -243,6 +239,8 @@ void CustomTabWidget::createMarkdownTab(const QString &filePath, bool isUntitled
     
     connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeTabName, 
             this, &CustomTabWidget::updateTabTitle);
+    connect(static_cast<BaseTextEditTab*>(newTab), &BaseTextEditTab::onChangeFileType,
+        this, &CustomTabWidget::updateFileType);
     
     if (tabIndex == -1) {
         int newIndex = addTab(newTab, tabName);

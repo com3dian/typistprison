@@ -340,7 +340,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     format = QTextCharFormat();
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
-    QString colorCodeKeyWord("#fc706d");
+    QString colorCodeKeyWord("#e8cbd0"); // red
     format.setForeground(QColor(colorCodeKeyWord));
     _formats[CodeKeyWord] = std::move(format);
 
@@ -367,21 +367,21 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     format = QTextCharFormat();
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
-    QString colorCodeOther("#ffa861"); // yellow
+    QString colorCodeOther("#e8d0a8"); // yellow
     format.setForeground(QColor(colorCodeOther));
     _formats[CodeOther] = std::move(format);
 
     format = QTextCharFormat();
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
-    QString colorCodeNumLiteral("#ffa861"); // yellow
+    QString colorCodeNumLiteral("#efc3c3"); // pink
     format.setForeground(QColor(colorCodeNumLiteral));
     _formats[CodeNumLiteral] = std::move(format);
 
     format = QTextCharFormat();
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
-    QString colorCodeBuiltIn("#6a9fe6"); // blue
+    QString colorCodeBuiltIn("#a7bec6"); // blue
     format.setForeground(QColor(colorCodeBuiltIn));
     _formats[CodeBuiltIn] = std::move(format);
 }

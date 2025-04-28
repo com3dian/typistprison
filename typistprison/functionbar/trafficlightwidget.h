@@ -7,6 +7,8 @@
 #include <QIcon>
 #include <QSize>
 
+#include "trafficbutton.h"
+
 class TrafficLightWidget : public QWidget {
     Q_OBJECT
 
@@ -14,12 +16,14 @@ public:
     explicit TrafficLightWidget(QWidget *parent = nullptr);
 
 private:
-    QPushButton *minimalButton;
-    QPushButton *maximalButton;
-    QPushButton *closeButton;
+    TrafficButton *minimalButton;
+    TrafficButton *maximalButton;
+    TrafficButton *closeButton;
 
 private slots:
     void greyButtons();
+    void onButtonHovered();
+    void onButtonUnhovered();
 
 // Add these methods to the class declaration in the header
 protected:

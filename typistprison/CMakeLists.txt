@@ -71,6 +71,7 @@ set(PROJECT_SOURCES
     functionbar/menubutton.h
     functionbar/trafficlightwidget.cpp
     functionbar/trafficlightwidget.h
+    functionbar/trafficbutton.h
     utils/ahocorasick.cpp
     utils/ahocorasick.h
     utils/hoverbutton.h

@@ -16,6 +16,7 @@
 #include <QApplication>
 #include <QLabel>
 #include <QScrollArea>
+#include <QWindow>
 
 #include "customtabwidget.h"
 #include "functionbar/customtabbar.h"

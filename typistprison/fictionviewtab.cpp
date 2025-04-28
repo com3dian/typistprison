@@ -47,6 +47,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     wordCountSpacerRight = new QWidget(this);
     wordCountSpacerRight->setFixedWidth(8);
     wordCountSpacerRight->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+    wordCountSpacerRight->setStyleSheet("background: transparent; background-color: #345678");
     wordCountLayout->addWidget(wordCountSpacerRight);
     
     // Set the holder widget's policy to expand
@@ -106,19 +107,16 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // bottomLeftSpacer->setMaxWidth(160);
     QWidget *spacerWidgetLeft = new QWidget();
     spacerWidgetLeft->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // spacerWidgetLeft->setMaximumWidth(320); // Limit the max width of the spacer widget
-    // spacerWidgetLeft->setMinimumWidth(10);
 
     // add stupid fucking word count
     QLayout *spaceAndCounterLayout = new QVBoxLayout();
     QWidget *spaceAndCounterWidget = new QWidget(this);
     spaceAndCounterWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // spaceAndCounterWidget->setMaximumWidth(320);
-    // spaceAndCounterWidget->setMinimumWidth(10);
 
     spaceAndCounterLayout->setSpacing(0);
     spaceAndCounterLayout->setContentsMargins(0, 0, 0, 0);
     spaceAndCounterWidget->setContentsMargins(0, 0, 0, 0);
+    spaceAndCounterWidget->setStyleSheet("background-color: transparent; border-radius: 6px;" );
 
     QWidget *spacerWidgetRight = new QWidget();
     spacerWidgetRight->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);

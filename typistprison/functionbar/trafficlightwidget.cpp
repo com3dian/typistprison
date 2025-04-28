@@ -1,7 +1,7 @@
 #include "trafficlightwidget.h"
 
 TrafficLightWidget::TrafficLightWidget(QWidget *parent) : QWidget(parent) {
-    minimalButton = new QPushButton(this);
+    minimalButton = new TrafficButton(this);
     minimalButton->setIconSize(QSize(8, 8));;
     minimalButton->setFixedSize(14, 14);
     minimalButton->setStyleSheet("QPushButton {"
@@ -14,7 +14,7 @@ TrafficLightWidget::TrafficLightWidget(QWidget *parent) : QWidget(parent) {
     connect(minimalButton, &QPushButton::clicked, this, &TrafficLightWidget::minimalButtonClicked);
     connect(minimalButton, &QPushButton::clicked, this, &TrafficLightWidget::greyButtons);
 
-    maximalButton = new QPushButton(this);
+    maximalButton = new TrafficButton(this);
     maximalButton->setIconSize(QSize(8, 8));;
     maximalButton->setFixedSize(14, 14);
     maximalButton->setStyleSheet("QPushButton {"
@@ -27,8 +27,7 @@ TrafficLightWidget::TrafficLightWidget(QWidget *parent) : QWidget(parent) {
     connect(maximalButton, &QPushButton::clicked, this, &TrafficLightWidget::maximalButtonClicked);
     connect(maximalButton, &QPushButton::clicked, this, &TrafficLightWidget::greyButtons);
 
-    closeButton = new QPushButton(this);
-
+    closeButton = new TrafficButton(this);
     closeButton->setIconSize(QSize(8, 8));;
     closeButton->setFixedSize(14, 14);
     closeButton->setStyleSheet("QPushButton {"
@@ -47,6 +46,17 @@ TrafficLightWidget::TrafficLightWidget(QWidget *parent) : QWidget(parent) {
     layout->addWidget(minimalButton);
     layout->addWidget(maximalButton);
     layout->addWidget(closeButton);
+
+    // Connect the signals:
+    connect(minimalButton, &TrafficButton::hoverEntered, this, &TrafficLightWidget::onButtonHovered);
+    connect(minimalButton, &TrafficButton::hoverLeft, this, &TrafficLightWidget::onButtonUnhovered);
+
+    connect(maximalButton, &TrafficButton::hoverEntered, this, &TrafficLightWidget::onButtonHovered);
+    connect(maximalButton, &TrafficButton::hoverLeft, this, &TrafficLightWidget::onButtonUnhovered);
+
+    connect(closeButton, &TrafficButton::hoverEntered, this, &TrafficLightWidget::onButtonHovered);
+    connect(closeButton, &TrafficButton::hoverLeft, this, &TrafficLightWidget::onButtonUnhovered);
+
 }
 
 // Add these methods after the constructor
@@ -63,7 +73,7 @@ void TrafficLightWidget::enterEvent(QEnterEvent *event) {
                                 "    background-color: #f5cd7d;"
                                 "}"
                             );
-    minimalButton->setIcon(QIcon(":/icons/windowminimize.png"));
+    // minimalButton->setIcon(QIcon(":/icons/windowminimize.png"));
     
     maximalButton->setIconSize(QSize(8, 8));;
     maximalButton->setStyleSheet("QPushButton {"
@@ -77,7 +87,7 @@ void TrafficLightWidget::enterEvent(QEnterEvent *event) {
                                 "    background-color: #83c779;"
                                 "}"
                             );
-    maximalButton->setIcon(QIcon(":/icons/windowmaximize.png"));
+    // maximalButton->setIcon(QIcon(":/icons/windowmaximize.png"));
     
     closeButton->setIconSize(QSize(8, 8));;
     closeButton->setStyleSheet("QPushButton {"
@@ -91,7 +101,7 @@ void TrafficLightWidget::enterEvent(QEnterEvent *event) {
                               "    background-color: #f08075;"
                               "}"
                             );
-    closeButton->setIcon(QIcon(":/icons/windowclose.png"));
+    // closeButton->setIcon(QIcon(":/icons/windowclose.png"));
     QWidget::enterEvent(event);
 }
 
@@ -130,4 +140,16 @@ void TrafficLightWidget::leaveEvent(QEvent *event) {
 
 void TrafficLightWidget::greyButtons() {
     leaveEvent(nullptr); // Call the leaveEvent method to reset the style
+}
+
+void TrafficLightWidget::onButtonHovered() {
+    minimalButton->setIcon(QIcon(":/icons/windowminimize.png"));
+    maximalButton->setIcon(QIcon(":/icons/windowmaximize.png"));
+    closeButton->setIcon(QIcon(":/icons/windowclose.png"));
+}
+
+void TrafficLightWidget::onButtonUnhovered() {
+    minimalButton->setIcon(QIcon(":/icons/emptyicon.png"));
+    maximalButton->setIcon(QIcon(":/icons/emptyicon.png"));
+    closeButton->setIcon(QIcon(":/icons/emptyicon.png"));
 }

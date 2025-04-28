@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     , wikiFrame(nullptr)
     , contextMenuFrame(nullptr)
     , subMenuFrame(nullptr)
+    , splitterContainer(nullptr)
 {
     // Hide window traffic lights (close, minimize, maximize buttons)
     this->setWindowFlags(Qt::FramelessWindowHint);
@@ -29,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->setSpacing(0);
 
     // Create a wrapper for the splitter (to ensure full expansion)
-    QWidget *splitterContainer = new QWidget(mainContainer);
+    splitterContainer = new QWidget(mainContainer);
     splitterContainer->setObjectName("splitterContainer");  // Add this line
     splitterContainer->setStyleSheet(
         "QWidget#splitterContainer {"  // Target only this specific widget
@@ -39,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
     );
 
     QVBoxLayout *splitterLayout = new QVBoxLayout(splitterContainer);
-    splitterLayout->setContentsMargins(8, 0, 8, 0);
+    splitterLayout->setContentsMargins(8, 0, 8, 8);
     splitterLayout->setSpacing(0);
 
     // Create the splitter
@@ -67,20 +68,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Double holder for tab widget
     QWidget *customTabWidgetHolder = new QWidget(this);
-    customTabWidgetHolder->setAttribute(Qt::WA_TranslucentBackground);
     customTabWidgetHolder->setStyleSheet(
         "QWidget {"
         "    background-color: #2c2c2c;"
         "    border: none;"
-        "    border-top-left-radius: 6px;"      // Top-left corner
-        "    border-top-right-radius: 6px;"     // Top-right corner
-        "    border-bottom-left-radius: 6px;"   // Bottom-left corner (more rounded)
-        "    border-bottom-right-radius: 6px;"  // Bottom-right corner (more rounded)
+        "    border-radius: 6px;"
         "}"
     );
     // Create layout for the holder
     QVBoxLayout *tabWidgetLayout = new QVBoxLayout(customTabWidgetHolder);
-    tabWidgetLayout->setContentsMargins(0, 0, 0, 8); // Bottom margin
+    tabWidgetLayout->setContentsMargins(0, 0, 0, 0); // Bottom margin
     tabWidgetLayout->setSpacing(0); // Optional, to avoid extra spacing
     tabWidgetLayout->addWidget(customTabWidget);
 
@@ -89,12 +86,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(functionBar, &FunctionBar::minimalButtonClicked, this, &MainWindow::minimizeWindow);
     connect(functionBar, &FunctionBar::maximalButtonClicked, this, &MainWindow::maximizeWindow);
     connect(functionBar, &FunctionBar::closeButtonClicked, this, &MainWindow::closeWindow);
-
-    editorTopSpacerWidget = new QWidget(this);
-    // set height as 8 px for editor top spacer
-    editorTopSpacerWidget->setFixedHeight(8);
-    editorTopSpacerWidget->setVisible(false);
-    editorLayout->addWidget(editorTopSpacerWidget);
 
     editorLayout->addWidget(functionBar);
     editorLayout->addWidget(customTabWidgetHolder);
@@ -436,8 +427,20 @@ void MainWindow::minimizeWindow() {
 void MainWindow::maximizeWindow() {
     if (isFullScreen()) {
         this->showNormal();
+        splitterContainer->setStyleSheet(
+            "QWidget#splitterContainer {"  // Target only this specific widget
+            "    background-color: #1F2020;"
+            "    border-radius: 8px;"
+            "}"
+        );
     } else {
         this->showFullScreen();
+        splitterContainer->setStyleSheet(
+            "QWidget#splitterContainer {"  // Target only this specific widget
+            "    background-color: #1F2020;"
+            "    border-radius: 0px;"
+            "}"
+        );
     }
 }
 
@@ -975,9 +978,6 @@ void MainWindow::activatePrisonerModeFunc() {
     
     // Hide side panel button
     sidePanelButton->setVisible(false);
-    
-    // Show editor top spacer
-    editorTopSpacerWidget->setVisible(true);
 
     // make the window maximum
     this->showMaximized();
@@ -986,9 +986,6 @@ void MainWindow::activatePrisonerModeFunc() {
 void MainWindow::deactivatePrisonerModeFunc() {
     // Show custom tab bar
     functionBar->setVisible(true);
-    
-    // Hide editor top spacer
-    editorTopSpacerWidget->setVisible(false);
 
     // First ensure window is not maximized
     if (isMaximized()) {

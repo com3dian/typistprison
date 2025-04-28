@@ -90,10 +90,10 @@ private:
     ImageFrame *imageFrame;
     QLabel *imageLabel;
     WikiFrame *wikiFrame;
-    QWidget *editorTopSpacerWidget;
     QFrame *contextMenuFrame;
     QModelIndex currentContextMenuIndex;
     bool isContextMenuForDir;
+    QWidget *splitterContainer;
 
     void setupUntitledTab(TabType tabType = FICTION_TAB);
     void setupMenuButtons(FunctionBar *tabBarWidget);
@@ -111,9 +111,6 @@ private:
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
-
-private:
-    QPoint m_dragPosition;
 
 signals:
     void mouseClick();

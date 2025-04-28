@@ -424,26 +424,35 @@ void FunctionBar::notHideBothPaintCornerWidget() {
     isScrollbuttonActive = false;
 }
 
-
-// Add these three methods after the existing code
 void FunctionBar::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        isDragging = true;
-        dragStartPosition = event->globalPos() - window()->frameGeometry().topLeft();
-        event->accept();
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+            if (window()->windowHandle()) {
+                window()->windowHandle()->startSystemMove();
+            }
+    #else
+            // fallback for old Qt versions
+            isDragging = true;
+            dragStartPosition = event->globalPos() - window()->frameGeometry().topLeft();
+    #endif
+            event->accept();
     }
 }
 
 void FunctionBar::mouseMoveEvent(QMouseEvent *event) {
-    if (isDragging && (event->buttons() & Qt::LeftButton)) {
-        window()->move(event->globalPos() - dragStartPosition);
-        event->accept();
-    }
+    #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
+        if (isDragging && (event->buttons() & Qt::LeftButton)) {
+            window()->move(event->globalPos() - dragStartPosition);
+            event->accept();
+        }
+    #endif
 }
 
 void FunctionBar::mouseReleaseEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        isDragging = false;
-        event->accept();
-    }
+    #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
+        if (event->button() == Qt::LeftButton) {
+            isDragging = false;
+            event->accept();
+        }
+    #endif
 }

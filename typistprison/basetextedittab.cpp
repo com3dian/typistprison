@@ -23,13 +23,14 @@ void BaseTextEditTab::setFilePath(const QString &path)
 
 bool BaseTextEditTab::saveContent()
 {
-    if (currentFilePath.isEmpty()) {
-        QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
+    QString fileName;
+    bool isUntitled = currentFilePath.isEmpty();
+    if (isUntitled) {
+        fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
         if (fileName.isEmpty()) {
             return false;
         }
         currentFilePath = fileName;
-        emit onChangeFileType(fileName);
     }
 
     QFile file(currentFilePath);
@@ -42,6 +43,11 @@ bool BaseTextEditTab::saveContent()
     out << getTextContent();
     file.close();
 
-    emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+    if (isUntitled) {
+        emit onChangeFileType(fileName);
+    } else {
+        emit onChangeTabName(QFileInfo(currentFilePath).fileName());
+    }
+
     return true;
 }
