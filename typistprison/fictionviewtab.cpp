@@ -47,7 +47,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     wordCountSpacerRight = new QWidget(this);
     wordCountSpacerRight->setFixedWidth(8);
     wordCountSpacerRight->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
-    wordCountSpacerRight->setStyleSheet("background: transparent; background-color: #345678");
+    wordCountSpacerRight->setStyleSheet("background: transparent; background-color: transparent");
     wordCountLayout->addWidget(wordCountSpacerRight);
     
     // Set the holder widget's policy to expand

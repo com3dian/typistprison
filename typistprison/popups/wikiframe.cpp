@@ -66,8 +66,9 @@ WikiFrame::WikiFrame(QWidget *parent) : QFrame(parent) {
     shadow->setOffset(0, 0);
     setGraphicsEffect(shadow);
 
-    // Set fixed size for the frame
-    setFixedSize(420, 320);  // Slightly larger than editor to account for padding
+    // Set fixed width and maximum height for the frame
+    setFixedWidth(360);  // Fixed width
+    setMinimumHeight(420); // Set a minimum height for the frame
 }
 
 void WikiFrame::setContent(const QString& content) {
@@ -111,4 +112,5 @@ void WikiFrame::showEvent(QShowEvent* event) {
             move(pos);
         }
     }
+
 } 

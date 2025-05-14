@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QAction>
+#include <QCursor>
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
@@ -38,6 +39,8 @@ namespace Ui {
 class MainWindow;
 }
 QT_END_NAMESPACE
+
+static constexpr int RESIZE_MARGIN = 8;
 
 class MainWindow : public QMainWindow
 {
@@ -111,6 +114,10 @@ private:
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
+    Qt::Edges edgeAt(const QPoint &pos) const;
+    void updateCursor(const Qt::Edges &edges);
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 
 signals:
     void mouseClick();

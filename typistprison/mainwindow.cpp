@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     , subMenuFrame(nullptr)
     , splitterContainer(nullptr)
 {
-    // Hide window traffic lights (close, minimize, maximize buttons)
+    // Hide window original traffic lights (close, minimize, maximize buttons)
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
     
@@ -35,12 +35,13 @@ MainWindow::MainWindow(QWidget *parent)
     splitterContainer->setStyleSheet(
         "QWidget#splitterContainer {"  // Target only this specific widget
         "    background-color: #1F2020;"
-        "    border-radius: 8px;"
+        "    border-radius: 9px;"
+        "    border: 1px solid #393b3b;"
         "}"
     );
 
     QVBoxLayout *splitterLayout = new QVBoxLayout(splitterContainer);
-    splitterLayout->setContentsMargins(8, 0, 8, 8);
+    splitterLayout->setContentsMargins(8, 1, 8, 8);
     splitterLayout->setSpacing(0);
 
     // Create the splitter
@@ -54,11 +55,10 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     // Make the handle always visible by preventing complete collapse
     centralSplitter->setHandleWidth(0);  // Set the physical handle width to match CSS
-    qDebug() << "Central splitter created";
+    centralSplitter->setCursor(Qt::ArrowCursor);
 
     folderTreeView = new FolderTreeViewWidget;
     centralSplitter->addWidget(folderTreeView);
-    qDebug() << "Folder tree view added to splitter";
 
     QWidget *editorWidget = new QWidget(this);
     QVBoxLayout *editorLayout = new QVBoxLayout;
@@ -106,6 +106,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Set main container as the central widget
     setCentralWidget(mainContainer);
+    setMouseTracking(true);
+    mainContainer->setMouseTracking(true);
     
     // ---- Create the Floating Side Panel Button ----
     sidePanelButton = new QPushButton(this);
@@ -777,8 +779,26 @@ void MainWindow::handleFocusLeaveMenuButton() {
 void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos) {
     QPixmap pixmap(imagePath);
     if (!pixmap.isNull()) {
-        // Scale the image by 0.2 (20% of its original size) while maintaining aspect ratio
-        QPixmap scaledPixmap = pixmap.scaled(pixmap.size() * 0.2, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        // Define maximum dimensions for the scaled image
+        const int MAX_WIDTH = 800;
+        const int MAX_HEIGHT = 600;
+
+        // Calculate the scaling factor to fit within max dimensions while maintaining aspect ratio
+        QSize originalSize = pixmap.size();
+        double scaleFactor = 0.2; // Start with 20% scaling
+        
+        // Calculate scaled size
+        QSize scaledSize = originalSize * scaleFactor;
+        
+        // If scaled size exceeds max dimensions, adjust scale factor
+        if (scaledSize.width() > MAX_WIDTH || scaledSize.height() > MAX_HEIGHT) {
+            double widthRatio = static_cast<double>(MAX_WIDTH) / originalSize.width();
+            double heightRatio = static_cast<double>(MAX_HEIGHT) / originalSize.height();
+            scaleFactor = qMin(widthRatio, heightRatio);
+        }
+
+        // Scale the image with the calculated factor
+        QPixmap scaledPixmap = pixmap.scaled(originalSize * scaleFactor, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
         // Create ImageFrame if it doesn't exist
         if (!imageFrame) {
@@ -793,8 +813,28 @@ void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos
         QSize frameSize = imageSize + QSize(20, 20); // Extra padding for the shadow
         imageFrame->resize(frameSize);
 
-        // Adjust position relative to the mouse or reference point
-        QPoint popupPos = this->mapFromGlobal(lastMousePos) + QPoint(0, 0);
+        // Position the frame relative to the mouse position with offset
+        QPoint popupPos = this->mapFromGlobal(lastMousePos - QPoint(8, 8));
+
+        // Ensure the frame stays within window bounds
+        QSize windowSize = this->size();
+
+        // Adjust x-coordinate if needed
+        if (popupPos.x() + frameSize.width() > windowSize.width()) {
+            popupPos.setX(windowSize.width() - frameSize.width());
+        }
+        if (popupPos.x() < 0) {
+            popupPos.setX(0);
+        }
+
+        // Adjust y-coordinate if needed
+        if (popupPos.y() + frameSize.height() > windowSize.height()) {
+            popupPos.setY(windowSize.height() - frameSize.height());
+        }
+        if (popupPos.y() < 0) {
+            popupPos.setY(0);
+        }
+
         imageFrame->move(popupPos);
 
         // Create and configure the drop shadow effect
@@ -828,7 +868,7 @@ void MainWindow::showWiki(const QString &wikiContent, QPoint lastMousePos) {
     wikiFrame->setContent(wikiContent);
 
     // Position the frame relative to the mouse position with offset
-    QPoint popupPos = this->mapFromGlobal(lastMousePos);
+    QPoint popupPos = this->mapFromGlobal(lastMousePos - QPoint(8, 8));
 
     // Ensure the frame stays within window bounds
     QSize frameSize = wikiFrame->size();
@@ -873,8 +913,8 @@ void MainWindow::showContextMenu(const QStringList &options, const QModelIndex &
         contextMenuFrame->setStyleSheet(
             "QFrame {"
             "    background-color: #2c2c2c;"
-            "    border-radius: 4px;"
-            "    padding: 2px 4px 4px 4px;"
+            "    border-radius: 5px;"
+            "    padding: 4px 4px 6px 4px;"
             "    border: 1px solid #1F2020;"
             "}"
             "QPushButton {"
@@ -919,7 +959,7 @@ void MainWindow::showContextMenu(const QStringList &options, const QModelIndex &
     // Add buttons for each option
     for (const QString &option : options) {
         QPushButton *button = new QPushButton(option, contextMenuFrame);
-        button->setFixedSize(108, 25);
+        button->setFixedSize(104, 25);
         button->setCursor(Qt::PointingHandCursor);
         connect(button, &QPushButton::clicked, this, [this, option]() {
             handleContextMenuSelection(option);
@@ -1004,4 +1044,62 @@ void MainWindow::deactivatePrisonerModeFunc() {
     
     // Show side panel button
     sidePanelButton->setVisible(true);
+}
+
+/*
+cursor behavior near edges of window
+
+resizing window in linux
+*/
+
+Qt::Edges MainWindow::edgeAt(const QPoint &pos) const {
+        Qt::Edges edges;
+        QRect r = rect();
+        if (pos.x() <= RESIZE_MARGIN) {
+            edges |= Qt::LeftEdge;
+        } else if (pos.x() >= r.width() - RESIZE_MARGIN) {
+            edges |= Qt::RightEdge;
+        }
+        
+        if (pos.y() >= r.height() - RESIZE_MARGIN) {
+            edges |= Qt::BottomEdge;
+        }
+        return edges;
+    }
+
+void MainWindow::updateCursor(const Qt::Edges &edges) {
+    // Get the widget under the cursor
+    QWidget* widgetUnderCursor = QApplication::widgetAt(QCursor::pos());
+    
+    // Only show resize cursors if we have valid edges and window handle
+    if (edges != Qt::Edges() && windowHandle()) {
+        // Only change cursor if we're directly over the splitterContainer
+        if (widgetUnderCursor == splitterContainer) {
+            if (edges == (Qt::LeftEdge) || edges == (Qt::RightEdge)) {
+                splitterContainer->setCursor(Qt::SizeHorCursor);
+            } else if (edges == (Qt::BottomEdge)) {
+                splitterContainer->setCursor(Qt::SizeVerCursor);
+            }
+        }
+    }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        Qt::Edges e = edgeAt(event->pos());
+        // Only attempt resize if we have valid edges
+        if (e != Qt::Edges() && windowHandle()) {
+            windowHandle()->startSystemResize(e);
+            return; // do not pass to base
+        }
+    }
+    QMainWindow::mousePressEvent(event);
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event) {
+    // only change cursor if not dragging
+    if (!(event->buttons() and Qt::LeftButton)) {
+        updateCursor(edgeAt(event->pos()));
+    }
+    QMainWindow::mouseMoveEvent(event);
 }

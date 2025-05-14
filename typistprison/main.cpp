@@ -45,10 +45,15 @@ int main(int argc, char *argv[])
 
     #if defined(Q_OS_WIN)
         qDebug() << "Running on Windows";
-        QString styleSheet = "QWidget { font-family: 'Noto Sans CJK SC Light';}"
-                             "PlaintextEdit { font-family: 'Noto Mono'; }"
-                             "QMarkdownTextEdit { font-family: %1; }"
-                             "FictionTextEdit { font-family: %1; }" ;
+        QString styleSheet = QString(
+                             "QWidget { font-family: '%1';}"
+                             "PlaintextEdit { font-family: '%2'; }"
+                             "QMarkdownTextEdit { font-family: '%3'; }"
+                             "FictionTextEdit { font-family: '%4'; }"
+                             ).arg(notoSansLightFamily)
+                              .arg(notoSansMonoFamily)
+                              .arg(notoSansLightFamily)
+                              .arg(notoSansLightFamily);
     #elif defined(Q_OS_MAC)
         qDebug() << "Running on MacOS";
         QString styleSheet = QString(
