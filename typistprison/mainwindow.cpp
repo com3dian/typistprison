@@ -36,13 +36,23 @@ MainWindow::MainWindow(QWidget *parent)
         "QWidget#splitterContainer {"  // Target only this specific widget
         "    background-color: #1F2020;"
         "    border-radius: 9px;"
-        "    border: 1px solid #393b3b;"
+        "    border: 1px solid #393B3B;"
         "}"
     );
+    
 
-    QVBoxLayout *splitterLayout = new QVBoxLayout(splitterContainer);
+    splitterLayout = new QVBoxLayout(splitterContainer);
     splitterLayout->setContentsMargins(8, 1, 8, 8);
     splitterLayout->setSpacing(0);
+
+    splitterTopWidget = new QWidget(this);
+    splitterTopWidget->setStyleSheet(
+        "QWidget {"
+        "    background-color: transparent;"
+        "}"
+    );
+    splitterTopWidget->setFixedHeight(7);
+    splitterTopWidget->setVisible(false);
 
     // Create the splitter
     centralSplitter = new QSplitter(splitterContainer);
@@ -97,6 +107,7 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->handle(1)->setEnabled(false);  // Disable handle dragging
 
     // Add splitter to its container layout
+    splitterLayout->addWidget(splitterTopWidget);
     splitterLayout->addWidget(centralSplitter);
     splitterContainer->setLayout(splitterLayout);
     splitterContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -136,6 +147,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(customTabWidget, &CustomTabWidget::hideImageSignal, this, &MainWindow::hideMarkdownImage);
     connect(customTabWidget, &CustomTabWidget::showWikiAtSignal, this, &MainWindow::showWiki);
     connect(customTabWidget, &CustomTabWidget::hideWikiSignal, this, &MainWindow::hideWiki);
+    connect(customTabWidget, &CustomTabWidget::activatePrisonerModeSignal, this, &MainWindow::activatePrisonerModeFunc);
+    connect(customTabWidget, &CustomTabWidget::deactivatePrisonerModeSignal, this, &MainWindow::deactivatePrisonerModeFunc);
 
     connect(folderTreeView, &FolderTreeViewWidget::doubleClickedOnFile, this, &MainWindow::openFile);
     connect(folderTreeView, &FolderTreeViewWidget::fileDeleted, customTabWidget, &CustomTabWidget::handleFileDeleted);
@@ -150,8 +163,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupActions();
 
     qApp->installEventFilter(this);
-    // activatePrisonerModeFunc();
-    // deactivatePrisonerModeFunc();
 }
 
 void MainWindow::setupActions() {
@@ -424,6 +435,13 @@ void MainWindow::toggleFileTreeView() {
 
 void MainWindow::minimizeWindow() {
     this->showMinimized();
+    splitterContainer->setStyleSheet(
+        "QWidget#splitterContainer {"  // Target only this specific widget
+        "    background-color: #1F2020;"
+        "    border-radius: 8px;"
+        "    border: 1px solid #393B3B;"
+        "}"
+    );
 }
 
 void MainWindow::maximizeWindow() {
@@ -433,6 +451,7 @@ void MainWindow::maximizeWindow() {
             "QWidget#splitterContainer {"  // Target only this specific widget
             "    background-color: #1F2020;"
             "    border-radius: 8px;"
+            "    border: 1px solid #393B3B;"
             "}"
         );
     } else {
@@ -441,6 +460,7 @@ void MainWindow::maximizeWindow() {
             "QWidget#splitterContainer {"  // Target only this specific widget
             "    background-color: #1F2020;"
             "    border-radius: 0px;"
+            "    border: 0px;"
             "}"
         );
     }
@@ -467,8 +487,8 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         
         // Convert the global position to the main window's coordinates.
         QPoint posInMainWindow = this->mapFromGlobal(mouseEvent->globalPos());
-        if (this->rect().contains(posInMainWindow))
-        {
+        if (this->rect().contains(posInMainWindow)) {
+
             // If the drop-down frame is visible, handle it
             if (existingFrame && existingFrame->isVisible()) {
                 if (obj == menuToggleButton) {
@@ -1007,6 +1027,7 @@ void MainWindow::closeFileTreeView() {
 }
 
 void MainWindow::activatePrisonerModeFunc() {
+    qDebug() << "MainWindow::activatePrisonerModeFunc()";
     // Close side panel
     closeFileTreeView();
     
@@ -1018,32 +1039,44 @@ void MainWindow::activatePrisonerModeFunc() {
     
     // Hide side panel button
     sidePanelButton->setVisible(false);
+    splitterTopWidget->setVisible(true);
 
     // make the window maximum
-    this->showMaximized();
+    this->showFullScreen();
+    splitterContainer->setStyleSheet(
+        "QWidget#splitterContainer {"  // Target only this specific widget
+        "    background-color: #1F2020;"
+        "    border-radius: 0px;"
+        "    border: 0px;"
+        "}"
+    );
 }
 
 void MainWindow::deactivatePrisonerModeFunc() {
+    qDebug() << "MainWindow::deactivatePrisonerModeFunc()";
     // Show custom tab bar
     functionBar->setVisible(true);
 
     // First ensure window is not maximized
-    if (isMaximized()) {
-        showNormal();
-    }
-    
-    if (!projectManager->isLoadedProject) {
-        return;
-    }
-    
+    this->showNormal();
+    splitterContainer->setStyleSheet(
+        "QWidget#splitterContainer {"  // Target only this specific widget
+        "    background-color: #1F2020;"
+        "    border-radius: 8px;"
+        "    border: 1px solid #393B3B;"
+        "}"
+    );
+
     // Restore side panel
-    openFileTreeView();
+    if (projectManager->isLoadedProject) {
+        // openFileTreeView();
+        // Show side panel button
+        sidePanelButton->setVisible(true);
+    }
     
     // Make handler draggable again
     centralSplitter->handle(1)->setEnabled(true);
-    
-    // Show side panel button
-    sidePanelButton->setVisible(true);
+    splitterTopWidget->setVisible(false);
 }
 
 /*
@@ -1085,21 +1118,25 @@ void MainWindow::updateCursor(const Qt::Edges &edges) {
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        Qt::Edges e = edgeAt(event->pos());
-        // Only attempt resize if we have valid edges
-        if (e != Qt::Edges() && windowHandle()) {
-            windowHandle()->startSystemResize(e);
-            return; // do not pass to base
+    #ifdef Q_OS_LINUX
+        if (event->button() == Qt::LeftButton) {
+            Qt::Edges e = edgeAt(event->pos());
+            // Only attempt resize if we have valid edges
+            if (e != Qt::Edges() && windowHandle()) {
+                windowHandle()->startSystemResize(e);
+                return; // do not pass to base
+            }
         }
-    }
+    #endif
     QMainWindow::mousePressEvent(event);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    // only change cursor if not dragging
-    if (!(event->buttons() and Qt::LeftButton)) {
-        updateCursor(edgeAt(event->pos()));
-    }
+    #ifdef Q_OS_LINUX
+        // only change cursor if not dragging
+        if (!(event->buttons() and Qt::LeftButton)) {
+            updateCursor(edgeAt(event->pos()));
+        }
+    #endif
     QMainWindow::mouseMoveEvent(event);
 }

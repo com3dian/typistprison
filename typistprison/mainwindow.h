@@ -33,6 +33,7 @@
 #include "popups/wikiframe.h"
 #include "functionbar/menubutton.h"
 #include "qmarkdowntextedit.h"
+#include "progressborderwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -70,11 +71,11 @@ public slots:
     void openFileTreeView();
     void closeFileTreeView();
     void createAndOpenProject();
-    void activatePrisonerModeFunc();
-    void deactivatePrisonerModeFunc();
 private slots:
     void showContextMenu(const QStringList &options, const QModelIndex &index, bool isDir);
     void handleContextMenuSelection(const QString &action);
+    void activatePrisonerModeFunc();
+    void deactivatePrisonerModeFunc();
 private:
     Ui::MainWindow *ui;
     int untitledCount;
@@ -97,6 +98,8 @@ private:
     QModelIndex currentContextMenuIndex;
     bool isContextMenuForDir;
     QWidget *splitterContainer;
+    QVBoxLayout *splitterLayout;
+    QWidget *splitterTopWidget;
 
     void setupUntitledTab(TabType tabType = FICTION_TAB);
     void setupMenuButtons(FunctionBar *tabBarWidget);

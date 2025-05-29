@@ -156,15 +156,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     connect(textEdit, &FictionTextEdit::textChanged, this, &FictionViewTab::updateWordcount);
     connect(textEdit, &FictionTextEdit::showWikiAt, this, &FictionViewTab::showWikiFunc);
     connect(textEdit, &FictionTextEdit::hideWiki, this, &FictionViewTab::hideWikiFunc);
-
-    if (isPrisoner) {
-        // // Connect signals unique to PrisonerTextEdit
-        // connect(static_cast<PrisonerFictionTextEdit*>(textEdit), &PrisonerFictionTextEdit::onEscape,
-        //         this, &FictionViewTab::deactivatePrisonerMode);
-        // connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
-    } else {
-        connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::activatePrisonerMode); 
-    }
+    connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::activatePrisonerMode);
 }
 
 void FictionViewTab::setupTextEdit(const QString &content) {
@@ -203,7 +195,7 @@ void FictionViewTab::setupScrollBar() {
         "}"
         "QScrollBar::handle:vertical {"
         "    background: #262626;"
-        "    min-height: 16px;"
+        "    min-height: 32px;"
         "    border-radius: 4px;"
         "}"
         "QScrollBar::handle:vertical:hover {"
@@ -265,6 +257,7 @@ bool FictionViewTab::saveContent() {
             // If the user cancels the save dialog, do nothing
             return false;
         }
+
         currentFilePath = fileName;
         
         QFile file(currentFilePath);
@@ -351,7 +344,7 @@ void FictionViewTab::activatePrisonerMode() {
 
     // Create and show the prisoner dialog
     PrisonerDialog dialog(this);
-    connect(&dialog, &PrisonerDialog::prisonerSettings, 
+    connect(&dialog, &PrisonerDialog::prisonerSettings,
             this, [this](int wordGoal, int timeLimit) {
         // Handle the prisoner settings here
         qDebug() << "Word Goal:" << wordGoal << "Time Limit:" << timeLimit;
@@ -361,75 +354,15 @@ void FictionViewTab::activatePrisonerMode() {
     if (dialog.exec() != QDialog::Accepted) {
         return;  // User cancelled the dialog
     }
-    
-    // new FictionViewTab
-    qDebug() << "activate prisoner mode";
-    QString content = textEdit->toPlainText();
-    QString filePath = getCurrentFilePath();
-    QWidget *parentWidget = nullptr;
 
-    // TODO: need some extra check;
-    // 
-    FictionViewTab *fullScreenFictionViewTab = new FictionViewTab(textEdit->toPlainText(), filePath, parentWidget, true, projectManager);
+    emit activatePrisonerModeSignal();
 
-    // connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
-
-    // Create a full screen frame
-    QFrame *fullScreenFrame = new QFrame();
-    fullScreenFrame->setStyleSheet("QFrame { background-color: #31363F; }");
-    fullScreenFrame->setWindowFlag(Qt::Window);                  
-    fullScreenFrame->setWindowFlag(Qt::FramelessWindowHint);     
-    fullScreenFrame->setWindowFlag(Qt::WindowFullscreenButtonHint); // Add this flag for proper macOS fullscreen
-    fullScreenFrame->setWindowModality(Qt::ApplicationModal);    
-    fullScreenFrame->setAttribute(Qt::WA_DeleteOnClose);         
-
-    // Show the window first, then make it fullscreen
-    fullScreenFrame->show();
-    fullScreenFrame->showFullScreen();
-    
-    fullScreenFrame->setFixedSize(QApplication::primaryScreen()->size());  // Set to screen size
-    fullScreenFrame->move(0, 0);  // Move to top-left corner
-    fullScreenFrame->showFullScreen();  // Alternative way to go fullscreen
-    
-    fullScreenFrame->setAttribute(Qt::WA_DeleteOnClose);         
-
-    // Create the content frame with margin
-    QFrame *contentFrame = new QFrame(fullScreenFrame);
-    contentFrame->setFrameShape(QFrame::NoFrame);
-    contentFrame->setStyleSheet("QFrame { margin: 32px; background-color: #31363F; }");
-
-    QVBoxLayout *contentLayout = new QVBoxLayout(contentFrame);
-    contentLayout->setContentsMargins(0, 0, 0, 0);
-    contentLayout->addWidget(fullScreenFictionViewTab);
-
-    // Add content frame to the full screen frame
-    QVBoxLayout *mainLayout = new QVBoxLayout(fullScreenFrame);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->addWidget(contentFrame);
-
-    // Store the frame pointer instead of dialog
-    prisonerFrame = fullScreenFrame;  // You might want to rename this member variable
-    prisonerFictionViewTab = fullScreenFictionViewTab;
-    fullScreenPrisonerTextEdit = static_cast<PrisonerFictionTextEdit*>(prisonerFictionViewTab->textEdit);
-    QPushButton *fullScreenPrisonerButton = prisonerFictionViewTab->prisonerButton;
-
-    connect(fullScreenPrisonerTextEdit, &PrisonerFictionTextEdit::onEscape, this, &FictionViewTab::deactivatePrisonerMode);
-    connect(fullScreenPrisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
+    disconnect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::activatePrisonerMode);
+    connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
 }
 
 void FictionViewTab::deactivatePrisonerMode() {
-    // In deactivatePrisonerMode()
-    if (prisonerFrame) {
-        // Get the text from the FictionViewTab before closing
-        if (prisonerFictionViewTab) {
-            QString prisonerText = prisonerFictionViewTab->textEdit->toPlainText();
-            textEdit->load(prisonerText);
-        }
-    
-        prisonerFrame->close();
-        prisonerFrame = nullptr;
-        prisonerFictionViewTab = nullptr;
-    }
+    emit deactivatePrisonerModeSignal();
 }
 
 QString FictionViewTab::getTextContent() const {

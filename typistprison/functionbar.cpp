@@ -312,12 +312,7 @@ void FunctionBar::setupMenuBar() {
     menuBar->setLayout(menuLayout);
 }
 
-void FunctionBar::showMenu() {
-}
-
 void FunctionBar::toggleMenuBar() {
-
-    qDebug() << "FunctionBar::toggleMenuBar";
 
     int buttonWidth1 = button1->sizeHint().width();
     int buttonWidth2 = button2->sizeHint().width();
@@ -329,7 +324,6 @@ void FunctionBar::toggleMenuBar() {
     animation->setEasingCurve(QEasingCurve::OutCubic);
 
     if (isExpanded) {
-        qDebug() << "FunctionBar::toggleMenuBar isExpanded";
         // Collapse menu bar
         animation->setStartValue(requiredWidth);  // Expanded width
         animation->setEndValue(0);      // Collapsed width
@@ -341,10 +335,7 @@ void FunctionBar::toggleMenuBar() {
             "border-image: url(:/icons/toggle_menu.png) 0 0 0 0 stretch stretch;"
             "}"
         );
-        disconnect(toggleButton, &QPushButton::clicked, this, &FunctionBar::closeMenuBar);
-        connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::expandMenuBar, Qt::UniqueConnection);
     } else {
-        qDebug() << "FunctionBar::toggleMenuBar not isExpanded";
         // Expand menu bar
         animation->setStartValue(0);    // Collapsed width
         animation->setEndValue(requiredWidth);    // Expanded width
@@ -356,8 +347,6 @@ void FunctionBar::toggleMenuBar() {
             "border-image: url(:/icons/toggle_menu_back.png) 0 0 0 0 stretch stretch;"
             "}"
         );
-        disconnect(toggleButton, &QPushButton::clicked, this, &FunctionBar::expandMenuBar);
-        connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::closeMenuBar, Qt::UniqueConnection);
     }
 
     animation->start();
@@ -369,6 +358,7 @@ void FunctionBar::closeMenuBar() {
         return;
     }
     this->toggleMenuBar();
+    disconnect(toggleButton, &QPushButton::clicked, this, &FunctionBar::closeMenuBar);
     connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::expandMenuBar, Qt::UniqueConnection);
 }
 
@@ -377,6 +367,7 @@ void FunctionBar::expandMenuBar() {
         return;
     }
     this->toggleMenuBar();
+    disconnect(toggleButton, &QPushButton::clicked, this, &FunctionBar::expandMenuBar);
     connect(toggleButton, &QPushButton::clicked, this, &FunctionBar::closeMenuBar, Qt::UniqueConnection);
 }
 

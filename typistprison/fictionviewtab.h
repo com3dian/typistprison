@@ -69,6 +69,8 @@ private:
 signals:
     void showWikiAt(const QString &wikiContent, QPoint lastMousePos);
     void hideWiki();
+    void activatePrisonerModeSignal();
+    void deactivatePrisonerModeSignal();
 
 // In the protected or public section of your class declaration:
 protected:

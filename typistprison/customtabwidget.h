@@ -36,6 +36,8 @@ public slots:
     void hideImage();
     void showWikiAt(const QString &wikiContent, QPoint lastMousePos);
     void hideWiki();
+    void activatePrisonerModeFunc();
+    void deactivatePrisonerModeFunc();
 
 private:
     int untitledCount;
@@ -63,6 +65,8 @@ signals:
     void hideImageSignal();
     void showWikiAtSignal(const QString &imagePath, QPoint lastMousePos);
     void hideWikiSignal();
+    void activatePrisonerModeSignal();
+    void deactivatePrisonerModeSignal();
 
 };
 

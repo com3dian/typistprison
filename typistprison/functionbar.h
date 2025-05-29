@@ -65,7 +65,6 @@ private:
     bool isExpanded;
     CustomTabWidget *syncedTabWidget;
 
-    void showMenu();
     void setupMenuBar();
     void setupTabBar();
     void setupToggleButton();

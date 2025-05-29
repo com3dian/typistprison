@@ -97,7 +97,7 @@ void MarkdownViewTab::setupScrollBar() {
         "}"
         "QScrollBar::handle:vertical {"
         "    background: #262626;"
-        "    min-height: 16px;"
+        "    min-height: 32px;"
         "    border-radius: 4px;"
         "}"
         "QScrollBar::handle:vertical:hover {"

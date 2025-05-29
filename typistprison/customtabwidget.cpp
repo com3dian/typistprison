@@ -99,7 +99,10 @@ void CustomTabWidget::createNewTab(const QString &filePath,
                 this, &CustomTabWidget::showWikiAt);
         connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::hideWiki,
                 this, &CustomTabWidget::hideWiki);
-
+        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::activatePrisonerModeSignal,
+                this, &CustomTabWidget::activatePrisonerModeFunc);
+        connect(static_cast<FictionViewTab*>(newTab), &FictionViewTab::deactivatePrisonerModeSignal,
+                this, &CustomTabWidget::deactivatePrisonerModeFunc);
     } else if (tabName.endsWith(".md") || (isUntitled && filePath.endsWith(".md"))) {
         newTab = new MarkdownViewTab(content, filePath, this);
         connect(static_cast<MarkdownViewTab*>(newTab), &MarkdownViewTab::showImageAt,
@@ -415,13 +418,20 @@ void CustomTabWidget::handleFileDeleted(const QString &deletedFilePath)
 void CustomTabWidget::handleFileRenamed(const QString &originalFilePath, const QString &newFilePath)
 {
     int tabIndex = checkIdenticalOpenedFile(originalFilePath);
-    qDebug() << "tabIndex: " << tabIndex;
     if (tabIndex != -1) {
 
         removeTab(tabIndex);
         emit tabClosedFromSyncedTabWidgetSignal(tabIndex);
 
-        qDebug() << "emit tabClosedFromSyncedTabWidgetSignal(tabIndex); -----------------------";
         createNewTab(newFilePath, false, tabIndex);
     }
+}
+
+void CustomTabWidget::activatePrisonerModeFunc() {
+    emit activatePrisonerModeSignal();
+}
+
+void CustomTabWidget::deactivatePrisonerModeFunc() {
+    qDebug() << "CustomTabWidget::deactivatePrisonerModeSignal";
+    emit deactivatePrisonerModeSignal();
 }

@@ -21,6 +21,8 @@ set(PROJECT_SOURCES
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+    progressborderwidget.cpp
+    progressborderwidget.h
     fictiontextedit.cpp
     fictiontextedit.h
     fictionviewtab.cpp
