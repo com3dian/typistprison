@@ -1,22 +1,35 @@
 #ifndef SAVEMESSAGEBOX_H
 #define SAVEMESSAGEBOX_H
 
-#include <QMessageBox>
+#include <QDialog>
 #include <QPushButton>
 #include <QWidget>
-#include <QShowEvent>
 
-class SaveMessageBox : public QMessageBox {
+class SaveMessageBox : public QDialog {
     Q_OBJECT // Necessary macro for signals and slots in Qt
 
 public:
+    enum ButtonResult {
+        Save,
+        Discard,
+        Cancel
+    };
+
     explicit SaveMessageBox(QWidget *parent = nullptr);
-    // void showEvent(QShowEvent *event) override;
     int exec() override;
+    ButtonResult getResult() const;
 
 private slots:
     void onSaveClicked();
     void onDiscardClicked();
+
+private:
+    void centerOnScreen();
+    
+    QPushButton *saveButton;
+    QPushButton *discardButton;
+    QPushButton *cancelButton;
+    ButtonResult result = Cancel;
 };
 
-#endif // CUSTOMMESSAGEBOX_H
+#endif // SAVEMESSAGEBOX_H

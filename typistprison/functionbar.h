@@ -17,6 +17,7 @@
 #include <QLabel>
 #include <QScrollArea>
 #include <QWindow>
+#include <QGraphicsOpacityEffect>
 
 #include "customtabwidget.h"
 #include "functionbar/customtabbar.h"
@@ -50,6 +51,7 @@ private:
     QPushButton *button2;
     CustomTabBar *tabBar;
     PaintCornerWidget *paintCornerWidget;
+    QGraphicsOpacityEffect *paintCornerWidgetOpacityEffect;
     PaintLeftEdgeWidget *paintLeftEdgeWidget;
     QWidget *transparentLeftWidget;
     QWidget *transparentRightWidget;
@@ -89,6 +91,7 @@ public slots:
     void hidePaintCornerWidget();
     void showPaintLeftEdgeWidget();
     void hidePaintLeftEdgeWidget();
+    void animatePaintRightEdgeWidget();
     void hideBothPaintCornerWidget();
     void notHideBothPaintCornerWidget();
 };

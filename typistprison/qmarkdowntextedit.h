@@ -116,6 +116,7 @@ protected:
 
     // extended typrison
     void mouseMoveEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 
 Q_SIGNALS:

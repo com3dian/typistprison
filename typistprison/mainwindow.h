@@ -97,7 +97,7 @@ private:
     QFrame *contextMenuFrame;
     QModelIndex currentContextMenuIndex;
     bool isContextMenuForDir;
-    QWidget *splitterContainer;
+    ProgressBorderWidget *splitterContainer;
     QVBoxLayout *splitterLayout;
     QWidget *splitterTopWidget;
 

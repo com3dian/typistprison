@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->setSpacing(0);
 
     // Create a wrapper for the splitter (to ensure full expansion)
-    splitterContainer = new QWidget(mainContainer);
+    splitterContainer = new ProgressBorderWidget(mainContainer);
     splitterContainer->setObjectName("splitterContainer");  // Add this line
     splitterContainer->setStyleSheet(
         "QWidget#splitterContainer {"  // Target only this specific widget
@@ -39,7 +39,6 @@ MainWindow::MainWindow(QWidget *parent)
         "    border: 1px solid #393B3B;"
         "}"
     );
-    
 
     splitterLayout = new QVBoxLayout(splitterContainer);
     splitterLayout->setContentsMargins(8, 1, 8, 8);
@@ -447,22 +446,10 @@ void MainWindow::minimizeWindow() {
 void MainWindow::maximizeWindow() {
     if (isFullScreen()) {
         this->showNormal();
-        splitterContainer->setStyleSheet(
-            "QWidget#splitterContainer {"  // Target only this specific widget
-            "    background-color: #1F2020;"
-            "    border-radius: 8px;"
-            "    border: 1px solid #393B3B;"
-            "}"
-        );
+        splitterContainer->setFullScreen(false);
     } else {
         this->showFullScreen();
-        splitterContainer->setStyleSheet(
-            "QWidget#splitterContainer {"  // Target only this specific widget
-            "    background-color: #1F2020;"
-            "    border-radius: 0px;"
-            "    border: 0px;"
-            "}"
-        );
+        splitterContainer->setFullScreen(true);
     }
 }
 
@@ -488,6 +475,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         // Convert the global position to the main window's coordinates.
         QPoint posInMainWindow = this->mapFromGlobal(mouseEvent->globalPos());
         if (this->rect().contains(posInMainWindow)) {
+            
+            // Hide wiki and markdown image windows on any click in the main window
+            hideMarkdownImage();
+            hideWiki();
 
             // If the drop-down frame is visible, handle it
             if (existingFrame && existingFrame->isVisible()) {
@@ -1027,7 +1018,6 @@ void MainWindow::closeFileTreeView() {
 }
 
 void MainWindow::activatePrisonerModeFunc() {
-    qDebug() << "MainWindow::activatePrisonerModeFunc()";
     // Close side panel
     closeFileTreeView();
     
@@ -1043,13 +1033,8 @@ void MainWindow::activatePrisonerModeFunc() {
 
     // make the window maximum
     this->showFullScreen();
-    splitterContainer->setStyleSheet(
-        "QWidget#splitterContainer {"  // Target only this specific widget
-        "    background-color: #1F2020;"
-        "    border-radius: 0px;"
-        "    border: 0px;"
-        "}"
-    );
+    splitterContainer->setFullScreen(true);
+    splitterContainer->startTimerProgress(10);
 }
 
 void MainWindow::deactivatePrisonerModeFunc() {
@@ -1059,13 +1044,7 @@ void MainWindow::deactivatePrisonerModeFunc() {
 
     // First ensure window is not maximized
     this->showNormal();
-    splitterContainer->setStyleSheet(
-        "QWidget#splitterContainer {"  // Target only this specific widget
-        "    background-color: #1F2020;"
-        "    border-radius: 8px;"
-        "    border: 1px solid #393B3B;"
-        "}"
-    );
+    splitterContainer->setFullScreen(false);
 
     // Restore side panel
     if (projectManager->isLoadedProject) {

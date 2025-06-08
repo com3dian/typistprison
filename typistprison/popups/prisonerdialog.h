@@ -22,6 +22,7 @@
 #include <QTextDocument>
 
 #include "utilsprisonerdialog.h"
+#include "../utils/hoverbutton.h"
 
 class PrisonerDialog : public QDialog {
     Q_OBJECT
@@ -263,12 +264,10 @@ public:
         QHBoxLayout *buttonLayout = new QHBoxLayout();
         buttonLayout->addStretch();  // Push button to the right
 
-        // Create push button with icon and text
-        QPushButton *actionButton = new QPushButton("Launch ", this);
-        actionButton->setIcon(QIcon(":/icons/right_arrow.png"));
-        actionButton->setIconSize(QSize(12, 12));
-        actionButton->setLayoutDirection(Qt::RightToLeft);
-        actionButton->setStyleSheet(R"(
+        // Create hover icon button with icon and text
+        actionButton = new HoverButton("Launch ", this);
+        actionButton->setIcons(QIcon(":/icons/right_arrow.png"), QIcon(":/icons/right_arrow_hover.png"));
+        actionButton->setSilentBehavior(R"(
             QPushButton {
                 background-color: transparent;
                 border: 1px solid #5A5A5A;
@@ -277,6 +276,16 @@ public:
                 padding: 4px 8px;
             }
         )");
+        actionButton->setHoverBehavior(R"(
+            QPushButton {
+                background-color: transparent;
+                border: 1px solid #999999;
+                color: #DEDEDE;
+                border-radius: 4px;
+                padding: 4px 8px;
+            }
+        )");
+        actionButton->setLayoutDirection(Qt::RightToLeft);
 
         connect(actionButton, &QPushButton::clicked, this, [=]() {
             // Get word goal from lineEdit
@@ -292,12 +301,19 @@ public:
         });
         connect(actionButton, &QPushButton::clicked, this, &QDialog::accept);
         
-        mainLayout->addSpacing(32);
+        mainLayout->addSpacing(16);
+        // add a vertical spacer
+        QSpacerItem *verticalSpacer = new QSpacerItem(20, 16, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        buttonLayout->addSpacerItem(verticalSpacer);
+
         buttonLayout->addWidget(actionButton);
         mainLayout->addLayout(buttonLayout);
         setLayout(mainLayout);
         adjustSplitter(mapToRange(100));
         connect(splitter, &QSplitter::splitterMoved, this, &PrisonerDialog::onSplitterMoved);
+        
+        // Make dialog non-resizable by fixing its size
+        setFixedSize(sizeHint());
     }
 
 protected:
@@ -341,20 +357,28 @@ protected:
                 // Map and update splitter
                 double mappedValue = mapToRange(numericValue);
                 adjustSplitter(mappedValue);
+
+                // Change visibility of actionbutton ⏯️
+                if (numericText.isEmpty()) {
+                    actionButton->setVisible(false);
+                } else if (numericValue < 100) {
+                    actionButton->setVisible(false);
+                }
                 return true;
             }
 
             // Check if input is strictly numeric (0-9)
+            // ⬆️ key pressed
             if (key == Qt::Key_Up) {
                 numericValue += 1; // Increase value
                 lineEdit->setText(QString::number(numericValue));
-
+            // ⬇️ key pressed
             } else if (key == Qt::Key_Down) {
                 if (numericValue > 100) {
                     numericValue -= 1; // Decrease value (not below 100)
                     lineEdit->setText(QString::number(numericValue));
                 }
-
+            // 🔢 number key pressed
             } else if (!text.isEmpty() && text.at(0).isDigit()) {
                 lineEdit->insert(text);
 
@@ -369,6 +393,17 @@ protected:
             // Adjust splitter size dynamically
             adjustSplitter(mappedValue);
 
+            // Change visibility of actionbutton ⏯️
+            if (numericText.isEmpty()) {
+                actionButton->setVisible(false);
+            } else if (numericValue < 100) {
+                actionButton->setVisible(false);
+            } else if (!numericText.isEmpty()) {
+                if (numericValue >= 100) {
+                    actionButton->setVisible(true);
+                }
+            }
+
             return true; // Ignore non-numeric input
         }
 
@@ -380,6 +415,7 @@ private:
     CustomSplitter *splitter;
     QWidget *leftContainer;
     QSlider *slider;
+    HoverButton *actionButton;
 
     double mapToRange(double x, double k = 100) {
         if (x <= 100) {
@@ -447,6 +483,11 @@ private slots:
 
         // Update the QLineEdit content
         lineEdit->setText(QString::number(numericValue));
+
+        // Change visibility of actionbutton ⏯️
+        if (numericValue >= 100) {
+            actionButton->setVisible(true);
+        }
     }
 };
 #endif // PRISONERDIALOG_H

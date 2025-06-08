@@ -1227,7 +1227,6 @@ bool QMarkdownTextEdit::isValidUrl(const QString &urlString) {
  * - <https://www.qownnotes.org> opens the webpage
  * - <file:///path/to/my/file/QOwnNotes.pdf> opens the file
  *   "/path/to/my/file/QOwnNotes.pdf" if the operating system supports that
- *  handler
  */
 void QMarkdownTextEdit::openUrl(const QString &urlString) {
     qDebug() << __func__;
@@ -1453,7 +1452,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     // if return is pressed and there is just an unordered list symbol then we
     // want to remove the list symbol Valid listCharacters: '+ ', '-' , '* ', '+
     // [ ] ', '+ [x] ', '- [ ] ', '- [-] ', '- [x] ', '* [ ] ', '* [x] '.
-    QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+)$)");
+    QRegularExpression regex(R"(^(\s*)([+|\-|\*] \[(x|-| )\]|[+\-\*])(\s+)$)");
     QRegularExpressionMatchIterator iterator =
         regex.globalMatch(currentLineText);
     if (iterator.hasNext()) {
@@ -1492,7 +1491,7 @@ bool QMarkdownTextEdit::handleReturnEntered() {
         // Valid listCharacters: '+ ', '-' , '* ', '+ [ ] ', '+ [x] ', '- [ ] ',
         // '- [x] ', '- [-] ', '* [ ] ', '* [x] '.
         regex =
-            QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x|-| |)\]|[+\-\*])(\s+))");
+            QRegularExpression(R"(^(\s*)([+|\-|\*] \[(x|-| )\]|[+\-\*])(\s+))");
         iterator = regex.globalMatch(currentLineText);
         if (iterator.hasNext()) {
             const QRegularExpressionMatch match = iterator.next();
@@ -1914,8 +1913,16 @@ void QMarkdownTextEdit::mouseMoveEvent(QMouseEvent *event) {
     QPlainTextEdit::mouseMoveEvent(event);
 }
 
+void QMarkdownTextEdit::leaveEvent(QEvent *event) {
+    // Stop the timer when mouse leaves the widget area
+    timer->stop();
+    
+    QPlainTextEdit::leaveEvent(event);
+}
+
 void QMarkdownTextEdit::readBlock() {
     QTextCursor cursor = cursorForPosition(lastMousePos);
+
     QTextBlock block = cursor.block();
     QString blockText = block.text();
 
@@ -1939,7 +1946,6 @@ void QMarkdownTextEdit::readBlock() {
                     qDebug() << "Markdown Image Detected: " << imagePath;
 
                     QPoint globalPos = mapToGlobal(lastMousePos);
-                    // popup->showImageAt(imagePath, globalPos);
                     emit showImageAt(imagePath, globalPos);
                 } else {
                     qDebug() << "Cursor is within the block, popup not shown.";

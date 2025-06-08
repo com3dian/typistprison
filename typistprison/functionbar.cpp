@@ -1,10 +1,14 @@
 #include "functionbar.h"
+#include <QGraphicsOpacityEffect> // Add this
+#include <QPropertyAnimation>   // Ensure this is included (likely already via functionbar.h or other uses)
+#include <QTimer> // Make sure QTimer is included
 
 FunctionBar::FunctionBar(QWidget *parent, CustomTabWidget *syncedTabWidget)
     : QWidget(parent)
     , syncedTabWidget(syncedTabWidget)
     , isExpanded(false)
     , isDragging(false)  // Add this initialization
+    // Add paintCornerWidgetOpacityEffect to initializer list if you prefer, or assign in body
 {
     // Main container layout
     mainLayout = new QHBoxLayout(this);
@@ -33,7 +37,7 @@ FunctionBar::FunctionBar(QWidget *parent, CustomTabWidget *syncedTabWidget)
     transparentLeftWidget->setVisible(false);
 
     paintCornerWidget = new PaintCornerWidget(this);
-    paintCornerWidget->setVisible(false);
+    paintCornerWidget->setVisible(false); // Start hidden
 
     transparentRightWidget = new QWidget(this);
     transparentRightWidget->setAttribute(Qt::WA_TranslucentBackground), transparentRightWidget->setFixedWidth(24);
@@ -92,58 +96,16 @@ void FunctionBar::onTabInserted(int index, const QString &label) {
     if (syncedTabWidget) {
         syncedTabWidget->blockSignals(true);
 
-        QPushButton *closeButton = new QPushButton(this);
-        closeButton->setFixedSize(16, 16); // Small size for a close button
-        closeButton->setStyleSheet(
-            "QPushButton {"
-            "border: none;"
-            "border-image: url(:/icons/tab_close.png) 0 0 0 0 stretch stretch;"
-            "}"
-            "QPushButton:hover {"
-            "border-image: url(:/icons/tab_hover.png) 0 0 0 0 stretch stretch;"
-            "}"
-        );
-
-        QWidget *tabContainer = new QWidget(this);
-        QHBoxLayout *layout = new QHBoxLayout(tabContainer);
-        layout->setContentsMargins(4, 4, 12, 0); // Adds space around the contents
-        layout->setSpacing(8); // Space between label and button
-
-        QSpacerItem *spacer = new QSpacerItem(96, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-        layout->addItem(spacer); // Pushes the close button to the left
-
-        layout->addWidget(closeButton);
-        tabContainer->setLayout(layout);
-
-        // Insert the tab with the custom widget
+        // Insert the tab
         tabBar->insertTab(index, label);
-        tabBar->setTabButton(index, QTabBar::RightSide, tabContainer);
-
-        // Connect the close button to remove the tab
-        connect(closeButton, &QPushButton::clicked, this, [this, closeButton]() {
-            int tabIndex = -1;
-
-            // Loop through all tabs to find which one contains the close button
-            for (int i = 0; i < tabBar->count(); ++i) {
-                QWidget *tabContainer = tabBar->tabButton(i, QTabBar::RightSide);
-                if (tabContainer) {
-                    // Try to find the close button inside the tabContainer's layout
-                    QHBoxLayout *layout = qobject_cast<QHBoxLayout *>(tabContainer->layout());
-                    if (layout && layout->indexOf(closeButton) != -1) {
-                        tabIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            // If the tab index is valid, emit the onTabRemoved signal
-            if (tabIndex != -1) {
-                onTabRemoved(tabIndex);
-            }
-        });
+        // tabBar->setTabButton(index, QTabBar::RightSide, closeButton); // REMOVED
+        
+        // Trigger the insertion animation for the new tab
+        if (auto* customTabBar = qobject_cast<CustomTabBar*>(tabBar)) {
+            customTabBar->animateTabInsertion(index);
+        }
 
         syncedTabWidget->blockSignals(false);
-
         tabBar->setCurrentIndex(index);
     }
 }
@@ -152,10 +114,7 @@ void FunctionBar::onTabClosedFromSyncedWidget(int index) {
     if (syncedTabWidget) {
         syncedTabWidget->blockSignals(true);
 
-        if (index >= 0 && index < tabBar->count()) {
-            qDebug() << "onTabClosedFromSyncedWidget =================================  count()" << tabBar->count();
-        }
-        tabBar->setTabButton(index, QTabBar::RightSide, nullptr);  // Remove the close button
+        // tabBar->setTabButton(index, QTabBar::RightSide, nullptr);  // Remove the close button // REMOVED
         QApplication::processEvents();
         tabBar->removeTab(index);                                  // Remove the tab
         QApplication::processEvents();
@@ -224,6 +183,9 @@ void FunctionBar::setupTabBar() {
     connect(tabBar, &CustomTabBar::lastTabNoFocus,
         this, &FunctionBar::hidePaintCornerWidget,
         Qt::UniqueConnection);
+    connect(tabBar, &CustomTabBar::animateTabInsertionFinished,
+        this, &FunctionBar::animatePaintRightEdgeWidget,
+        Qt::UniqueConnection);
 
     // left out-border painting 
     connect(tabBar, &CustomTabBar::firstTabFocus,
@@ -285,7 +247,7 @@ void FunctionBar::setupMenuBar() {
     );
     button1->setLayoutDirection(Qt::RightToLeft);
 
-    button1->setVisible(false); // 默认折叠时隐藏
+    button1->setVisible(false);
 
     button2 = new QPushButton("Project ", this);
     button2->setIcon(customIcon);
@@ -320,7 +282,7 @@ void FunctionBar::toggleMenuBar() {
 
     // Animate the expansion of the menu bar
     QPropertyAnimation *animation = new QPropertyAnimation(menuBar, "minimumWidth", this);
-    animation->setDuration(300);
+    animation->setDuration(200);
     animation->setEasingCurve(QEasingCurve::OutCubic);
 
     if (isExpanded) {
@@ -381,6 +343,8 @@ void FunctionBar::showPaintCornerWidget() {
     if (isScrollbuttonActive) {
         return;
     }
+
+    // Ensure widget is visible, and set initial opacity if it was hidden
     paintCornerWidget->setVisible(true);
     transparentRightWidget->setVisible(false);
 }
@@ -389,8 +353,32 @@ void FunctionBar::hidePaintCornerWidget() {
     if (isScrollbuttonActive) {
         return;
     }
+
     paintCornerWidget->setVisible(false);
     transparentRightWidget->setVisible(true);
+}
+
+void FunctionBar::animatePaintRightEdgeWidget() {
+    // Delay in milliseconds (e.g., 500ms = 0.5 seconds)
+    if (!paintCornerWidget) return; // Guard against widget being deleted during delay
+
+    paintCornerWidgetOpacityEffect = new QGraphicsOpacityEffect(this); // Create the effect
+    paintCornerWidget->setGraphicsEffect(paintCornerWidgetOpacityEffect); // Apply to the widget
+    paintCornerWidgetOpacityEffect->setOpacity(0.0); // Start fully transparent
+
+    int delayMilliseconds = 200; // You can adjust this value
+
+    QTimer::singleShot(delayMilliseconds, this, [this]() {
+        // This code will execute after delayMilliseconds
+        if (!paintCornerWidget) return; // Guard against widget being deleted during delay
+
+        QPropertyAnimation *animation = new QPropertyAnimation(paintCornerWidgetOpacityEffect, "opacity", this);
+        animation->setDuration(200); // Duration of the fade-in animation
+        animation->setStartValue(paintCornerWidgetOpacityEffect->opacity()); // Start from current opacity (should be 0.0 if just made visible)
+        animation->setEndValue(1.0);   // Fade to fully opaque
+        animation->setEasingCurve(QEasingCurve::InOutQuad);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    });
 }
 
 void FunctionBar::showPaintLeftEdgeWidget() {
@@ -404,7 +392,6 @@ void FunctionBar::hidePaintLeftEdgeWidget() {
 }
 
 void FunctionBar::hideBothPaintCornerWidget() {
-    qDebug() << "FunctionBar::hideBothPaintCornerWidget()";
     paintCornerWidget->setVisible(false);
     transparentRightWidget->setVisible(false);
 

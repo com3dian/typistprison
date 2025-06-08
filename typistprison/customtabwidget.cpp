@@ -333,15 +333,6 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
         // QRect tabBarRect = this->customTabBar->geometry();
 
         SaveMessageBox msgBox(this);
-        // msgBox.adjustSize();
-        // int msgBoxWidth = msgBox.sizeHint().width();
-        // int msgBoxHeight = msgBox.sizeHint().height();
-
-        // int x = tabBarRect.x() + (tabBarRect .width() - msgBoxWidth) / 2;  // Horizontally center
-        // int y = tabBarRect.y()  + tabBarRect.height();  // Bottom of the tab bar
-
-        // qDebug() << "msgRect" << x << y;
-        // msgBox.move(x, y);  // Set the position and size
         int ret = msgBox.exec();
 
         QWidget *newTab = nullptr;
@@ -349,35 +340,38 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
         QRegularExpression regex("untitled-\\d+\\*");
         bool isSuccessful;
 
-        switch (ret) {
-            case QMessageBox::Save:
-                // Save the document
-                qDebug() << "Saving the document at index" << index;
+        if (ret == QDialog::Accepted) {
+            SaveMessageBox::ButtonResult result = msgBox.getResult();
+            switch (result) {
+                case SaveMessageBox::Save:
+                    // Save the document
+                    qDebug() << "Saving the document at index" << index;
 
-                newTab = this->widget(index);
-                title = this->tabText(index);
-                qDebug() << regex.match(title).hasMatch();
+                    newTab = this->widget(index);
+                    title = this->tabText(index);
+                    qDebug() << regex.match(title).hasMatch();
 
-                isSuccessful = static_cast<BaseTextEditTab*>(newTab)->saveContent();
-                if (isSuccessful) {
+                    isSuccessful = static_cast<BaseTextEditTab*>(newTab)->saveContent();
+                    if (isSuccessful) {
+                        removeTab(index);
+                        emit tabClosedFromSyncedTabWidgetSignal(index);
+                    }
+                    break;
+                case SaveMessageBox::Discard:
+                    // Discard changes and close the tab
+                    qDebug() << "Discarding changes and closing the tab at index" << index;
                     removeTab(index);
                     emit tabClosedFromSyncedTabWidgetSignal(index);
-                }
-                break;
-            case QMessageBox::Discard:
-                // Discard changes and close the tab
-                qDebug() << "Discarding changes and closing the tab at index" << index;
-                removeTab(index);
-                emit tabClosedFromSyncedTabWidgetSignal(index);
-                break;
-            case QMessageBox::Cancel:
-                // Cancel the close operation
-                qDebug() << "Canceling the close operation for tab at index" << index;
-                // Do nothing to cancel the close operation
-                break;
-            default:
-                // Should never be reached
-                break;
+                    break;
+                case SaveMessageBox::Cancel:
+                    // Cancel the close operation
+                    qDebug() << "Canceling the close operation for tab at index" << index;
+                    // Do nothing to cancel the close operation
+                    break;
+            }
+        } else {
+            // Dialog was rejected (should be treated as cancel)
+            qDebug() << "Dialog was rejected, canceling the close operation for tab at index" << index;
         }
     } else {
         removeTab(index);

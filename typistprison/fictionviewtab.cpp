@@ -69,11 +69,13 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     SearchWidget *searchWidget = new SearchWidget();
 
     // add prisoner button
-    prisonerButton = new HoverButton("Prisoner", QIcon(":/icons/prisoner.png"), this);
+    prisonerButton = new HoverButton("Prisoner", this);
+    prisonerButton->setIcons(QIcon(":/icons/emptyicon.png"), QIcon(":/icons/prisoner.png"));
     prisonerButton->setLayoutDirection(Qt::RightToLeft);
 
     // sniper button
-    sniperButton = new HoverButton("Sniper", QIcon(":/icons/sniper.png"), this);
+    sniperButton = new HoverButton("Sniper", this);
+    sniperButton->setIcons(QIcon(":/icons/emptyicon.png"), QIcon(":/icons/sniper.png"));
     sniperButton->setLayoutDirection(Qt::RightToLeft);
     if (isPrisoner) {
         textEdit = new PrisonerFictionTextEdit(this, projectManager);

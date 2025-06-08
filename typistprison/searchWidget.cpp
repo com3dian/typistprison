@@ -252,10 +252,8 @@ void SearchWidget::updateBottomLine()
 }
 
 void SearchWidget::loseAttention()
-{   
-    qDebug() << "SearchWidget::loseAttention;";
+{
     if (isOnSearch) {
-        qDebug() << "    on search;";
         return;
     }
     lineEdit->setText("+");
