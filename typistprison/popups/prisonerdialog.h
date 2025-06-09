@@ -64,7 +64,7 @@ public:
         iconLayout->addStretch();
         mainLayout->addLayout(iconLayout);
 
-        // Labels
+        // Labels 🏷
         QLabel *label1 = new QLabel("Escape", this);
         QLabel *label2 = new QLabel("Ready? Set Your Goal & Timer.", this);
         
@@ -266,12 +266,13 @@ public:
 
         // Create hover icon button with icon and text
         actionButton = new HoverButton("Launch ", this);
-        actionButton->setIcons(QIcon(":/icons/right_arrow.png"), QIcon(":/icons/right_arrow_hover.png"));
+        actionButton->setEnabled(false);
+        actionButton->setIcons(QIcon(":/icons/empty_icon.png"), QIcon(":/icons/empty_icon.png"));
         actionButton->setSilentBehavior(R"(
             QPushButton {
                 background-color: transparent;
-                border: 1px solid #5A5A5A;
-                color: #BDBDBD;
+                border: 1px solid #333333;
+                color: #5A5A5A;
                 border-radius: 4px;
                 padding: 4px 8px;
             }
@@ -279,8 +280,8 @@ public:
         actionButton->setHoverBehavior(R"(
             QPushButton {
                 background-color: transparent;
-                border: 1px solid #999999;
-                color: #DEDEDE;
+                border: 1px solid #333333;
+                color: #5A5A5A;
                 border-radius: 4px;
                 padding: 4px 8px;
             }
@@ -301,10 +302,7 @@ public:
         });
         connect(actionButton, &QPushButton::clicked, this, &QDialog::accept);
         
-        mainLayout->addSpacing(16);
-        // add a vertical spacer
-        QSpacerItem *verticalSpacer = new QSpacerItem(20, 16, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        buttonLayout->addSpacerItem(verticalSpacer);
+        mainLayout->addSpacing(32);
 
         buttonLayout->addWidget(actionButton);
         mainLayout->addLayout(buttonLayout);
@@ -360,9 +358,47 @@ protected:
 
                 // Change visibility of actionbutton ⏯️
                 if (numericText.isEmpty()) {
-                    actionButton->setVisible(false);
+                    actionButton->setEnabled(false);
+                    actionButton->setIcons(QIcon(":/icons/empty_icon.png"), QIcon(":/icons/empty_icon.png"));
+                    actionButton->setSilentBehavior(R"(
+                        QPushButton {
+                            background-color: transparent;
+                            border: 1px solid #333333;
+                            color: #5A5A5A;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                        }
+                    )");
+                    actionButton->setHoverBehavior(R"(
+                        QPushButton {
+                            background-color: transparent;
+                            border: 1px solid #333333;
+                            color: #5A5A5A;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                        }
+                    )");
                 } else if (numericValue < 100) {
-                    actionButton->setVisible(false);
+                    actionButton->setEnabled(false);
+                    actionButton->setIcons(QIcon(":/icons/empty_icon.png"), QIcon(":/icons/empty_icon.png"));
+                    actionButton->setSilentBehavior(R"(
+                        QPushButton {
+                            background-color: transparent;
+                            border: 1px solid #333333;
+                            color: #5A5A5A;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                        }
+                    )");
+                    actionButton->setHoverBehavior(R"(
+                        QPushButton {
+                            background-color: transparent;
+                            border: 1px solid #333333;
+                            color: #5A5A5A;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                        }
+                    )");
                 }
                 return true;
             }
@@ -395,12 +431,70 @@ protected:
 
             // Change visibility of actionbutton ⏯️
             if (numericText.isEmpty()) {
-                actionButton->setVisible(false);
+                actionButton->setEnabled(false);
+                actionButton->setIcons(QIcon(":/icons/empty_icon.png"), QIcon(":/icons/empty_icon.png"));
+                actionButton->setSilentBehavior(R"(
+                    QPushButton {
+                        background-color: transparent;
+                        border: 1px solid #333333;
+                        color: #5A5A5A;
+                        border-radius: 4px;
+                        padding: 4px 8px;
+                    }
+                )");
+                actionButton->setHoverBehavior(R"(
+                    QPushButton {
+                        background-color: transparent;
+                        border: 1px solid #333333;
+                        color: #5A5A5A;
+                        border-radius: 4px;
+                        padding: 4px 8px;
+                    }
+                )");
             } else if (numericValue < 100) {
-                actionButton->setVisible(false);
+                actionButton->setEnabled(false);
+                actionButton->setIcons(QIcon(":/icons/empty_icon.png"), QIcon(":/icons/empty_icon.png"));
+                actionButton->setSilentBehavior(R"(
+                        QPushButton {
+                            background-color: transparent;
+                            border: 1px solid #333333;
+                            color: #5A5A5A;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                        }
+                    )");
+                    actionButton->setHoverBehavior(R"(
+                        QPushButton {
+                            background-color: transparent;
+                            border: 1px solid #333333;
+                            color: #5A5A5A;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                        }
+                    )");
+
             } else if (!numericText.isEmpty()) {
                 if (numericValue >= 100) {
-                    actionButton->setVisible(true);
+                    actionButton->setEnabled(true);
+                    actionButton->setIcons(QIcon(":/icons/right_arrow.png"), QIcon(":/icons/right_arrow_hover.png"));
+                    actionButton->setSilentBehavior(R"(
+                        QPushButton {
+                            background-color: transparent;
+                            border: 1px solid #5A5A5A;
+                            color: #BDBDBD;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                        }
+                    )");
+                    actionButton->setHoverBehavior(R"(
+                        QPushButton {
+                            background-color: transparent;
+                            border: 1px solid #999999;
+                            color: #DEDEDE;
+                            border-radius: 4px;
+                            padding: 4px 8px;
+                        }
+                    )");
                 }
             }
 
@@ -417,6 +511,18 @@ private:
     QSlider *slider;
     HoverButton *actionButton;
 
+    /**
+     * Maps a word count value to a normalized range [0, 1) for splitter positioning.
+     * 
+     * This function creates a non-linear mapping that:
+     * - Returns 0.0 for word counts <= 100 (minimum threshold)
+     * - For word counts > 100, applies a sigmoid-like curve that approaches but never reaches 1.0
+     * - The curve provides more granular control for lower word counts and compresses higher values
+     * 
+     * @param x The input word count value
+     * @param k Controls the steepness of the curve (default: 100)
+     * @return A value in range [0, 1) representing the relative position for UI elements
+     */
     double mapToRange(double x, double k = 100) {
         if (x <= 100) {
             return 0.0;
@@ -486,7 +592,26 @@ private slots:
 
         // Change visibility of actionbutton ⏯️
         if (numericValue >= 100) {
-            actionButton->setVisible(true);
+            actionButton->setEnabled(true);
+            actionButton->setIcons(QIcon(":/icons/right_arrow.png"), QIcon(":/icons/right_arrow_hover.png"));
+            actionButton->setSilentBehavior(R"(
+                QPushButton {
+                    background-color: transparent;
+                    border: 1px solid #5A5A5A;
+                    color: #BDBDBD;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                }
+            )");
+            actionButton->setHoverBehavior(R"(
+                QPushButton {
+                    background-color: transparent;
+                    border: 1px solid #999999;
+                    color: #DEDEDE;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                }
+            )");
         }
     }
 };

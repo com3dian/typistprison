@@ -373,7 +373,7 @@ void FunctionBar::animatePaintRightEdgeWidget() {
         if (!paintCornerWidget) return; // Guard against widget being deleted during delay
 
         QPropertyAnimation *animation = new QPropertyAnimation(paintCornerWidgetOpacityEffect, "opacity", this);
-        animation->setDuration(200); // Duration of the fade-in animation
+        animation->setDuration(100); // Duration of the fade-in animation
         animation->setStartValue(paintCornerWidgetOpacityEffect->opacity()); // Start from current opacity (should be 0.0 if just made visible)
         animation->setEndValue(1.0);   // Fade to fully opaque
         animation->setEasingCurve(QEasingCurve::InOutQuad);
