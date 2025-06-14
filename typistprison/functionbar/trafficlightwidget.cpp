@@ -146,6 +146,7 @@ void TrafficLightWidget::onButtonHovered() {
     minimalButton->setIcon(QIcon(":/icons/windowminimize.png"));
     maximalButton->setIcon(QIcon(":/icons/windowmaximize.png"));
     closeButton->setIcon(QIcon(":/icons/windowclose.png"));
+    this->enterEvent(nullptr);
 }
 
 void TrafficLightWidget::onButtonUnhovered() {

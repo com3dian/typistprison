@@ -7,6 +7,9 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QTimer>
+#include <QMenu>
+#include <QContextMenuEvent>
+#include <QGraphicsDropShadowEffect>
 #include "plaintexthighlighter.h"
 #include "fontmanager.h"
 
@@ -34,6 +37,9 @@ protected:
     void focusInEvent(QFocusEvent *e) override;
     // void paintEvent(QPaintEvent *event) override;
     // void focusOutEvent(QFocusEvent *event) override;
+
+private slots:
+    void showContextMenu(const QPoint &pos);
 
 private:
     // void toggleCursorVisibility();
