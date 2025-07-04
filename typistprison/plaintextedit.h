@@ -10,8 +10,11 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QGraphicsDropShadowEffect>
+#include <QWidgetAction>
+#include <functional>
 #include "plaintexthighlighter.h"
 #include "fontmanager.h"
+#include "functionbar/menubutton.h"
 
 class PlaintextEdit : public QTextEdit {
     Q_OBJECT

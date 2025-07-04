@@ -66,6 +66,9 @@ protected:
     void focusInEvent(QFocusEvent *e) override;
     void mouseMoveEvent(QMouseEvent *event) override;
 
+private slots:
+    void showContextMenu(const QPoint &pos);
+
 private:
     int getVisibleCenterY();
     int checkVisibleCenterBlock(const QTextBlock &block);

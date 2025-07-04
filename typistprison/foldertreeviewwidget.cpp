@@ -190,6 +190,10 @@ void FolderTreeViewWidget::setupButton() {
             "   padding: 10px;"
     );
     refreshButton->setFixedSize(13, 13);
+    connect(refreshButton, &QPushButton::clicked, this, [this]() {
+        QString projectRootPath = fileModel->rootPath();
+        this->refresh(projectRootPath);
+    });
 
     // Create a horizontal layout to add buttons
     QHBoxLayout *buttonWidgetLayout = new QHBoxLayout;
@@ -238,7 +242,7 @@ void FolderTreeViewWidget::setupFileTree() {
         "QTreeView::item { "
         "    border: none; "
         "    border-radius: 0px; "
-        "    padding: 1px 0px; "
+        "    padding: 3px 0px; "
         "    margin: 0px; "
         "}"
         "QTreeView::item:hover { "

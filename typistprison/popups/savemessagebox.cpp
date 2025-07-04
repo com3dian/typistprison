@@ -13,7 +13,7 @@ SaveMessageBox::SaveMessageBox(QWidget *parent)
     // Set the dialog parameters
     setWindowTitle("Unsaved Changes");
     setModal(true);
-    setFixedSize(400, 120);
+    setFixedWidth(400);
 
     // Apply a custom stylesheet to change the background color
     QString styleSheet = "QDialog {"
@@ -23,7 +23,7 @@ SaveMessageBox::SaveMessageBox(QWidget *parent)
 
     // Create the main layout
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(10);
+    mainLayout->setSpacing(16);
     mainLayout->setContentsMargins(20, 20, 20, 20);
 
     // Create and add the message label
@@ -38,14 +38,14 @@ SaveMessageBox::SaveMessageBox(QWidget *parent)
     buttonLayout->setSpacing(10);
 
     // Create custom buttons
-    saveButton = new QPushButton("Save");
+    saveButton = new QPushButton("  Save  ");
     discardButton = new QPushButton("Discard");
     cancelButton = new QPushButton("Cancel");
 
-    // set save width for buttons
-    saveButton->setFixedWidth(64);
-    discardButton->setFixedWidth(64);
-    cancelButton->setFixedWidth(64);
+    // // set save width for buttons
+    // saveButton->setFixedWidth(64);
+    // discardButton->setFixedWidth(64);
+    // cancelButton->setFixedWidth(64);
 
     // Style the buttons using style sheets
     QString saveButtonStyle = R"(

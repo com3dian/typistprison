@@ -1,4 +1,8 @@
 #include "mainwindow.h"
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
 
 
 // Add this to your MainWindow constructor initialization list
@@ -12,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     , contextMenuFrame(nullptr)
     , subMenuFrame(nullptr)
     , splitterContainer(nullptr)
+    , networkManager(new QNetworkAccessManager(this))
 {
     // Hide window original traffic lights (close, minimize, maximize buttons)
     this->setWindowFlags(Qt::FramelessWindowHint);
@@ -788,11 +793,47 @@ void MainWindow::handleFocusLeaveMenuButton() {
 }
 
 void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos) {
-    QPixmap pixmap(imagePath);
-    if (!pixmap.isNull()) {
-        // Define maximum dimensions for the scaled image
-        const int MAX_WIDTH = 800;
-        const int MAX_HEIGHT = 600;
+    // Check if imagePath is a URL
+    QUrl url(imagePath);
+    if (url.isValid() && (url.scheme() == "http" || url.scheme() == "https")) {
+        // Download image from URL
+        qDebug() << "Downloading image from URL:" << imagePath;
+        
+        QNetworkRequest request(url);
+        request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+        
+        QNetworkReply *reply = networkManager->get(request);
+        
+        // Store the mouse position for when the download completes
+        connect(reply, &QNetworkReply::finished, this, [this, reply, lastMousePos]() {
+            if (reply->error() == QNetworkReply::NoError) {
+                QByteArray imageData = reply->readAll();
+                QPixmap pixmap;
+                if (pixmap.loadFromData(imageData)) {
+                    displayImage(pixmap, lastMousePos);
+                } else {
+                    qDebug() << "Failed to load image from downloaded data";
+                }
+            } else {
+                qDebug() << "Failed to download image:" << reply->errorString();
+            }
+            reply->deleteLater();
+        });
+    } else {
+        // Handle local file path
+        QPixmap pixmap(imagePath);
+        if (!pixmap.isNull()) {
+            displayImage(pixmap, lastMousePos);
+        } else {
+            qDebug() << "Failed to load local image:" << imagePath;
+        }
+    }
+}
+
+void MainWindow::displayImage(const QPixmap &pixmap, QPoint lastMousePos) {
+    // Define maximum dimensions for the scaled image
+    const int MAX_WIDTH = 800;
+    const int MAX_HEIGHT = 600;
 
         // Calculate the scaling factor to fit within max dimensions while maintaining aspect ratio
         QSize originalSize = pixmap.size();
@@ -858,9 +899,6 @@ void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos
         imageFrame->setGraphicsEffect(shadow);
 
         imageFrame->show();
-    } else {
-        qDebug() << "Failed to load image:" << imagePath;
-    }
 }
 
 void MainWindow::hideMarkdownImage() {
@@ -964,8 +1002,8 @@ void MainWindow::showContextMenu(const QStringList &options, const QModelIndex &
     
     // Create a new layout
     QVBoxLayout *layout = new QVBoxLayout(contextMenuFrame);
-    layout->setContentsMargins(4, 2, 6, 2);
-    layout->setSpacing(0);
+    layout->setContentsMargins(6, 2, 6, 2);
+    layout->setSpacing(3);
     
     // Add buttons for each option
     for (const QString &option : options) {

@@ -11,8 +11,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets LinguistTools)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets Network LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets Network LinguistTools)
 
 set(TS_FILES typistprison_zh_CN.ts)
 
@@ -49,8 +49,6 @@ set(PROJECT_SOURCES
     searchWidget.h
     qownlanguagedata.cpp
     qownlanguagedata.h
-    savemessagebox.cpp
-    savemessagebox.h
     fontmanager.cpp
     fontmanager.h
     foldertreeviewwidget.cpp
@@ -82,6 +80,8 @@ set(PROJECT_SOURCES
     popups/imageframe.h
     popups/wikiframe.h
     popups/wikiframe.cpp
+    popups/savemessagebox.h
+    popups/savemessagebox.cpp
     popups/prisonerdialog.h
     popups/utilsprisonerdialog.h
     popups/utilsprisonerdialog.cpp
@@ -124,6 +124,7 @@ target_link_libraries(typistprison PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Network
 )
 
 # Set properties for the executable

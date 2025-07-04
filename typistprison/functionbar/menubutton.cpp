@@ -3,13 +3,13 @@
 MenuButton::MenuButton(const QString &leftText, const QString &rightText, QWidget *parent)
     : QPushButton(parent) 
 {
-    setStyleSheet("QPushButton { border: none; padding: 0px; }");
+    setStyleSheet("QPushButton { border: none; padding: 0px; background-color: transparent; }");
 
     QLabel *leftLabel = new QLabel(leftText, this);
     QLabel *rightLabel = new QLabel(rightText, this);
 
-    leftLabel->setStyleSheet("color: #BDBDBD;");
-    rightLabel->setStyleSheet("color: transparent;");
+    leftLabel->setStyleSheet("color: #BDBDBD; background-color: transparent;");
+    rightLabel->setStyleSheet("color: transparent; background-color: transparent;");
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->addWidget(leftLabel);
@@ -30,15 +30,15 @@ void MenuButton::setTexts(const QString &leftText, const QString &rightText) {
 }
 
 void MenuButton::enterEvent(QEnterEvent *event) {
-    findChild<QLabel *>()->setStyleSheet("color: #FFFFFF;");
-    findChildren<QLabel *>().last()->setStyleSheet("color: #656565;");
+    findChild<QLabel *>()->setStyleSheet("color: #FFFFFF; background-color: transparent;");
+    findChildren<QLabel *>().last()->setStyleSheet("color: #656565; background-color: transparent;");
     QPushButton::enterEvent(event);
     emit hovered();
 }
 
 void MenuButton::leaveEvent(QEvent *event) {
-    findChild<QLabel *>()->setStyleSheet("color: #BDBDBD;");
-    findChildren<QLabel *>().last()->setStyleSheet("color: transparent;");
+    findChild<QLabel *>()->setStyleSheet("color: #BDBDBD; background-color: transparent;");
+    findChildren<QLabel *>().last()->setStyleSheet("color: transparent; background-color: transparent;");
     QPushButton::leaveEvent(event);
     emit notHovered();
 }

@@ -139,4 +139,7 @@ private:
     QPoint lastMousePos;
 
     void readBlock();
+
+private slots:
+    void showContextMenu(const QPoint &pos);
 };

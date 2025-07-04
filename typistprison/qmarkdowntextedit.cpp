@@ -23,6 +23,7 @@
  */
 
 #include "qmarkdowntextedit.h"
+#include "utils/contextmenuutil.h"
 
 #include <QClipboard>
 #include <QDebug>
@@ -122,6 +123,10 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
     timer = new QTimer(this);
     timer->setSingleShot(true);
     connect(timer, &QTimer::timeout, this, &QMarkdownTextEdit::readBlock);
+    
+    // Set up context menu
+    this->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QMarkdownTextEdit::customContextMenuRequested, this, &QMarkdownTextEdit::showContextMenu);
 
     // popup = new ImagePopup(this);
 }
@@ -1920,6 +1925,12 @@ void QMarkdownTextEdit::leaveEvent(QEvent *event) {
     QPlainTextEdit::leaveEvent(event);
 }
 
+/* 
+    Methods for showing image at cursor position.
+    Supports both local file paths and remote URLs (http/https).
+    The image showing is done by mainwindow.cpp, to ensure the image is shown
+    in the correct position, even on linux.
+*/
 void QMarkdownTextEdit::readBlock() {
     QTextCursor cursor = cursorForPosition(lastMousePos);
 
@@ -1931,7 +1942,7 @@ void QMarkdownTextEdit::readBlock() {
         QRegularExpressionMatch match = regex.match(blockText);
 
         if (match.hasMatch()) {
-            QString imagePath = match.captured(1);  // Extract path inside parentheses
+            QString imagePath = match.captured(1);  // Extract path/URL inside parentheses
 
             if (!imagePath.isEmpty()) {
                 QTextCursor currentCursor = textCursor();
@@ -1943,7 +1954,7 @@ void QMarkdownTextEdit::readBlock() {
 
                 // Check if the current cursor is within the block
                 if (currentCursorPosition < blockStartPosition || currentCursorPosition > blockEndPosition) {
-                    qDebug() << "Markdown Image Detected: " << imagePath;
+                    qDebug() << "Markdown Image Detected (local path or URL):" << imagePath;
 
                     QPoint globalPos = mapToGlobal(lastMousePos);
                     emit showImageAt(imagePath, globalPos);
@@ -1954,4 +1965,12 @@ void QMarkdownTextEdit::readBlock() {
         }
     }
     qDebug() << "readBlock finish";
+}
+
+/* 
+    Methods for good looking context menu.
+    Implemented in utils/contextmenuutil.h.
+*/
+void QMarkdownTextEdit::showContextMenu(const QPoint &pos) {
+    ContextMenuUtil::showContextMenu(this, pos);
 }

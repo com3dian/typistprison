@@ -20,6 +20,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QInputDialog>
 #include <QTimer>
+#include <QNetworkAccessManager>
 
 #include "customtabwidget.h"
 #include "ui_mainwindow.h"
@@ -100,6 +101,7 @@ private:
     ProgressBorderWidget *splitterContainer;
     QVBoxLayout *splitterLayout;
     QWidget *splitterTopWidget;
+    QNetworkAccessManager *networkManager;
 
     void setupUntitledTab(TabType tabType = FICTION_TAB);
     void setupMenuButtons(FunctionBar *tabBarWidget);
@@ -114,6 +116,7 @@ private:
     void handleMouseEnterMenuButton(QPushButton *button);
     void handleFocusLeaveMenuButton();
     void setupActions();
+    void displayImage(const QPixmap &pixmap, QPoint lastMousePos);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

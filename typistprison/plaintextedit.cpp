@@ -1,4 +1,5 @@
 #include "plaintextedit.h"
+#include "utils/contextmenuutil.h"
 
 PlaintextEdit::PlaintextEdit(QWidget *parent)
     : QTextEdit(parent), 
@@ -194,79 +195,5 @@ void PlaintextEdit::clearSearch() {
 
 void PlaintextEdit::showContextMenu(const QPoint &pos) {
     qDebug() << "showContextMenu triggered";
-    
-    // Create the menu
-    QMenu* menu = new QMenu(this);
-    menu->setAttribute(Qt::WA_TranslucentBackground);
-    menu->setWindowFlags(menu->windowFlags() | Qt::FramelessWindowHint);
-    
-    // Add drop shadow effect
-    QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect(menu);
-    shadow->setBlurRadius(20);
-    shadow->setColor(QColor(0, 0, 0, 80));
-    shadow->setOffset(0, 0);
-    menu->setGraphicsEffect(shadow);
-    
-    // Create actions
-    QAction* undoAction = menu->addAction("Undo");
-    undoAction->setShortcut(QKeySequence::Undo);
-    undoAction->setEnabled(document()->isUndoAvailable());
-    connect(undoAction, &QAction::triggered, this, &PlaintextEdit::undo);
-    
-    QAction* redoAction = menu->addAction("Redo");
-    redoAction->setShortcut(QKeySequence::Redo);
-    redoAction->setEnabled(document()->isRedoAvailable());
-    connect(redoAction, &QAction::triggered, this, &PlaintextEdit::redo);
-    
-    menu->addSeparator();
-    
-    QAction* cutAction = menu->addAction("Cut");
-    cutAction->setShortcut(QKeySequence::Cut);
-    cutAction->setEnabled(textCursor().hasSelection());
-    connect(cutAction, &QAction::triggered, this, &PlaintextEdit::cut);
-    
-    QAction* copyAction = menu->addAction("Copy");
-    copyAction->setShortcut(QKeySequence::Copy);
-    copyAction->setEnabled(textCursor().hasSelection());
-    connect(copyAction, &QAction::triggered, this, &PlaintextEdit::copy);
-    
-    QAction* pasteAction = menu->addAction("Paste");
-    pasteAction->setShortcut(QKeySequence::Paste);
-    connect(pasteAction, &QAction::triggered, this, &PlaintextEdit::paste);
-    
-    menu->addSeparator();
-    
-    QAction* selectAllAction = menu->addAction("Select All");
-    selectAllAction->setShortcut(QKeySequence::SelectAll);
-    connect(selectAllAction, &QAction::triggered, this, &PlaintextEdit::selectAll);
-    
-    // Style the menu
-    menu->setStyleSheet(
-        "QMenu {"
-        "    background-color: #1F2020;"
-        "    border: 1px solid #1F2020;"
-        "    border-radius: 10px;"
-        "    padding: 4px;"
-        "}"
-        "QMenu::item {"
-        "    color: #BDBDBD;"
-        "    padding: 4px 4px 4px 24px;"
-        "    border-radius: 3px;"
-        "}"
-        "QMenu::item:selected {"
-        "    background-color: #84e0a5;"
-        "    color: #2C2C2C;"
-        "}"
-        "QMenu::separator {"
-        "    height: 1px;"
-        "    background-color: #1F2020;"
-        "    margin: 4px 0px;"
-        "}"
-    );
-    
-    // Show the menu at the cursor position
-    menu->exec(mapToGlobal(pos));
-    
-    // Clean up
-    menu->deleteLater();
+    ContextMenuUtil::showContextMenu(this, pos);
 }

@@ -3,7 +3,7 @@
 #include "fictionviewtab.h"
 #include "plaintextedit.h"
 #include "plaintextviewtab.h"
-#include "savemessagebox.h"
+#include "popups/savemessagebox.h"
 #include "markdownviewtab.h"
 
 #include <QVBoxLayout>

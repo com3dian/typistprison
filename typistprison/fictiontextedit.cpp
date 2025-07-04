@@ -1,4 +1,5 @@
 #include "fictiontextedit.h"
+#include "utils/contextmenuutil.h"
 
 FictionTextEdit::FictionTextEdit(QWidget *parent, ProjectManager *projectManager)
     : QTextEdit(parent)
@@ -25,6 +26,10 @@ FictionTextEdit::FictionTextEdit(QWidget *parent, ProjectManager *projectManager
     QFont font(notoSansRegularFamily, globalFontSize);
     this->setFont(font);
     this->setCursorWidth(2);
+    
+    // Set up context menu
+    this->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &FictionTextEdit::customContextMenuRequested, this, &FictionTextEdit::showContextMenu);
 
     // To be discussed (Between me and me):
     // Do we want a colored blinking cursor (carent)?
@@ -1016,4 +1021,8 @@ void FictionTextEdit::readBlock() {
     }
     QPoint globalPos = mapToGlobal(lastMousePos);
     emit showWikiAt(fullMatchedContent, globalPos);
+}
+
+void FictionTextEdit::showContextMenu(const QPoint &pos) {
+    ContextMenuUtil::showContextMenu(this, pos);
 }
