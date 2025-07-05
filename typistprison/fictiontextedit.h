@@ -27,6 +27,9 @@
 #include <QString>
 #include <QStringMatcher>
 #include <QTextImageFormat> // tobe removed
+#include <QFuture>
+#include <QFutureWatcher>
+#include <qtconcurrentrun.h>
 
 
 class FictionTextEdit : public QTextEdit
@@ -70,9 +73,32 @@ private slots:
     void showContextMenu(const QPoint &pos);
 
 private:
+    // Data structure for thread-safe block computation
+    struct BlockData {
+        int blockNumber;
+        int top;
+        int bottom;
+        bool isValid;
+        
+        BlockData() : blockNumber(-1), top(0), bottom(0), isValid(false) {}
+        BlockData(int num, int t, int b) : blockNumber(num), top(t), bottom(b), isValid(true) {}
+    };
+    
+    struct DocumentData {
+        QVector<BlockData> blocks;
+        int centerY;
+        int firstBlockNumber;
+        int lastBlockNumber;
+    };
+
     int getVisibleCenterY();
     int checkVisibleCenterBlock(const QTextBlock &block);
     QTextBlock findBlockClosestToCenter();
+    void findBlockClosestToCenterAsync();
+    void findBlockClosestToCenterAsyncThrottled();
+    void findBlockClosestToCenterAsyncImpl();
+    static int findBlockClosestToCenterWorker(const DocumentData &data);
+    void onBlockSearchComplete();
     void refresh();
     void updateCursorPosition();
     void readBlock();
@@ -92,6 +118,11 @@ private:
     
     QTimer *timer;
     QPoint lastMousePos;
+    
+    // Threading support for block computation
+    QFutureWatcher<int> *blockSearchWatcher;
+    QFuture<int> blockSearchFuture;
+    QTimer *blockSearchThrottleTimer;
 };
 
 #endif // FICTIONTEXTEDIT_H

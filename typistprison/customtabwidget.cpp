@@ -262,9 +262,7 @@ void CustomTabWidget::closeWindowIfNoTabs(int index) {
 }
 
 void CustomTabWidget::showImageAt(const QString &imagePath, QPoint lastMousePos) {
-    qDebug() << "show image at function incustomtabwidget" ;
     emit showImageAtSignal(imagePath, lastMousePos);
-    qDebug() << "show image at function incustomtabwidget" ;
 }
 
 void CustomTabWidget::hideImage() {
@@ -272,9 +270,7 @@ void CustomTabWidget::hideImage() {
 }
 
 void CustomTabWidget::showWikiAt(const QString &imagePath, QPoint lastMousePos) {
-    qDebug() << "show wiki at function incustomtabwidget" ;
     emit showWikiAtSignal(imagePath, lastMousePos);
-    qDebug() << "show wiki at function incustomtabwidget" ;
 }
 
 void CustomTabWidget::hideWiki() {
@@ -345,11 +341,8 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
             switch (result) {
                 case SaveMessageBox::Save:
                     // Save the document
-                    qDebug() << "Saving the document at index" << index;
-
                     newTab = this->widget(index);
                     title = this->tabText(index);
-                    qDebug() << regex.match(title).hasMatch();
 
                     isSuccessful = static_cast<BaseTextEditTab*>(newTab)->saveContent();
                     if (isSuccessful) {
@@ -359,19 +352,16 @@ void CustomTabWidget::onTabCloseRequested(int index, bool needAsking) {
                     break;
                 case SaveMessageBox::Discard:
                     // Discard changes and close the tab
-                    qDebug() << "Discarding changes and closing the tab at index" << index;
                     removeTab(index);
                     emit tabClosedFromSyncedTabWidgetSignal(index);
                     break;
                 case SaveMessageBox::Cancel:
                     // Cancel the close operation
-                    qDebug() << "Canceling the close operation for tab at index" << index;
                     // Do nothing to cancel the close operation
                     break;
             }
         } else {
             // Dialog was rejected (should be treated as cancel)
-            qDebug() << "Dialog was rejected, canceling the close operation for tab at index" << index;
         }
     } else {
         removeTab(index);

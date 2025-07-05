@@ -3,7 +3,6 @@
 #include <QTextBlock>
 #include <QBrush>
 #include <QColor>
-#include <QDebug>
 
 FictionHighlighter::FictionHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent), searchString(""), globalFontSize(14)

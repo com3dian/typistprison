@@ -50,6 +50,19 @@ FictionTextEdit::FictionTextEdit(QWidget *parent, ProjectManager *projectManager
     timer = new QTimer(this);
     timer->setSingleShot(true);
     connect(timer, &QTimer::timeout, this, &FictionTextEdit::readBlock);
+    
+    // Initialize threading support for block computation
+    blockSearchWatcher = new QFutureWatcher<int>(this);
+    connect(blockSearchWatcher, &QFutureWatcher<int>::finished, this, &FictionTextEdit::onBlockSearchComplete);
+    
+    // Initialize throttling timer to batch rapid scroll events
+    blockSearchThrottleTimer = new QTimer(this);
+    blockSearchThrottleTimer->setSingleShot(true);
+    blockSearchThrottleTimer->setInterval(50); // 50ms delay to batch rapid calls
+    connect(blockSearchThrottleTimer, &QTimer::timeout, this, [this]() {
+        // Call the actual async implementation directly to avoid recursion
+        this->findBlockClosestToCenterAsyncImpl();
+    });
 
 }
 
@@ -223,16 +236,6 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event)
             QString selectedText = textCursor().selectedText();
             emit onFictionEditSearch(selectedText);
             return; // Return early to avoid further processing
-        } else if (event->key() == Qt::Key_Z) {
-            qDebug() << "ctrl + Z";
-            qDebug() << this->toPlainText().isEmpty();
-            if (this->toPlainText().isEmpty()) {
-                qDebug() << "empty";
-                return;
-            } else {
-                undo();
-                return;
-            }
         }
         // // QTextEdit::keyPressEvent(event);
         // return;
@@ -381,7 +384,6 @@ void FictionTextEdit::insertFromMimeData(const QMimeData *source)
     QTextBlock currentBlock = cursor.block();
     if ((cursor.blockNumber() != 0) || (not plainText.contains('\n'))) {
         // direct insert if not in first block
-        qDebug() << "direct insertion";
         cursor.insertText(plainText);
         QTextBlock newBlock = cursor.block();
         applyBlockFormatting(newBlock);
@@ -391,9 +393,7 @@ void FictionTextEdit::insertFromMimeData(const QMimeData *source)
         for (int i = 0; i <lines.size(); ++i){
             if (i == 0) {
                 cursor.insertText(lines[i]);
-                qDebug() << "insert lines 0";
             } else if (i == 1) {
-                qDebug() << "insert lines 1";
                 cursor = applyCharFormatting(cursor, false);
                 cursor.insertBlock();
                 QTextBlock newBlock = cursor.block();
@@ -468,10 +468,11 @@ void FictionTextEdit::changeFontSize(int delta) {
     verticalScrollBar()->setValue(newCenterBlockMiddle - halfViewportHeight);
 }
 
-/*  Find the center of the visible area 
+/*  
+Find the center of the visible area 
     
-    returns: int
-             the y value of center
+returns: int
+            the y value of center
 */
 int FictionTextEdit::getVisibleCenterY() {
     QRect visibleRect = viewport()->rect();
@@ -500,10 +501,14 @@ int FictionTextEdit::checkVisibleCenterBlock(const QTextBlock &block) {
     return 0; // make compiler happy
 }
 
-/*  Function to find the block closest to the center of the visible area
+/*  
+Function to find the block closest to the center of the visible area (SYNCHRONOUS)
+This method blocks the UI thread and should only be used when immediate results are needed,
+such as in changeFontSize() where the result is needed immediately for scroll positioning.
+For UI updates like focus highlighting, use findBlockClosestToCenterAsync() instead.
     
-    returns: Qtextblock
-             block closest to the center of the visible area
+returns: QTextBlock
+    block closest to the center of the visible area
 */
 QTextBlock FictionTextEdit::findBlockClosestToCenter() {
     QTextDocument *doc = document();
@@ -602,6 +607,222 @@ QTextBlock FictionTextEdit::findBlockClosestToCenter() {
     return closestBlock; // make compiler happy 
 }
 
+/*
+UI Thread                    Background Thread
+┌─────────────────────────┐  ┌──────────────────────┐
+│ Entry Points:           │  │                      │
+│ ├─ Sync (immediate)     │  │                      │
+│ ├─ Async (direct)       │  │ Worker Thread        │
+│ └─ Async (throttled)    │  │ ├─ Binary Search     │
+│                         │  │ ├─ Block Calculation │
+│ Data Extraction         │  │ └─ Pure Logic        │
+│ ├─ Extract block rects  │  │                      │
+│ ├─ Get center Y         │  │                      │
+│ └─ Create thread-safe   │  │                      │
+│   data structures       │  │                      │
+│                         │  │                      │
+│ Result Handling         │  │                      │
+│ ├─ Apply formatting     │  │                      │
+│ └─ Update UI            │  │                      │
+└─────────────────────────┘  └──────────────────────┘
+*/
+
+/*
+Function to find the block closest to the center of the visible area (ASYNCHRONOUS)
+This method performs the computation in a background thread to avoid blocking the UI.
+Use this for UI updates like focus highlighting during scrolling where slight delay is acceptable.
+The result is handled in onBlockSearchComplete() when the computation finishes.
+*/
+void FictionTextEdit::findBlockClosestToCenterAsync() {
+    // Direct call to implementation
+    findBlockClosestToCenterAsyncImpl();
+}
+
+/*
+- document()->documentLayout()->blockBoundingRect() must be called in UI thread
+- We do one-time extraction of all needed data
+- Worker thread gets pure numerical data - no GUI dependencies
+*/
+void FictionTextEdit::findBlockClosestToCenterAsyncThrottled() {
+    // Use throttling to batch rapid calls (e.g., during fast scrolling)
+    blockSearchThrottleTimer->start();
+}
+
+void FictionTextEdit::findBlockClosestToCenterAsyncImpl() {
+    // Cancel any existing computation to avoid stacking multiple requests
+    if (blockSearchWatcher->isRunning()) {
+        blockSearchFuture.cancel();
+        blockSearchWatcher->waitForFinished();
+    }
+    
+    // Extract thread-safe data from document
+    QTextDocument *doc = document();
+    DocumentData docData;
+    docData.centerY = getVisibleCenterY();
+    
+    QTextBlock firstBlock = doc->firstBlock();
+    QTextBlock lastBlock = doc->lastBlock();
+    
+    if (!firstBlock.isValid() || !lastBlock.isValid()) {
+        return; // No blocks available
+    }
+    
+    docData.firstBlockNumber = firstBlock.blockNumber();
+    docData.lastBlockNumber = lastBlock.blockNumber();
+    
+    // Extract bounding rectangles for all blocks (this must be done in main thread)
+    QTextBlock block = firstBlock;
+    while (block.isValid()) {
+        QRectF blockRect = document()->documentLayout()->blockBoundingRect(block);
+        docData.blocks.append(BlockData(
+            block.blockNumber(),
+            static_cast<int>(blockRect.top()),
+            static_cast<int>(blockRect.bottom())
+        ));
+        
+        block = block.next();
+        if (block.blockNumber() > lastBlock.blockNumber()) {
+            break;
+        }
+    }
+    
+    // Start async computation
+    blockSearchFuture = QtConcurrent::run(&FictionTextEdit::findBlockClosestToCenterWorker, docData);
+    blockSearchWatcher->setFuture(blockSearchFuture);
+}
+
+int FictionTextEdit::findBlockClosestToCenterWorker(const DocumentData &data) {
+    if (data.blocks.isEmpty()) {
+        return -1;
+    }
+    
+    int centerY = data.centerY;
+    int lowIndex = 0;
+    int highIndex = data.blocks.size() - 1;
+    
+    // Helper lambda to check visible center block using extracted data
+    auto checkVisibleCenterBlockData = [&](const BlockData &blockData) -> int {
+        if ((blockData.top - 16 <= centerY) && (blockData.bottom + 16 >= centerY)) {
+            return 0;
+        } else if (blockData.top - 16 > centerY) {
+            return blockData.top - centerY; // positive value
+        } else if (blockData.bottom + 16 < centerY) {
+            return blockData.bottom - centerY; // negative value
+        }
+        return 0;
+    };
+    
+    // Estimate initial midpoint using ratio
+    const BlockData &lowBlock = data.blocks[lowIndex];
+    const BlockData &highBlock = data.blocks[highIndex];
+    
+    float ratio = static_cast<float>(centerY - lowBlock.top) / (highBlock.top - lowBlock.top);
+    if (ratio < 0) {
+        ratio = 0;
+    } else if (ratio > 1) {
+        ratio = 0.99f;
+    }
+    int midIndex = lowIndex + static_cast<int>((highIndex - lowIndex) * ratio);
+    
+    // Binary search
+    while (lowIndex < highIndex) {
+        if (midIndex < 0 || midIndex >= data.blocks.size()) {
+            midIndex = lowIndex + (highIndex - lowIndex) / 2;
+        }
+        
+        const BlockData &midBlock = data.blocks[midIndex];
+        int position = checkVisibleCenterBlockData(midBlock);
+        
+        if (position == 0) {
+            return midBlock.blockNumber;
+        } else if (position > 0) {
+            // current block is below the middle line
+            highIndex = midIndex;
+            const BlockData &newHighBlock = data.blocks[highIndex];
+            
+            // Update ratio for next iteration
+            ratio = static_cast<float>(centerY - lowBlock.top) / (newHighBlock.top - lowBlock.top);
+            if (ratio < 0) {
+                ratio = 0;
+            } else if (ratio > 1) {
+                ratio = 0.99f;
+            }
+            midIndex = lowIndex + static_cast<int>((highIndex - lowIndex) * ratio);
+        } else {
+            // current block is above the middle line
+            lowIndex = midIndex + 1;
+            if (lowIndex < data.blocks.size()) {
+                const BlockData &newLowBlock = data.blocks[lowIndex];
+                
+                // Update ratio for next iteration
+                ratio = static_cast<float>(centerY - newLowBlock.top) / (highBlock.top - newLowBlock.top);
+                if (ratio < 0) {
+                    ratio = 0;
+                } else if (ratio > 1) {
+                    ratio = 0.99f;
+                }
+                midIndex = lowIndex + static_cast<int>((highIndex - lowIndex) * ratio);
+            }
+        }
+        
+        // Break condition to prevent infinite loop
+        if (lowIndex == highIndex) {
+            break;
+        }
+    }
+    
+    // Find the closest block
+    if (lowIndex < data.blocks.size()) {
+        const BlockData &closestBlock = data.blocks[lowIndex];
+        int position = checkVisibleCenterBlockData(closestBlock);
+        
+        if (position == 0) {
+            return closestBlock.blockNumber;
+        } else if (position < 0) {
+            if (lowIndex > 0) {
+                return data.blocks[lowIndex - 1].blockNumber;
+            } else {
+                return closestBlock.blockNumber;
+            }
+        } else {
+            if (lowIndex + 1 < data.blocks.size()) {
+                return data.blocks[lowIndex + 1].blockNumber;
+            } else {
+                return closestBlock.blockNumber;
+            }
+        }
+    }
+    
+    return data.firstBlockNumber; // Fallback
+}
+
+void FictionTextEdit::onBlockSearchComplete() {
+    if (blockSearchWatcher->isCanceled()) {
+        return; // Computation was cancelled
+    }
+    
+    int blockNumber = blockSearchWatcher->result();
+    if (blockNumber >= 0) {
+        QTextDocument *doc = document();
+        QTextBlock foundBlock = doc->findBlockByNumber(blockNumber);
+        
+        if (foundBlock.isValid()) {
+            // Update the focus block with the result
+            if (isSniperMode) {
+                // Set the previous centered block to grey
+                if (previousCenteredBlock.isValid()) {
+                    applyBlockFormatting(previousCenteredBlock);
+                }
+                
+                // Set the new centered block to white
+                newCenteredBlock = foundBlock;
+                applyBlockFormatting(newCenteredBlock);
+                previousCenteredBlock = newCenteredBlock;
+            }
+        }
+    }
+}
+
 void FictionTextEdit::updateFocusBlock() {
     qDebug() << "updateFocusBlock";
 
@@ -639,13 +860,9 @@ void FictionTextEdit::updateFocusBlock() {
         return;
     }
 
-    // Find the new centered block
-    newCenteredBlock = findBlockClosestToCenter();
-    // Set the new centered block to white
-    applyBlockFormatting(newCenteredBlock);
-
-    // Update the previously centered block
-    previousCenteredBlock = newCenteredBlock;
+    // Find the new centered block asynchronously with throttling for frequent scroll events
+    findBlockClosestToCenterAsyncThrottled();
+    
     connect(this, &QTextEdit::textChanged, this, &FictionTextEdit::refresh);
 }
 
@@ -662,11 +879,10 @@ void FictionTextEdit::changeGlobalTextColor(const QColor &color)
     // Merge the new format with the existing format to preserve colors
     cursor.mergeCharFormat(format);
 
-    // Ensure the centered block is formatted correctly
-    newCenteredBlock = findBlockClosestToCenter();
-
-    applyBlockFormatting(newCenteredBlock);
-    previousCenteredBlock = newCenteredBlock;
+    // Ensure the centered block is formatted correctly (async)
+    if (isSniperMode) {
+        findBlockClosestToCenterAsync();
+    }
 }
 
 void FictionTextEdit::activateSniperMode() {
@@ -695,7 +911,6 @@ void FictionTextEdit::focusInEvent(QFocusEvent *e) {
 }
 
 void FictionTextEdit::search(const QString &searchString) {
-    qDebug() << "search;;;;;";
     // Reset matchStringIndex if searchString has changed
     if (searchString != highlighter->getSearchString()) {
         matchStringIndex = -1;
@@ -1015,7 +1230,6 @@ void FictionTextEdit::readBlock() {
     }
     // Here you can trigger your tooltip or other UI elements
     QString fullMatchedContent = projectManager->getContentByKeys(matchedWikiKeys);
-    qDebug() << fullMatchedContent;
     if (fullMatchedContent.isEmpty()) {
         return;
     }
