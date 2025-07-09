@@ -8,6 +8,7 @@
 #include <QMenu>
 #include <QWidgetAction>
 #include <QGraphicsDropShadowEffect>
+#include <QTimer>
 #include <functional>
 #include "../functionbar/menubutton.h"
 
@@ -42,6 +43,14 @@ public:
             
             QWidgetAction* action = new QWidgetAction(menu);
             action->setDefaultWidget(button);
+            
+            // Mac-specific fix: Force initial repaint to ensure proper text rendering
+            #ifdef Q_OS_MAC
+            QTimer::singleShot(0, button, [button]() {
+                button->update();
+                button->repaint();
+            });
+            #endif
             
             if (callback) {
                 QObject::connect(button, &MenuButton::mouseClick, [menu, callback]() {

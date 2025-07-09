@@ -5,6 +5,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QEnterEvent>
+#include <QShowEvent>
 
 class MenuButton : public QPushButton {
     Q_OBJECT
@@ -22,6 +23,7 @@ signals:
 protected:
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 };
 
 #endif // MENUBUTTON_H

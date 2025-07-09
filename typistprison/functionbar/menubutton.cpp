@@ -42,3 +42,21 @@ void MenuButton::leaveEvent(QEvent *event) {
     QPushButton::leaveEvent(event);
     emit notHovered();
 }
+
+void MenuButton::showEvent(QShowEvent *event) {
+    QPushButton::showEvent(event);
+    
+    // Mac-specific fix: Force initial label styling to ensure proper text rendering
+    #ifdef Q_OS_MAC
+    QLabel *leftLabel = findChild<QLabel *>();
+    QLabel *rightLabel = findChildren<QLabel *>().last();
+    if (leftLabel) {
+        leftLabel->setStyleSheet("color: #BDBDBD; background-color: transparent;");
+        leftLabel->update();
+    }
+    if (rightLabel) {
+        rightLabel->setStyleSheet("color: transparent; background-color: transparent;");
+        rightLabel->update();
+    }
+    #endif
+}
