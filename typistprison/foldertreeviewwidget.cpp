@@ -1,6 +1,7 @@
 #include "foldertreeviewwidget.h"
 #include "customtreestyle.h"
 #include "customfilesystemmodel.h"
+#include "projectmanager.h"
 #include <QTreeView>
 #include <QFileSystemModel>
 #include <QHeaderView>
@@ -16,8 +17,8 @@
 #include <QClipboard>
 #include <QLabel>
 
-FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot)
-    : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr), buttonWidget(nullptr)
+FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot, ProjectManager *projectManager)
+    : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr), buttonWidget(nullptr), projectManager(projectManager)
 {
     this->setStyleSheet(
         "FolderTreeViewWidget {"
@@ -79,6 +80,7 @@ void FolderTreeViewWidget::leaveEvent(QEvent* event)
 
 // In the refresh method, ensure the overlay is properly handled
 void FolderTreeViewWidget::refresh(const QString &newFolderRoot) {
+    qDebug() << "REFRESH - Checking fileTreeView:" << (fileTreeView ? "exists" : "NULL");
     if (fileTreeView) {
         delete fileTreeView;
         fileTreeView = nullptr;
@@ -89,11 +91,15 @@ void FolderTreeViewWidget::refresh(const QString &newFolderRoot) {
         folderRoot = newFolderRoot;
     }
 
+    // Trigger project manager to reopen the project
+    if (projectManager && !folderRoot.isEmpty()) {
+        projectManager->open(folderRoot);
+    }
+
     fileTreeView = new QTreeView(this);
     CustomTreeStyle *customStyle = new CustomTreeStyle(":/icons/angle_right.png", ":/icons/angle_down.png");
     fileTreeView->setStyle(customStyle);
 
-    qDebug() << "folderRoot" << folderRoot;
     fileModel->setRootPath(folderRoot);
     setupButton();
     setupFileTree();

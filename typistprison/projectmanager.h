@@ -1,7 +1,6 @@
 #ifndef PROJECTMANAGER_H
 #define PROJECTMANAGER_H
 
-#include "foldertreeviewwidget.h"
 #include "utils/ahocorasick.h"
 #include <QDir>
 #include <QFile>

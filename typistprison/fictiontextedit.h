@@ -4,8 +4,9 @@
 
 #include "searchWidget.h"
 #include "fontmanager.h"
-#include "fictionhighlighter.h"
 #include "projectmanager.h"
+#include "utils/fictionhighlighter.h"
+#include "utils/contextmenuutil.h"
 
 #include <QAbstractTextDocumentLayout>
 #include <QApplication>
@@ -118,11 +119,12 @@ private:
     
     QTimer *timer;
     QPoint lastMousePos;
-    
+    bool isInit;
     // Threading support for block computation
     QFutureWatcher<int> *blockSearchWatcher;
     QFuture<int> blockSearchFuture;
     QTimer *blockSearchThrottleTimer;
+
 };
 
 #endif // FICTIONTEXTEDIT_H

@@ -17,9 +17,9 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 
+#include "prisonerfictiontextedit.h"
 #include "fictiontextedit.h"
 #include "searchWidget.h"
-#include "prisonerfictiontextedit.h"
 #include "projectmanager.h"
 #include "basetextedittab.h"
 #include "utils/hoverbutton.h"
@@ -48,9 +48,6 @@ private:
     QWidget *wordCountSpacerRight;  // Change from QSpacerItem* to QWidget*
     QString oldTextContent;
     bool isPrisoner;
-    QFrame* prisonerFrame = nullptr;  // instead of QDialog* prisonerDialog
-    FictionViewTab *prisonerFictionViewTab;
-    PrisonerFictionTextEdit* fullScreenPrisonerTextEdit;
     ProjectManager *projectManager;
 
     void setupTextEdit(const QString &content);

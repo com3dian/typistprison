@@ -231,7 +231,7 @@ void MarkdownHighlighter::initTextFormats(int defaultFontSize, int globalFontSiz
     format = QTextCharFormat();
     format.setFont(monoFont);
     format.setFontPointSize(globalFontSize);
-    QString colorList("#b4c1a1"); // #9ffcc0
+    QString colorList("#b4c1a1"); // #b4c1a1
     format.setForeground(QColor(colorList));
     _formats[List] = format;
 

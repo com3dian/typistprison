@@ -7,12 +7,13 @@
 #include <QVBoxLayout>
 #include <QGraphicsDropShadowEffect>
 #include <QCursor>
+#include "projectmanager.h"
 
 class FolderTreeViewWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit FolderTreeViewWidget(QWidget *parent = nullptr, const QString folderRoot = "");  // Constructor
+    explicit FolderTreeViewWidget(QWidget *parent = nullptr, const QString folderRoot = "", ProjectManager *projectManager = nullptr);  // Constructor
     void toggleFileTreeView();
     void refresh(const QString &newFolderRoot);
     void handleContextMenuAction(const QString &action, const QModelIndex &index, bool isDir);
@@ -39,6 +40,7 @@ private:
     qreal scalingFactor;            // Correctly call devicePixelRatio()
     QString folderRoot;       // project root
     QWidget* overlayWidget;
+    ProjectManager *projectManager; // Pointer to the project manager
     
 protected:
     void enterEvent(QEnterEvent* event) override;

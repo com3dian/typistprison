@@ -24,6 +24,11 @@ protected:
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
     void showEvent(QShowEvent *event) override;
+    void changeEvent(QEvent* event) override;
+
+private:
+    QLabel *leftLabel;
+    QLabel *rightLabel;
 };
 
 #endif // MENUBUTTON_H

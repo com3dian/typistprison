@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     centralSplitter->setHandleWidth(0);  // Set the physical handle width to match CSS
     centralSplitter->setCursor(Qt::ArrowCursor);
 
-    folderTreeView = new FolderTreeViewWidget;
+    folderTreeView = new FolderTreeViewWidget(this, "", projectManager);
     centralSplitter->addWidget(folderTreeView);
 
     QWidget *editorWidget = new QWidget(this);
@@ -509,9 +509,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                     return true;
                 }
 
-                emit mouseClick();
-                handleFocusLeaveMenuButton();
-                disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
+                if (menuToggleButton->geometry().contains(posInMainWindow)) {
+                    handleFocusLeaveMenuButton();
+                    functionBar->closeMenuBar();
+                    return true;
+                } else {
+                    emit mouseClick();
+                    handleFocusLeaveMenuButton();
+                    disconnect(this, &MainWindow::mouseClick, functionBar, &FunctionBar::closeMenuBar);
+                    return true;
+                }
                 
             }
             if (contextMenuFrame && contextMenuFrame->isVisible()) {
@@ -835,6 +842,12 @@ void MainWindow::displayImage(const QPixmap &pixmap, QPoint lastMousePos) {
     const int MAX_WIDTH = 800;
     const int MAX_HEIGHT = 600;
 
+    const int EDGE_PADDING = 8;
+    const int TOP_PADDING = 48;
+
+    int windowMaxWidth = qMin(this->width() - 2*EDGE_PADDING, MAX_WIDTH);
+    int windowMaxHeight = qMin(this->height() - EDGE_PADDING - TOP_PADDING, MAX_HEIGHT);
+
         // Calculate the scaling factor to fit within max dimensions while maintaining aspect ratio
         QSize originalSize = pixmap.size();
         double scaleFactor = 0.2; // Start with 20% scaling
@@ -843,10 +856,10 @@ void MainWindow::displayImage(const QPixmap &pixmap, QPoint lastMousePos) {
         QSize scaledSize = originalSize * scaleFactor;
         
         // If scaled size exceeds max dimensions, adjust scale factor
-        if (scaledSize.width() > MAX_WIDTH || scaledSize.height() > MAX_HEIGHT) {
-            double widthRatio = static_cast<double>(MAX_WIDTH) / originalSize.width();
-            double heightRatio = static_cast<double>(MAX_HEIGHT) / originalSize.height();
-            scaleFactor = qMin(widthRatio, heightRatio);
+        if (scaledSize.width() > windowMaxWidth || scaledSize.height() > windowMaxHeight) {
+            double widthRatio = static_cast<double>(windowMaxWidth) / static_cast<double>(originalSize.width());
+            double heightRatio = static_cast<double>(windowMaxHeight) / static_cast<double>(originalSize.height());
+            scaleFactor = qMin(0.2, qMin(widthRatio, heightRatio));
         }
 
         // Scale the image with the calculated factor
@@ -860,10 +873,9 @@ void MainWindow::displayImage(const QPixmap &pixmap, QPoint lastMousePos) {
         // Set the image to the frame
         imageFrame->setImage(scaledPixmap);
 
-        // Resize the frame to fit the scaled image with shadow padding
+        // Resize the frame to fit the scaled image
         QSize imageSize = scaledPixmap.size();
-        QSize frameSize = imageSize + QSize(20, 20); // Extra padding for the shadow
-        imageFrame->resize(frameSize);
+        imageFrame->resize(imageSize);
 
         // Position the frame relative to the mouse position with offset
         QPoint popupPos = this->mapFromGlobal(lastMousePos - QPoint(8, 8));
@@ -872,19 +884,19 @@ void MainWindow::displayImage(const QPixmap &pixmap, QPoint lastMousePos) {
         QSize windowSize = this->size();
 
         // Adjust x-coordinate if needed
-        if (popupPos.x() + frameSize.width() > windowSize.width()) {
-            popupPos.setX(windowSize.width() - frameSize.width());
+        if (popupPos.x() + imageSize.width() > windowSize.width() - EDGE_PADDING) {
+            popupPos.setX(windowSize.width() - imageSize.width() - EDGE_PADDING);
         }
-        if (popupPos.x() < 0) {
-            popupPos.setX(0);
+        if (popupPos.x() < EDGE_PADDING) {
+            popupPos.setX(EDGE_PADDING);
         }
 
         // Adjust y-coordinate if needed
-        if (popupPos.y() + frameSize.height() > windowSize.height()) {
-            popupPos.setY(windowSize.height() - frameSize.height());
+        if (popupPos.y() + imageSize.height() > windowSize.height() - EDGE_PADDING) {
+            popupPos.setY(windowSize.height() - imageSize.height() - EDGE_PADDING);
         }
-        if (popupPos.y() < 0) {
-            popupPos.setY(0);
+        if (popupPos.y() < TOP_PADDING) {
+            popupPos.setY(TOP_PADDING);
         }
 
         imageFrame->move(popupPos);
@@ -892,7 +904,7 @@ void MainWindow::displayImage(const QPixmap &pixmap, QPoint lastMousePos) {
         // Create and configure the drop shadow effect
         QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
         shadow->setBlurRadius(24);   // Increase for a softer, larger shadow
-        shadow->setColor(QColor("#1F2020")); // Shadow color
+        shadow->setColor(QColor("#1F2020"));    // Shadow color
         shadow->setOffset(0, 0);     // Zero offset to get shadow on all sides
 
         // Apply the effect to your frame
@@ -907,6 +919,9 @@ void MainWindow::hideMarkdownImage() {
     }
 }
 
+/*
+Show wiki content in a popup frame.
+*/
 void MainWindow::showWiki(const QString &wikiContent, QPoint lastMousePos) {
     // Create WikiFrame if it doesn't exist
     if (!wikiFrame) {

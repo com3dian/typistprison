@@ -180,7 +180,7 @@ void ProgressBorderWidget::paintEvent(QPaintEvent *event) {
 }
 
 void ProgressBorderWidget::drawPath(QPainter &painter, const QPainterPath &path) {
-    QPen pen(Qt::blue, 8);
+    QPen pen(QColor("#f07f8f"), 8);
     pen.setCapStyle(Qt::RoundCap);
     painter.setPen(pen);
     painter.drawPath(path);

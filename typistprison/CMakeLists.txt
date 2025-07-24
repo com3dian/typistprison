@@ -27,8 +27,6 @@ set(PROJECT_SOURCES
     fictiontextedit.h
     fictionviewtab.cpp
     fictionviewtab.h
-    fictionhighlighter.cpp
-    fictionhighlighter.h
     prisonerfictiontextedit.cpp
     prisonerfictiontextedit.h
     plaintextedit.cpp
@@ -75,6 +73,8 @@ set(PROJECT_SOURCES
     utils/ahocorasick.cpp
     utils/ahocorasick.h
     utils/hoverbutton.h
+    utils/fictionhighlighter.cpp
+    utils/fictionhighlighter.h
     popups/imagepopup.cpp
     popups/imagepopup.h
     popups/imageframe.h

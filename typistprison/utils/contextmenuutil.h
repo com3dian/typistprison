@@ -35,8 +35,11 @@ public:
         menu->setGraphicsEffect(shadow);
         
         // Helper function to create MenuButton action
-        auto createMenuButtonAction = [&](const QString &text, const QString &shortcut = QString(), bool enabled = true, std::function<void()> callback = nullptr) -> QWidgetAction* {
-            MenuButton* button = new MenuButton(text, shortcut, menu);
+        auto createMenuButtonAction = [&](const QString &text,
+                                          const QString &shortcut = QString(),
+                                          bool enabled = true,
+                                          std::function<void()> callback = nullptr) -> QWidgetAction* {
+            MenuButton* button = new MenuButton(text, enabled ? shortcut : "", menu);
             button->setEnabled(enabled);
             button->setFixedHeight(28);
             button->setFixedWidth(128);
@@ -93,8 +96,8 @@ public:
             "    padding-bottom: 4px;"
             "}"
             "QMenu::separator {"
-            "    height: 1px;"
-            "    background-color: #303030;"
+            "    height: 2px;"
+            "    background-color: #262626;"
             "    margin: 2px 0px 0px 0px;"
             "}"
         );

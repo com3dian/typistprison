@@ -5,8 +5,8 @@ MenuButton::MenuButton(const QString &leftText, const QString &rightText, QWidge
 {
     setStyleSheet("QPushButton { border: none; padding: 0px; background-color: transparent; }");
 
-    QLabel *leftLabel = new QLabel(leftText, this);
-    QLabel *rightLabel = new QLabel(rightText, this);
+    leftLabel = new QLabel(leftText, this);
+    rightLabel = new QLabel(rightText, this);
 
     leftLabel->setStyleSheet("color: #BDBDBD; background-color: transparent;");
     rightLabel->setStyleSheet("color: transparent; background-color: transparent;");
@@ -25,22 +25,26 @@ MenuButton::MenuButton(const QString &leftText, const QString &rightText, QWidge
 }
 
 void MenuButton::setTexts(const QString &leftText, const QString &rightText) {
-    findChild<QLabel *>()->setText(leftText);
-    findChildren<QLabel *>().last()->setText(rightText);
+    leftLabel->setText(leftText);
+    rightLabel->setText(rightText);
 }
 
 void MenuButton::enterEvent(QEnterEvent *event) {
-    findChild<QLabel *>()->setStyleSheet("color: #FFFFFF; background-color: transparent;");
-    findChildren<QLabel *>().last()->setStyleSheet("color: #656565; background-color: transparent;");
+    if (isEnabled()) {
+        leftLabel->setStyleSheet("color: #FFFFFF; background-color: transparent;");
+        rightLabel->setStyleSheet("color: #656565; background-color: transparent;");
+        emit hovered();
+    }
     QPushButton::enterEvent(event);
-    emit hovered();
 }
 
 void MenuButton::leaveEvent(QEvent *event) {
-    findChild<QLabel *>()->setStyleSheet("color: #BDBDBD; background-color: transparent;");
-    findChildren<QLabel *>().last()->setStyleSheet("color: transparent; background-color: transparent;");
+    if (isEnabled()) {
+        leftLabel->setStyleSheet("color: #BDBDBD; background-color: transparent;");
+        rightLabel->setStyleSheet("color: transparent; background-color: transparent;");
+        emit notHovered();
+    }
     QPushButton::leaveEvent(event);
-    emit notHovered();
 }
 
 void MenuButton::showEvent(QShowEvent *event) {
@@ -48,15 +52,33 @@ void MenuButton::showEvent(QShowEvent *event) {
     
     // Mac-specific fix: Force initial label styling to ensure proper text rendering
     #ifdef Q_OS_MAC
-    QLabel *leftLabel = findChild<QLabel *>();
-    QLabel *rightLabel = findChildren<QLabel *>().last();
-    if (leftLabel) {
-        leftLabel->setStyleSheet("color: #BDBDBD; background-color: transparent;");
-        leftLabel->update();
+    if (isEnabled()) {
+        if (leftLabel) {
+            leftLabel->setStyleSheet("color: #BDBDBD; background-color: transparent;");
+            leftLabel->update();
+        }
+    } else {
+        if (leftLabel) {
+            leftLabel->setStyleSheet("color: #656565; background-color: transparent;");
+            leftLabel->update();
+        }
     }
     if (rightLabel) {
         rightLabel->setStyleSheet("color: transparent; background-color: transparent;");
         rightLabel->update();
     }
     #endif
+}
+
+void MenuButton::changeEvent(QEvent* event) {
+    QPushButton::changeEvent(event);
+    if (event->type() == QEvent::EnabledChange) {
+        if (!isEnabled()) {
+            leftLabel->setStyleSheet("color: #656565; background-color: transparent;");
+            rightLabel->setStyleSheet("color: transparent; background-color: transparent;");
+        } else {
+            leftLabel->setStyleSheet("color: #BDBDBD; background-color: transparent;");
+            rightLabel->setStyleSheet("color: transparent; background-color: transparent;");
+        }
+    }
 }

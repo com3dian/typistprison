@@ -1,7 +1,17 @@
 #include "projectmanager.h"
 #include <QDebug>
 #include <QTimer>
-#include <QDirIterator>  // Add this include for QDirIterator
+#include <QDirIterator>
+#include <QRegularExpression>
+
+/*
+This class manage the project(folder) of typrison, including:
+- banned words
+- wiki folder or file
+
+TODO: have a easy method to handle when banned words file is changed
+and wiki folder or file is changed.
+*/
 
 // Constructor
 ProjectManager::ProjectManager(QObject* parent)
@@ -20,7 +30,6 @@ void ProjectManager::open(const QString selectedProjectRoot) {
     currentProjectRoot = selectedProjectRoot;
     readBannedWords(selectedProjectRoot);
     readWikiFiles(selectedProjectRoot);
-    printWikiContent();
 
     isLoadedProject = true;
     
@@ -42,10 +51,19 @@ void ProjectManager::readBannedWords(const QString selectedProjectRoot) {
     int maxStars = 0;
 
     for (const QString& fileName : txtFiles) {
-        int starCount = fileName.count('*');
-        if (starCount > maxStars) {
-            maxStars = starCount;
-            bestFile = fileName;
+        bool allAsterisks = false;
+        if (fileName.length() > 4) {
+            QString firstHalf = fileName.left(fileName.length() - 4); // remove last 4 characters
+            allAsterisks = std::all_of(firstHalf.begin(), firstHalf.end(),
+                                            [](QChar ch) { return ch == '*'; });
+        }
+        
+        if (allAsterisks) {
+            int starCount = fileName.count('*');
+            if (starCount > maxStars) {
+                maxStars = starCount;
+                bestFile = fileName;
+            }
         }
     }
 
@@ -73,7 +91,6 @@ void ProjectManager::readBannedWords(const QString selectedProjectRoot) {
         file.close();
 
         bannedWordsLines = lines;
-        qDebug() << "lines" << lines;
 
         QString bannedWordsQstringList;
         for (const auto& str : bannedWordsLines) {
@@ -100,7 +117,6 @@ int ProjectManager::getMaxiumBannedWordLength() {
 }
 
 QString ProjectManager::matchBannedWords(QString text) {
-    qDebug() << "match banned words 0";
     // If no banned words file is found, return original text
     if (!haveBannedWordsFile) {
         return text;
@@ -116,22 +132,6 @@ QString ProjectManager::matchBannedWords(QString text) {
         int utf8BannedWordLength = bannedWordsLines[patternIndex].size();
         int end = match.second - backspace;
         int start = end - utf8BannedWordLength + 1;
-
-        // qDebug() << "Pattern Index: " << patternIndex;
-        // qDebug() << "Match second: " << match.second;
-        // qDebug() << "End: " << end;
-        // qDebug() << "UTF-8 Banned Word Length: " << utf8BannedWordLength;
-        // qDebug() << "Start: " << start;
-        // qDebug() << "String size before erase: " << static_cast<int>(stdStringText.size());
-
-        // if (start < 0 || start >= static_cast<int>(stdStringText.size())) {
-        //     qDebug() << "ERROR: Invalid start index for erase()";
-        //     continue;  // Skip invalid operations
-        // }
-        // if (utf8BannedWordLength <= 0 || start + utf8BannedWordLength > static_cast<int>(stdStringText.size())) {
-        //     qDebug() << "ERROR: Invalid erase range";
-        //     continue;
-        // }
 
         // Replace the range [start, end] with proper number of asterisks
         stdStringText.erase(start, utf8BannedWordLength);
@@ -522,7 +522,6 @@ QMap<QString, QList<QPair<int, QString>>> ProjectManager::matchWikiContent(const
         matches[wikiKey].append(qMakePair(startPos, matchedText));
     }
 
-    qDebug() << "Total sections with matches:" << matches.size();
     return matches;
 }
 

@@ -13,6 +13,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 private:
     QIcon folderIcon;
+    QIcon wikiIcon;
 };
 
 #endif // CUSTOMFILESYSTEMMODEL_H

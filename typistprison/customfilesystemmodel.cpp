@@ -9,6 +9,7 @@ CustomFileSystemModel::CustomFileSystemModel(QObject *parent)
 {
     // Initialize folder icons
     folderIcon = QIcon(":/icons/folder.png");
+    wikiIcon = QIcon(":/icons/wikifile_icon.png");
 }
 
 /*
@@ -20,9 +21,14 @@ QVariant CustomFileSystemModel::data(const QModelIndex &index, int role) const {
         return QColor("#BDBDBD");
     }
     else if (role == Qt::DecorationRole) {
+        QString dirName = QFileSystemModel::fileName(index);
         // Check if it's a directory first
         if (isDir(index)) {
-            return folderIcon;
+            if (dirName == "wiki") {
+                return wikiIcon;
+            } else {
+                return folderIcon;
+            }
         }
         // Then handle files
         QString fileName = QFileSystemModel::fileName(index);
@@ -32,7 +38,17 @@ QVariant CustomFileSystemModel::data(const QModelIndex &index, int role) const {
         } else if (fileName.endsWith(".md")) {
             return QIcon(":/icons/md_icon.png");
         } else if (fileName.endsWith(".txt")) {
-            return QIcon(":/icons/txt_icon.png");
+            bool allAsterisks = false;
+            if (fileName.length() > 4) {
+                QString firstHalf = fileName.left(fileName.length() - 4); // remove last 4 characters '.txt'
+                allAsterisks = std::all_of(firstHalf.begin(), firstHalf.end(),
+                                                [](QChar ch) { return ch == '*'; });
+            }
+            if (allAsterisks) {
+                return QIcon(":/icons/*_icon.png");
+            } else {
+                return QIcon(":/icons/txt_icon.png");
+            }
         } else {
             return QIcon(":/icons/file.png");  // Default icon for other file types
         }
