@@ -14,6 +14,9 @@ public:
     void clearTimerProgress();
     void setFullScreen(bool fullScreen);
 
+signals:
+    void needsRepaint();
+
 protected:
     void paintEvent(QPaintEvent *event) override;
 
@@ -23,6 +26,7 @@ private slots:
 
 private:
     void drawPath(QPainter &painter, const QPainterPath &path);
+    void drawPathTest(QPainter &painter, const QPainterPath &path);
     void paintBorder(qreal startLength, QRectF borderRect, QPainter painter);
 
     int timerProgress;

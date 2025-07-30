@@ -66,7 +66,10 @@ void CustomTabWidget::createNewTab(const QString &filePath,
     QWidget *newTab;
 
     if (not filePath.isEmpty()) {
-        if (this->checkIdenticalOpenedFile(filePath) != -1) {
+        int tabIndex = this->checkIdenticalOpenedFile(filePath);
+        if (tabIndex != -1) {
+            this->setCurrentIndex(tabIndex);
+            emit tabActivatedSignal(tabIndex );
             return;
         }
     }
@@ -414,8 +417,8 @@ void CustomTabWidget::handleFileRenamed(const QString &originalFilePath, const Q
 void CustomTabWidget::activatePrisonerModeFunc() {
     emit activatePrisonerModeSignal();
 }
-
 void CustomTabWidget::deactivatePrisonerModeFunc() {
     qDebug() << "CustomTabWidget::deactivatePrisonerModeSignal";
     emit deactivatePrisonerModeSignal();
 }
+

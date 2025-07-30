@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Create the splitter
     centralSplitter = new QSplitter(splitterContainer);
     centralSplitter->setStyleSheet(
-    "QSplitter { background-color: #1F2020;}"  // Background of the splitter itself
+    "QSplitter { background-color: transparent;}"  // Background of the splitter itself
     "QSplitter::handle {"
     "    background-color: #1F2020;"
     "}"
@@ -82,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Double holder for tab widget
     QWidget *customTabWidgetHolder = new QWidget(this);
+    customTabWidgetHolder->setAttribute(Qt::WA_TranslucentBackground);
     customTabWidgetHolder->setStyleSheet(
         "QWidget {"
         "    background-color: #2c2c2c;"

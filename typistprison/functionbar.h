@@ -75,6 +75,7 @@ private:
     void onTabInserted(int index, const QString &label);
     void onTabRemoved(int index);
     void onTabClosedFromSyncedWidget(int index);
+    void onTabActivatedFromSyncWidget(int index);
     void onTabMoved(int from, int to);
     void onTabTitleUpdated(int index, QString newTitle);
 

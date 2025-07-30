@@ -123,6 +123,12 @@ void FunctionBar::onTabClosedFromSyncedWidget(int index) {
     }
 }
 
+void FunctionBar::onTabActivatedFromSyncWidget(int index) {
+    if (syncedTabWidget) {
+        tabBar->setCurrentIndex(index);
+    }
+}
+
 void FunctionBar::onTabRemoved(int index) {
     if (syncedTabWidget) {
         syncedTabWidget->closeWindowIfNoTabs(index);
@@ -170,6 +176,7 @@ void FunctionBar::setupTabBar() {
 
     connect(syncedTabWidget, &CustomTabWidget::tabInsertedSignal, this, &FunctionBar::onTabInserted);
     connect(syncedTabWidget, &CustomTabWidget::tabClosedFromSyncedTabWidgetSignal, this, &FunctionBar::onTabClosedFromSyncedWidget);
+    connect(syncedTabWidget, &CustomTabWidget::tabActivatedSignal, this, &FunctionBar::onTabActivatedFromSyncWidget);
     connect(syncedTabWidget, &CustomTabWidget::updatedTabTitleSignal, this, &FunctionBar::onTabTitleUpdated);
 
     connect(tabBar, &QTabBar::tabBarClicked, this, &FunctionBar::onTabGainedAttention);

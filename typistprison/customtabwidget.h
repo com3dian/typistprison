@@ -61,6 +61,7 @@ signals:
     void tabInsertedSignal(int index, const QString &label);
     void tabClosedFromSyncedTabWidgetSignal(int index);
     void updatedTabTitleSignal(int currentIndex, QString newTitle);
+    void tabActivatedSignal(int index);
     void showImageAtSignal(const QString &imagePath, QPoint lastMousePos);
     void hideImageSignal();
     void showWikiAtSignal(const QString &imagePath, QPoint lastMousePos);

@@ -20,17 +20,20 @@ void ProgressBorderWidget::clearTimerProgress() {
     prisonerTimer->stop();
     timerProgress = 0;
     update(); // repaint
+    emit needsRepaint();
     isTimerRunning = false;
 }
 
 void ProgressBorderWidget::updateTimerProgress() {
     timerProgress = timerProgress + 1;
     update(); // repaint
+    emit needsRepaint();
 }
 
 void ProgressBorderWidget::updateTypingProgress(qreal progress) {
     qreal typingProgress = progress;
     update();
+    emit needsRepaint();
 }
 
 void ProgressBorderWidget::paintBorder(qreal startLength, QRectF borderRect, QPainter painter) {
@@ -115,10 +118,10 @@ void ProgressBorderWidget::paintEvent(QPaintEvent *event) {
     painter.drawRoundedRect(rect, cornerRadius, cornerRadius);
 
     int borderMargin = 4;
-    int borderRadius = 9;
+    int innerRadius = 6;
 
-    qreal width = rect.width() - 2 * borderRadius;
-    qreal height = rect.height() - 2 * borderRadius;
+    qreal width = rect.width() - 2 * borderMargin -  2 * innerRadius;
+    qreal height = rect.height() - 2 * borderMargin - 2 * innerRadius;
     qreal perimeter = 2 * (width + height);
     qreal progressLength;
     if (totalTime == 0.0){
@@ -127,41 +130,60 @@ void ProgressBorderWidget::paintEvent(QPaintEvent *event) {
         progressLength = (timerProgress / totalTime) * perimeter;
     }
 
-    QPointF topLeft = rect.topLeft() + QPointF(borderRadius, borderMargin);
-    QPointF topRight = rect.topRight() + QPointF(-borderRadius, borderMargin);
-    QPointF topRightArc = rect.topRight() + QPointF(-borderRadius, borderMargin);
+    QPointF topLeftArcTo = rect.topLeft() + QPointF(0.5, 0.5) +QPointF(2 * borderMargin + innerRadius, borderMargin);
 
-    QPointF bottomRight = rect.bottomRight() + QPointF(-borderMargin, -borderMargin);
+    QPointF topRightArcFrom = rect.topRight() + QPointF(- 0.5, 0.5) + QPointF(- 2 * borderMargin - innerRadius, borderMargin);
+    QPointF topRightArcTo = rect.topRight() + QPointF(- 0.5, 0.5) + QPointF(- borderMargin, 2 * borderMargin + innerRadius);
+
+    QPointF bottomRightArcFrom = rect.bottomRight() + QPointF(- 0.5, - 0.5) + QPointF(-borderMargin, - 2 * borderMargin - innerRadius);
+    QPointF bottomRightArcTo = rect.bottomRight() + QPointF(- 0.5, - 0.5) + QPointF(- 2 * borderMargin - innerRadius, -borderMargin);
+
     QPointF bottomLeft = rect.bottomLeft() + QPointF(borderMargin, -borderMargin);
 
     QPainterPath path;
-    path.moveTo(topLeft);
+    path.moveTo(topLeftArcTo);
 
     qreal remaining = progressLength;
 
-    qreal topEdge = width;
+    qreal topEdge = width - 2 * borderMargin;
     if (remaining <= topEdge) {
-        path.lineTo(topLeft + QPointF(remaining, 0));
+        path.lineTo(topLeftArcTo + QPointF(remaining, 0));
         drawPath(painter, path);
         return;
     } else {
-        path.lineTo(topRight);
+        path.lineTo(topRightArcFrom);
         remaining -= topEdge;
     }
 
-    qreal rightEdge = height;
-    if (remaining <= rightEdge) {
-        path.lineTo(topRight + QPointF(0, remaining));
+    qreal topRightArcRadius = borderMargin + innerRadius;
+    qreal topRightArcLength = 3.1416 * topRightArcRadius * 0.5;
+    QPointF topRightCenter = topRightArcFrom + QPointF(0, topRightArcRadius);
+    qDebug() << "topRightCenter: " << topRightCenter;
+    
+    QRectF topRightRect(topRightCenter.x() - topRightArcRadius, topRightCenter.y() - topRightArcRadius, 2 * topRightArcRadius, 2 * topRightArcRadius);
+
+    if (remaining <= topRightArcLength) {
+        path.arcTo(topRightRect, 90.0, - remaining/topRightArcLength * 90.0);
         drawPath(painter, path);
         return;
     } else {
-        path.lineTo(bottomRight);
+        path.arcTo(topRightRect, 90.0, - 90.0);
+        remaining -=  topRightArcLength;
+    }
+
+    qreal rightEdge = height - 2 * borderMargin;
+    if (remaining <= rightEdge) {        
+        path.lineTo(topRightArcTo + QPointF(0, remaining));
+        drawPath(painter, path);
+        return;
+    } else {
+        path.lineTo(bottomRightArcFrom);
         remaining -= rightEdge;
     }
 
     qreal bottomEdge = width;
     if (remaining <= bottomEdge) {
-        path.lineTo(bottomRight - QPointF(remaining, 0));
+        path.lineTo(bottomRightArcFrom - QPointF(remaining, 0));
         drawPath(painter, path);
         return;
     } else {
@@ -173,20 +195,29 @@ void ProgressBorderWidget::paintEvent(QPaintEvent *event) {
     if (remaining <= leftEdge) {
         path.lineTo(bottomLeft - QPointF(0, remaining));
     } else {
-        path.lineTo(topLeft);
+        path.lineTo(topLeftArcTo);
     }
 
     drawPath(painter, path);
 }
 
 void ProgressBorderWidget::drawPath(QPainter &painter, const QPainterPath &path) {
-    QPen pen(QColor("#f07f8f"), 8);
+    QPen pen(QColor("#ACD3A8"), 8);
     pen.setCapStyle(Qt::RoundCap);
     painter.setPen(pen);
     painter.drawPath(path);
 }
 
+void ProgressBorderWidget::drawPathTest(QPainter &painter, const QPainterPath &path) {
+    QPen pen(QColor("#5652d1"), 8);
+    pen.setCapStyle(Qt::RoundCap);
+    painter.setPen(pen);
+    painter.drawPath(path);
+}
+
+
 void ProgressBorderWidget::setFullScreen(bool fullScreen) {
     isFullScreen = fullScreen;
     update();
+    emit needsRepaint();
 }
