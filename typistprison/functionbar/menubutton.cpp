@@ -1,3 +1,19 @@
+/*
+Buttons in 
+    1. drop down (menu) list
+    2. right click menu
+
++-------------------+
+|  New...   Ctrl+N  |
+|  Open     Ctrl+Z  |
+|  Save     Ctrl+S  |
+|  Search   Ctrl+F  |
++-------------------+
+
+when hovering on this button, `leftText` will be highlighted and `rightText` will show.
+*/
+
+
 #include "menubutton.h"
 
 MenuButton::MenuButton(const QString &leftText, const QString &rightText, QWidget *parent)

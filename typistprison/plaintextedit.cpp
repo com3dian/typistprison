@@ -194,6 +194,5 @@ void PlaintextEdit::clearSearch() {
 }
 
 void PlaintextEdit::showContextMenu(const QPoint &pos) {
-    qDebug() << "showContextMenu triggered";
     ContextMenuUtil::showContextMenu(this, pos);
 }

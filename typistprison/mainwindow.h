@@ -30,6 +30,9 @@
 #include "projectmanager.h"
 #include "basetextedittab.h"
 #include "searchWidget.h"
+#include "fictionviewtab.h"
+#include "markdownviewtab.h"
+#include "plaintextviewtab.h"
 #include "popups/imageframe.h"
 #include "popups/wikiframe.h"
 #include "functionbar/menubutton.h"
@@ -75,7 +78,7 @@ public slots:
 private slots:
     void showContextMenu(const QStringList &options, const QModelIndex &index, bool isDir);
     void handleContextMenuSelection(const QString &action);
-    void activatePrisonerModeFunc();
+    void activatePrisonerModeFunc(int timeLimit, int wordGoal);
     void deactivatePrisonerModeFunc();
 private:
     Ui::MainWindow *ui;

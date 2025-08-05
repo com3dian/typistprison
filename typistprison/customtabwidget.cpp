@@ -414,8 +414,8 @@ void CustomTabWidget::handleFileRenamed(const QString &originalFilePath, const Q
     }
 }
 
-void CustomTabWidget::activatePrisonerModeFunc() {
-    emit activatePrisonerModeSignal();
+void CustomTabWidget::activatePrisonerModeFunc(int timeLimit, int wordGoal) {
+    emit activatePrisonerModeSignal(timeLimit, wordGoal);
 }
 void CustomTabWidget::deactivatePrisonerModeFunc() {
     qDebug() << "CustomTabWidget::deactivatePrisonerModeSignal";

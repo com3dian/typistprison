@@ -1,9 +1,29 @@
+/*
+The main window widget holding everthing in the app.
+
++-mainwindow----
+|
+|   +-mainContainer (qwidget)----
+|   |
+|   |   +-splitterContainer (progressborderwidget)----
+    |   |
+    |   |  +-splitterTopWidget (QWidget)----
+        |  |      (invisible by default)
+        |  +------------------------------------------
+
+           +-centralSplitter (QSplitter)---------
+           |
+           |   +-folderTreeView-+   +-editorWidget (QWidget)----
+           |   |                |   |                        
+
+*/
+
+
 #include "mainwindow.h"
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QUrl>
-
 
 // Add this to your MainWindow constructor initialization list
 MainWindow::MainWindow(QWidget *parent)
@@ -87,7 +107,7 @@ MainWindow::MainWindow(QWidget *parent)
         "QWidget {"
         "    background-color: #2c2c2c;"
         "    border: none;"
-        "    border-radius: 6px;"
+        "    border-radius: 4px;"
         "}"
     );
     // Create layout for the holder
@@ -170,6 +190,11 @@ MainWindow::MainWindow(QWidget *parent)
     qApp->installEventFilter(this);
 }
 
+/*
+(Part of) Short cuts definition.
+
+the other half is in `keypress` method in each textedit classes.
+*/
 void MainWindow::setupActions() {
     // Create actions for shortcuts instead of relying on invisible buttons
     QAction* actionOpenFile = new QAction("Open File", this);
@@ -183,7 +208,6 @@ void MainWindow::setupActions() {
     actionOpenFile->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
     actionNewFile->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_N));
     actionSaveFile->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
-    // actionSearchFile->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F)); // Added search shortcut
 
     // Add actions to the main window so they work globally
     this->addAction(actionOpenFile);
@@ -324,7 +348,7 @@ void MainWindow::searchFile()
     QWidget* currentWidget = customTabWidget->currentWidget();
     if (!currentWidget)
         return;
-    
+
     // Cast to BaseTextEditTab since all tab types inherit from it
     BaseTextEditTab* textEditTab = qobject_cast<BaseTextEditTab*>(currentWidget);
     if (textEditTab) {
@@ -333,8 +357,25 @@ void MainWindow::searchFile()
         
         // Find the search widget within the tab and give it focus
         SearchWidget* searchWidget = textEditTab->findChild<SearchWidget*>();
+        
+        // Try to get selected text
+        QString selectedText;
+        if (auto* fictionTab = qobject_cast<FictionViewTab*>(textEditTab)) {
+            if (auto* textEdit = fictionTab->findChild<FictionTextEdit*>()) {
+                selectedText = textEdit->textCursor().selectedText();
+            }
+        } else if (auto* markdownTab = qobject_cast<MarkdownViewTab*>(textEditTab)) {
+            if (auto* textEdit = markdownTab->findChild<QMarkdownTextEdit*>()) {
+                selectedText = textEdit->textCursor().selectedText();
+            }
+        } else if (auto* plaintextTab = qobject_cast<PlaintextViewTab*>(textEditTab)) {
+            if (auto* textEdit = plaintextTab->findChild<PlaintextEdit*>()) {
+                selectedText = textEdit->textCursor().selectedText();
+            }
+        }
+        
         if (searchWidget) {
-            searchWidget->handleSearch("");
+            searchWidget->handleSearch(selectedText);
         }
     }
 }
@@ -536,6 +577,18 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
+/*
+Show a drop down list of options when mouse entering menu buttons.
+[File☚] [Project]
++--------+
+| New... |
+| Open   |
+| Save   |
+
+| Search |
++--------+
+menu buttons are the (file, project) buttons in (top left) function bar.
+*/
 void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
     // Remove any existing frame if present.
     if (existingFrame) {
@@ -791,6 +844,10 @@ void MainWindow::handleMouseEnterMenuButton(QPushButton *button) {
         Qt::UniqueConnection);
 }
 
+/*
+Remove the drop down option list when mouse leaving menu buttons.
+menu buttons are the (file, project) buttons in (top left) function bar.
+*/
 void MainWindow::handleFocusLeaveMenuButton() {
     if (existingFrame) {
         existingFrame->setVisible(false);
@@ -800,13 +857,24 @@ void MainWindow::handleFocusLeaveMenuButton() {
     }
 }
 
+/*
+Find the image in .md file.
+triggered by QMarkdownTextEdit::readBlock -> (signal) showImageAt(imagePath, globalPos);
+
+![img☚](path/to/img.png)
+     +------------------------+
+     |                        |
+     | ʕ•̫͡•ʕ*̫͡*ʕ•͓͡•ʔ-̫͡-ʕ•̫͡•ʔ*̫͡*ʔ-̫͡-ʔ |
+     |                        |
+     +------------------------+
+
+this method will try to read the image from file-system or download from internet.
+*/
 void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos) {
     // Check if imagePath is a URL
     QUrl url(imagePath);
     if (url.isValid() && (url.scheme() == "http" || url.scheme() == "https")) {
         // Download image from URL
-        qDebug() << "Downloading image from URL:" << imagePath;
-        
         QNetworkRequest request(url);
         request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
         
@@ -838,6 +906,18 @@ void MainWindow::showMarkdownImage(const QString &imagePath, QPoint lastMousePos
     }
 }
 
+/*
+Show a floating window that displays image.
+
+![img☚](path/to/img.png)
+     +------------------------+
+     |                        |
+     | ʕ•̫͡•ʕ*̫͡*ʕ•͓͡•ʔ-̫͡-ʕ•̫͡•ʔ*̫͡*ʔ-̫͡-ʔ |
+     |                        |
+     +------------------------+
+
+max size for image frame is [800, 600]
+*/
 void MainWindow::displayImage(const QPixmap &pixmap, QPoint lastMousePos) {
     // Define maximum dimensions for the scaled image
     const int MAX_WIDTH = 800;
@@ -851,7 +931,8 @@ void MainWindow::displayImage(const QPixmap &pixmap, QPoint lastMousePos) {
 
         // Calculate the scaling factor to fit within max dimensions while maintaining aspect ratio
         QSize originalSize = pixmap.size();
-        double scaleFactor = 0.2; // Start with 20% scaling
+        double scaleFactor = 0.2 + 0.8/((originalSize.width()+originalSize.height())/128+1);
+        qDebug() << "scaleFactor: " << scaleFactor;
         
         // Calculate scaled size
         QSize scaledSize = originalSize * scaleFactor;
@@ -1071,7 +1152,7 @@ void MainWindow::closeFileTreeView() {
     }
 }
 
-void MainWindow::activatePrisonerModeFunc() {
+void MainWindow::activatePrisonerModeFunc(int timeLimit, int wordGoal) {
     // Close side panel
     closeFileTreeView();
     
@@ -1088,17 +1169,17 @@ void MainWindow::activatePrisonerModeFunc() {
     // make the window maximum
     this->showFullScreen();
     splitterContainer->setFullScreen(true);
-    splitterContainer->startTimerProgress(10);
+    splitterContainer->startTimerProgress(timeLimit, wordGoal);
 }
 
 void MainWindow::deactivatePrisonerModeFunc() {
-    qDebug() << "MainWindow::deactivatePrisonerModeFunc()";
-    // Show custom tab bar
+    // Show customtabbar
     functionBar->setVisible(true);
 
     // First ensure window is not maximized
     this->showNormal();
     splitterContainer->setFullScreen(false);
+    splitterContainer->clearTimerProgress();
 
     // Restore side panel
     if (projectManager->isLoadedProject) {

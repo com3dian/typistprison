@@ -7,7 +7,11 @@ mot
 #include "fictionviewtab.h"
 
 
-FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, QWidget *parent, bool isPrisoner, ProjectManager *projectManager)
+FictionViewTab::FictionViewTab(const QString &content,
+                               const QString &filePath,
+                               QWidget *parent,
+                               bool isPrisoner,
+                               ProjectManager *projectManager)
     : BaseTextEditTab(content, filePath, parent), 
       vScrollBar(new QScrollBar(Qt::Vertical, this)),
       wordCountSpacerRight(nullptr),
@@ -29,7 +33,7 @@ FictionViewTab::FictionViewTab(const QString &content, const QString &filePath, 
     // font.setBold(true);                   // Set the font to bold
     // Apply the font to the QLabel
     wordCountLabel->setFont(font);
-    wordCountLabel->setContentsMargins(8, 5, 4, 8);
+    wordCountLabel->setContentsMargins(8, 5, 8, 8);
     wordCountLabel->setVisible(false);  // Hide the label by default
     
     // Create a holder widget for the word count label
@@ -251,7 +255,16 @@ void FictionViewTab::deactivateSniperMode() {
     connect(sniperButton, &QPushButton::clicked, this, &FictionViewTab::activateSniperMode);
 }
 
+/*
+Save the content into `currentFilePath` file.
+
+if `currentFilePath` is empty, popup a file-saving dialog; and then save.
+*/
 bool FictionViewTab::saveContent() {
+    if (isPrisoner) { // if in prisoner mode, do nothing
+        return false;
+    }
+
     if (currentFilePath.isEmpty()) {
         // If no file path is provided, prompt the user to select a save location
         QString fileName = QFileDialog::getSaveFileName(this, "Save File", "", "Text Files (*.txt);;All Files (*)");
@@ -331,7 +344,13 @@ void FictionViewTab::updateWordcount() {
         i.next();
         wordCount++;
     }
-    wordCountLabel->setText(QString::number(wordCount) + " words  ");
+    wordCountLabel->setText(QString::number(wordCount) + " words");
+
+    if (isPrisoner) {
+        // update typist progress
+        
+
+    }
 }
 
 void FictionViewTab::activatePrisonerMode() {
@@ -344,12 +363,18 @@ void FictionViewTab::activatePrisonerMode() {
         return;  // If save failed or was cancelled, don't proceed
     }
 
+    int dialogWordGoal;
+    int dialogTimeLimit;
+
     // Create and show the prisoner dialog
     PrisonerDialog dialog(this);
     connect(&dialog, &PrisonerDialog::prisonerSettings,
-            this, [this](int wordGoal, int timeLimit) {
+            this, [&](int wordGoal, int timeLimit) {
         // Handle the prisoner settings here
         qDebug() << "Word Goal:" << wordGoal << "Time Limit:" << timeLimit;
+
+        dialogWordGoal = wordGoal;
+        dialogTimeLimit = timeLimit;
         // Store these values or use them as needed
     });
 
@@ -357,7 +382,7 @@ void FictionViewTab::activatePrisonerMode() {
         return;  // User cancelled the dialog
     }
 
-    emit activatePrisonerModeSignal();
+    emit activatePrisonerModeSignal(dialogTimeLimit, dialogWordGoal);
 
     disconnect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::activatePrisonerMode);
     connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
@@ -365,6 +390,9 @@ void FictionViewTab::activatePrisonerMode() {
 
 void FictionViewTab::deactivatePrisonerMode() {
     emit deactivatePrisonerModeSignal();
+
+    connect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::activatePrisonerMode);
+    disconnect(prisonerButton, &QPushButton::clicked, this, &FictionViewTab::deactivatePrisonerMode);
 }
 
 QString FictionViewTab::getTextContent() const {

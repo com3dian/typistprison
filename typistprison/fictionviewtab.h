@@ -66,8 +66,9 @@ private:
 signals:
     void showWikiAt(const QString &wikiContent, QPoint lastMousePos);
     void hideWiki();
-    void activatePrisonerModeSignal();
+    void activatePrisonerModeSignal(int timeLimit, int wordGoal);
     void deactivatePrisonerModeSignal();
+    void tyingProgressChange(qreal progress);
 
 // In the protected or public section of your class declaration:
 protected:

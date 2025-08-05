@@ -36,7 +36,7 @@ public slots:
     void hideImage();
     void showWikiAt(const QString &wikiContent, QPoint lastMousePos);
     void hideWiki();
-    void activatePrisonerModeFunc();
+    void activatePrisonerModeFunc(int timeLimit, int wordGoal);
     void deactivatePrisonerModeFunc();
 
 private:
@@ -66,7 +66,7 @@ signals:
     void hideImageSignal();
     void showWikiAtSignal(const QString &imagePath, QPoint lastMousePos);
     void hideWikiSignal();
-    void activatePrisonerModeSignal();
+    void activatePrisonerModeSignal(int timeLimit, int wordGoal);
     void deactivatePrisonerModeSignal();
 
 };

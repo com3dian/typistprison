@@ -1,3 +1,16 @@
+/*
+MacOS-style-ish minimize/maximize/close buttons.
+
+------+
+o o o |
+------|
+
+when silent, all 3 buttons are grey;
+when mouse entering widget, 3 butons get coloured;
+when mouse entering one of the buttons, all 3 buttons start showing icon.
+*/
+
+
 #include "trafficlightwidget.h"
 
 TrafficLightWidget::TrafficLightWidget(QWidget *parent) : QWidget(parent) {

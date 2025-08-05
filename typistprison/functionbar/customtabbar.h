@@ -12,7 +12,7 @@
 #include <QToolButton>
 #include <QTimer>
 #include <QPropertyAnimation> // Added for QPropertyAnimation
-#include <QPixmap>            // Added for close icons
+#include <QPixmap>
 
 class CustomTabBar : public QTabBar {
     Q_OBJECT

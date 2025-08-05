@@ -1964,7 +1964,6 @@ void QMarkdownTextEdit::readBlock() {
             }
         }
     }
-    qDebug() << "readBlock finish";
 }
 
 /* 

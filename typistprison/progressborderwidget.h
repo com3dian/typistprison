@@ -10,7 +10,7 @@ class ProgressBorderWidget : public QWidget {
 
 public:
     explicit ProgressBorderWidget(QWidget *parent = nullptr);
-    void startTimerProgress(qreal totalTime);
+    void startTimerProgress(int timeLimit, int wordGoal);
     void clearTimerProgress();
     void setFullScreen(bool fullScreen);
 
@@ -22,21 +22,19 @@ protected:
 
 private slots:
     void updateTimerProgress();
-    void updateTypingProgress(qreal typingProgress);
+    void updateTypingProgress(int wordCount);
 
 private:
-    void drawPath(QPainter &painter, const QPainterPath &path);
-    void drawPathTest(QPainter &painter, const QPainterPath &path);
-    void paintBorder(qreal startLength, QRectF borderRect, QPainter painter);
-
-    int timerProgress;
     QTimer *prisonerTimer;
-    qreal totalTime;
+    qreal timerProgress;
+    qreal totalTime; // total time in seconds
+    int targetWordCount;
     bool isTimerRunning;
     bool isFullScreen;
-    qreal typingProgress; // New member variable for typing progress
-    QPainterPath progressPath; // New member variable for the progress path
-    QPainterPath typingPath; // New member variable for the typing path
+
+    void drawPath(QPainter &painter, const QPainterPath &path);
+    void drawPathTest(QPainter &painter, const QPainterPath &path);
+    void paintBorder(qreal startLength, QPointF startPoint, QRectF borderRect, QPainter painter);
 };
 
 #endif // PROGRESSBORDERWIDGET_H

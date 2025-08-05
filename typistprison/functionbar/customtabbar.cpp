@@ -1,3 +1,15 @@
+/*
+The tabbar that is the tabbar actually showing at the top of the app.
+used in functionBar.
+
++---------------------+
+| file.cell.txt      x \ file.txt   x | another_file.txt   x
++                       +------------------------------------
+
+this tabbar has a twin tab widget `customtabwidget`, all actions from customtabwidget
+are synced to this tabbar, and vice versa.
+*/
+
 #include "customtabbar.h"
 #include <QMouseEvent> // For mouse events
 
@@ -74,6 +86,9 @@ void CustomTabBar::onAnimationFinished() {
     update(); // Ensure a final repaint with the tab fully visible and no animation logic active
 }
 
+/*
+Hide default scroll button for tabbar
+*/
 void CustomTabBar::customizeScrollButtons() {
     // Retrieve the scroll buttons by their object names
     QToolButton *leftButton = findChild<QToolButton*>("ScrollLeftButton");

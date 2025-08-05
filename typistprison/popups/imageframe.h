@@ -29,12 +29,17 @@ protected:
             QPainter painter(this);
             painter.setRenderHint(QPainter::Antialiasing, true);
             painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+            // // Background color fill with rounded corners
+            // QPainterPath backgroundPath;
+            // backgroundPath.addRoundedRect(this->rect(), 6, 6); // match border radius
+            // painter.fillPath(backgroundPath, QColor("#1F2020"));
             
             QPainterPath path;
             path.addRoundedRect(this->rect().adjusted(0, 0, 0, 0), 4, 4);
             painter.setClipPath(path);
 
-            painter.drawPixmap(this->rect().adjusted(0, 0, 0, 0), pixmap);
+            painter.drawPixmap(this->rect().adjusted(6, 6, -6, -6), pixmap);
         }
     }
 };

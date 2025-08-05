@@ -246,8 +246,6 @@ void FictionTextEdit::keyPressEvent(QKeyEvent *event) {
             emit onFictionEditSearch(selectedText);
             return; // Return early to avoid further processing
         }
-        // // QTextEdit::keyPressEvent(event);
-        // return;
     }
 
     // If the handler is at bottom and user hit enter, attach handler to bottom

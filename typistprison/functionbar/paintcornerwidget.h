@@ -1,3 +1,13 @@
+/*
+
+
+__
+  \
+   \
+    \
+     \___
+*/
+
 #ifndef PAINTCORNERWIDGET_H
 #define PAINTCORNERWIDGET_H
 

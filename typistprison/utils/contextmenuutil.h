@@ -14,8 +14,8 @@
 
 
 /*
-Method for nice looking context menu (menu at right click).
-Used in FictionViewTab, MarkdownViewTab, PlaintextViewTab.
+Method for good looking context menu (menu at right click).
+Used in FictionTextEdit, QMarkdownTextEdit, PlaintextEdit.
 */
 class ContextMenuUtil {
 public:
@@ -69,20 +69,26 @@ public:
         bool hasUndo = textEdit->document()->isUndoAvailable();
         bool hasRedo = textEdit->document()->isRedoAvailable();
         bool hasSelection = textEdit->textCursor().hasSelection();
+
+        #ifdef Q_OS_MAC
+            #define CONTROL_SYMBOL "⌘ "  // Mac Command key
+        #else
+            #define CONTROL_SYMBOL "Ctrl+"  // Windows & Linux use "Ctrl"
+        #endif
         
         // Create menu items using MenuButton
-        menu->addAction(createMenuButtonAction("Undo", "Ctrl+Z", hasUndo, [textEdit]() { textEdit->undo(); }));
-        menu->addAction(createMenuButtonAction("Redo", "Ctrl+Y", hasRedo, [textEdit]() { textEdit->redo(); }));
+        menu->addAction(createMenuButtonAction("Undo", QString(CONTROL_SYMBOL)+"Z", hasUndo, [textEdit]() { textEdit->undo(); }));
+        menu->addAction(createMenuButtonAction("Redo", QString(CONTROL_SYMBOL)+"Y", hasRedo, [textEdit]() { textEdit->redo(); }));
         
         menu->addSeparator();
         
-        menu->addAction(createMenuButtonAction("Cut", "Ctrl+X", hasSelection, [textEdit]() { textEdit->cut(); }));
-        menu->addAction(createMenuButtonAction("Copy", "Ctrl+C", hasSelection, [textEdit]() { textEdit->copy(); }));
-        menu->addAction(createMenuButtonAction("Paste", "Ctrl+V", true, [textEdit]() { textEdit->paste(); }));
+        menu->addAction(createMenuButtonAction("Cut", QString(CONTROL_SYMBOL)+"X", hasSelection, [textEdit]() { textEdit->cut(); }));
+        menu->addAction(createMenuButtonAction("Copy", QString(CONTROL_SYMBOL)+"C", hasSelection, [textEdit]() { textEdit->copy(); }));
+        menu->addAction(createMenuButtonAction("Paste", QString(CONTROL_SYMBOL)+"V", true, [textEdit]() { textEdit->paste(); }));
         
         menu->addSeparator();
         
-        menu->addAction(createMenuButtonAction("Select All", "Ctrl+A", true, [textEdit]() { textEdit->selectAll(); }));
+        menu->addAction(createMenuButtonAction("Select All", QString(CONTROL_SYMBOL)+"A", true, [textEdit]() { textEdit->selectAll(); }));
         
         // Style the menu
         menu->setStyleSheet(

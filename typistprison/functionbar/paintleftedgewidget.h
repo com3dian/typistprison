@@ -1,3 +1,17 @@
+/*
+
+Widget for painting bottom left corner of tabbar in functionbar
+
+  ___
+ /
+ |
+ |
+_/
+
+
+
+*/
+
 #ifndef PAINTLEFTEDGEWIDGET_H
 #define PAINTLEFTEDGEWIDGET_H
 
@@ -9,7 +23,7 @@ class PaintLeftEdgeWidget : public QWidget {
     Q_OBJECT
 public:
     explicit PaintLeftEdgeWidget(QWidget *parent = nullptr) : QWidget(parent) {
-        // Set a fixed width (change 150 to your desired width)
+        // Set a fixed width
         setFixedWidth(8);
     }
 
@@ -20,7 +34,7 @@ protected:
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        // You can add more custom painting code here
+        // custom painting
         int slant = 2;  // Adjust this to control the slant amount
         int radius = 4;  // Corner radius
         int moveRight = 1;
