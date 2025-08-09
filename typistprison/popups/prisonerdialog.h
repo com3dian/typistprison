@@ -23,6 +23,7 @@
 
 #include "utilsprisonerdialog.h"
 #include "../utils/hoverbutton.h"
+#include "../utils/closebuttonwidget.h"
 
 class PrisonerDialog : public QDialog {
     Q_OBJECT
@@ -33,14 +34,49 @@ public:
     PrisonerDialog(QWidget *parent = nullptr) : QDialog(parent) {
         setWindowTitle("Prisoner Dialog");
         
-        setStyleSheet("background-color: #1F2020;");  // Dark background color
+        // Set window flags to make it frameless and borderless
+        setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+        setAttribute(Qt::WA_TranslucentBackground);
+        
+        // Create a container widget for rounded corners
+        QWidget *containerWidget = new QWidget(this);
+        containerWidget->setObjectName("containerWidget");
+        containerWidget->setStyleSheet(R"(
+            #containerWidget {
+                background-color: #1F2020;
+                border: 1px solid #393B3B;
+                border-radius: 9px;
+            }
+            QWidget {
+                background-color: #1F2020;
+            }
+        )");
 
-        // Main layout
-        QVBoxLayout *mainLayout = new QVBoxLayout(this);
+        // Main layout for the dialog
+        QVBoxLayout *dialogLayout = new QVBoxLayout(this);
+        dialogLayout->setContentsMargins(0, 0, 0, 0);
+        dialogLayout->addWidget(containerWidget);
+
+        // Main layout for the container
+        QVBoxLayout *mainLayout = new QVBoxLayout(containerWidget);
         mainLayout->setContentsMargins(20, 20, 20, 20);
         mainLayout->setSpacing(2);
 
-        // Icon
+        // Close Button
+        CloseButtonWidget *closeButtonWidget = new CloseButtonWidget(containerWidget);
+        connect(closeButtonWidget, &CloseButtonWidget::closeButtonClicked, this, [this]() {
+            reject();
+            close();
+        });
+
+        // Add close button to main layout with right alignment
+        QHBoxLayout *topLayout = new QHBoxLayout();
+        topLayout->setContentsMargins(0, 0, 0, 0);
+        topLayout->addStretch();
+        topLayout->addWidget(closeButtonWidget);
+        mainLayout->addLayout(topLayout);
+
+        // Door Icon
         QLabel *iconLabel = new QLabel(this);
         // Calculate size based on device pixel ratio
         qreal dpr = devicePixelRatio();
@@ -316,6 +352,7 @@ public:
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override {
+        // Handle existing line edit events
         if (event->type() == QEvent::KeyPress) {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
@@ -613,6 +650,10 @@ private slots:
                 }
             )");
         }
+    }
+
+    void enterButtonEvent() {
+        
     }
 };
 #endif // PRISONERDIALOG_H

@@ -86,8 +86,7 @@ void TrafficLightWidget::enterEvent(QEnterEvent *event) {
                                 "    background-color: #f5cd7d;"
                                 "}"
                             );
-    // minimalButton->setIcon(QIcon(":/icons/windowminimize.png"));
-    
+
     maximalButton->setIconSize(QSize(8, 8));;
     maximalButton->setStyleSheet("QPushButton {"
                                 "    border: none;"
@@ -100,7 +99,6 @@ void TrafficLightWidget::enterEvent(QEnterEvent *event) {
                                 "    background-color: #83c779;"
                                 "}"
                             );
-    // maximalButton->setIcon(QIcon(":/icons/windowmaximize.png"));
     
     closeButton->setIconSize(QSize(8, 8));;
     closeButton->setStyleSheet("QPushButton {"
@@ -114,7 +112,7 @@ void TrafficLightWidget::enterEvent(QEnterEvent *event) {
                               "    background-color: #f08075;"
                               "}"
                             );
-    // closeButton->setIcon(QIcon(":/icons/windowclose.png"));
+
     QWidget::enterEvent(event);
 }
 

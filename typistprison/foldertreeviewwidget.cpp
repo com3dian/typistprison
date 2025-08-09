@@ -17,8 +17,15 @@
 #include <QClipboard>
 #include <QLabel>
 
-FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent, QString folderRoot, ProjectManager *projectManager)
-    : QWidget(parent), fileModel(nullptr), fileTreeView(nullptr), layout(nullptr), buttonWidget(nullptr), projectManager(projectManager)
+FolderTreeViewWidget::FolderTreeViewWidget(QWidget *parent,
+                   QString folderRoot,
+                   ProjectManager *projectManager)
+    : QWidget(parent),
+      fileModel(nullptr),
+      fileTreeView(nullptr),
+      layout(nullptr),
+      buttonWidget(nullptr),
+      projectManager(projectManager)
 {
     this->setStyleSheet(
         "FolderTreeViewWidget {"

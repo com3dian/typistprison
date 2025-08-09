@@ -2,8 +2,9 @@
 #define SAVEMESSAGEBOX_H
 
 #include <QDialog>
-#include <QPushButton>
 #include <QWidget>
+#include "../utils/closebuttonwidget.h"
+#include "../utils/hoverbutton.h"
 
 class SaveMessageBox : public QDialog {
     Q_OBJECT // Necessary macro for signals and slots in Qt
@@ -26,9 +27,8 @@ private slots:
 private:
     void centerOnScreen();
     
-    QPushButton *saveButton;
-    QPushButton *discardButton;
-    QPushButton *cancelButton;
+    HoverButton *saveButton;
+    HoverButton *discardButton;
     ButtonResult result = Cancel;
 };
 

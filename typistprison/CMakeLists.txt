@@ -75,6 +75,8 @@ set(PROJECT_SOURCES
     utils/hoverbutton.h
     utils/fictionhighlighter.cpp
     utils/fictionhighlighter.h
+    utils/closebuttonwidget.cpp
+    utils/closebuttonwidget.h
     popups/imagepopup.cpp
     popups/imagepopup.h
     popups/imageframe.h
