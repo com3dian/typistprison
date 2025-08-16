@@ -1,4 +1,5 @@
-<img width="13276" height="4012" alt="banner(1)" src="https://github.com/user-attachments/assets/b281b614-ebaa-4479-a4cd-8e009d24fe27" />
+<img width="13276" height="4012" alt="banner" src="https://github.com/user-attachments/assets/254585cb-c813-4b60-9401-71b18ee40680" />
+
 
 ## 🚀 Features
 - **Intuitive Editor**: Clean and distraction-free interface for focused writing.
