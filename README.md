@@ -1,5 +1,4 @@
-![无标题演示文稿-1(1)](https://github.com/user-attachments/assets/90cafd3b-831d-446b-9a67-1a4a9986e180)
-
+<img width="14092" height="4492" alt="banner" src="https://github.com/user-attachments/assets/9ddcc1f5-ebec-4658-8fac-0ca90b6d0160" />
 
 ## 🚀 Features
 - **Intuitive Editor**: Clean and distraction-free interface for focused writing.
