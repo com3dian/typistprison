@@ -72,9 +72,19 @@ void ProgressBorderWidget::deactivatePrisonerMode() {
 
 void ProgressBorderWidget::startTimerProgress(int timeLimit, int wordGoal) {
     timerProgress = 0.0;
+    targetWordCount = wordGoal;
+
+    // For infinite word goals (wordGoal == -1), we do not start the background
+    // timer/chaser at all. The visual chaser and timer-driven failure are disabled.
+    if (wordGoal == -1) {
+        totalTime = 0.0;
+        prisonerTimer->stop();
+        isTimerRunning = false;
+        return;
+    }
+
     // convert minutes time to seconds
     totalTime = timeLimit * 60 * 10;
-    targetWordCount = wordGoal;
     prisonerTimer->start(100); // update interval
     isTimerRunning = true;
 }
@@ -91,7 +101,9 @@ void ProgressBorderWidget::updateTimerProgress() {
     timerProgress = timerProgress + 1;
     requestRepaint();
 
-    if (prisonerManager && totalTime > 0.0) {
+    // If there is no meaningful total time (including infinite-word mode where
+    // we disabled the chaser), skip notifying the PrisonerManager.
+    if (prisonerManager && totalTime > 0.0 && targetWordCount != -1) {
         qreal normalizedProgress = timerProgress / totalTime;
         prisonerManager->updateTimerProgress(normalizedProgress);
     }
@@ -313,8 +325,10 @@ void ProgressBorderWidget::paintEvent(QPaintEvent *event) {
 
     qreal perimeter = 2 * (width + height) - startDistance - endDistance + 3 * cornerArcLength;
     qreal timerProgressLength;
-    if (totalTime == 0.0){
-        timerProgressLength = 0;
+    // If there is no timer (including infinite word goal where we disabled it),
+    // do not paint the chaser border at all.
+    if (totalTime <= 0.0 || targetWordCount == -1) {
+        timerProgressLength = -1;
     } else {
         timerProgressLength = (timerProgress / totalTime) * perimeter;
     }

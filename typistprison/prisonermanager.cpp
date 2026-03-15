@@ -30,6 +30,14 @@ void PrisonerManager::clear() {
 
 void PrisonerManager::updateTimerProgress(qreal timerProgressLength) {
     this->timerProgressLength = timerProgressLength;
+
+    // If wordGoal is -1, we are in "infinite words" mode:
+    // - Do not track background progress in the editor
+    // - Do not run the chaser / failure logic
+    if (wordGoal == -1) {
+        return;
+    }
+
     greyWordCount = qRound(wordGoal * timerProgressLength) + baseWordCount;
     if (isPrisoner) {
         // if chaser reach the progress, fail the prisoner mode
