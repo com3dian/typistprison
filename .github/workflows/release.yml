@@ -146,11 +146,14 @@ jobs:
         echo "Found app at: $APP_PATH"
 
     - name: Import Apple code signing certificate
-      if: ${{ secrets.MACOS_CERTIFICATE_BASE64 != '' && secrets.MACOS_CERTIFICATE_PASSWORD != '' }}
       env:
         MACOS_CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
         MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
       run: |
+        if [ -z "$MACOS_CERTIFICATE_BASE64" ] || [ -z "$MACOS_CERTIFICATE_PASSWORD" ]; then
+          echo "Skipping certificate import: required secrets are missing."
+          exit 0
+        fi
         echo "$MACOS_CERTIFICATE_BASE64" | base64 --decode > /tmp/build_certificate.p12
         KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
         security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
