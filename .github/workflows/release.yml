@@ -190,6 +190,23 @@ jobs:
             fi
           done < <(find "$APP_PATH/Contents" -type f -print0)
 
+          echo "Normalizing app metadata files for bundle signing..."
+          INFO_PLIST="$APP_PATH/Contents/Info.plist"
+          if [ -L "$INFO_PLIST" ]; then
+            cp -fL "$INFO_PLIST" "$INFO_PLIST.real"
+            mv -f "$INFO_PLIST.real" "$INFO_PLIST"
+          fi
+          APP_EXECUTABLE="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$INFO_PLIST" 2>/dev/null || true)"
+          if [ -z "$APP_EXECUTABLE" ]; then
+            APP_EXECUTABLE="$(basename "$APP_PATH" .app)"
+          fi
+          EXEC_PATH="$APP_PATH/Contents/MacOS/$APP_EXECUTABLE"
+          if [ -L "$EXEC_PATH" ]; then
+            cp -fL "$EXEC_PATH" "$EXEC_PATH.real"
+            mv -f "$EXEC_PATH.real" "$EXEC_PATH"
+            chmod +x "$EXEC_PATH"
+          fi
+
           echo "Signing app bundle..."
           codesign --force --timestamp --options runtime --sign "$APPLE_CODESIGN_IDENTITY" "$APP_PATH"
 
