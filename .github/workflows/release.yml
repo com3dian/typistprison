@@ -146,7 +146,7 @@ jobs:
         echo "Found app at: $APP_PATH"
 
     - name: Import Apple code signing certificate
-      if: ${{ secrets.MACOS_CERTIFICATE_BASE64 != '' }}
+      if: ${{ secrets.MACOS_CERTIFICATE_BASE64 != '' && secrets.MACOS_CERTIFICATE_PASSWORD != '' }}
       env:
         MACOS_CERTIFICATE_BASE64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
         MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
