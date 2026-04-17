@@ -163,43 +163,32 @@ jobs:
         security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
         rm -f /tmp/build_certificate.p12
 
-    - name: Deploy Qt dependencies and create DMG
+    - name: Deploy Qt dependencies, sign, and create DMG
       id: create_dmg
       env:
         APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_CODESIGN_IDENTITY }}
       run: |
         APP_PATH="${{ steps.find_app.outputs.app_path }}"
-        macdeployqt "$APP_PATH" -always-overwrite -verbose=2
-        
-        if [ -d "$APP_PATH/Contents/Frameworks" ]; then
-          echo "Qt frameworks bundled:"
-          ls -lh "$APP_PATH/Contents/Frameworks" | head -10
-        fi
-        
         DMG_PATH="${APP_PATH%.app}.dmg"
         
         if [ -z "$APPLE_CODESIGN_IDENTITY" ]; then
-          echo "No APPLE_CODESIGN_IDENTITY: creating unsigned DMG (macdeployqt -dmg)."
+          echo "No APPLE_CODESIGN_IDENTITY: building unsigned app and DMG."
+          macdeployqt "$APP_PATH" -always-overwrite -verbose=2
           macdeployqt "$APP_PATH" -dmg -always-overwrite
         else
-          echo "Signing app with identity: $APPLE_CODESIGN_IDENTITY"
-          ENT="/tmp/typistprison-entitlements.plist"
-          printf '%s\n' \
-            '<?xml version="1.0" encoding="UTF-8"?>' \
-            '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
-            '<plist version="1.0">' \
-            '<dict>' \
-            '    <key>com.apple.security.cs.allow-jit</key>' \
-            '    <true/>' \
-            '    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>' \
-            '    <true/>' \
-            '    <key>com.apple.security.cs.disable-library-validation</key>' \
-            '    <true/>' \
-            '</dict>' \
-            '</plist>' > "$ENT"
-          codesign --force --deep --options runtime --entitlements "$ENT" --sign "$APPLE_CODESIGN_IDENTITY" "$APP_PATH"
-          codesign -dv --verbose=4 "$APP_PATH" 2>&1 || true
-          
+          echo "Deploying and signing app with macdeployqt identity: $APPLE_CODESIGN_IDENTITY"
+          macdeployqt "$APP_PATH" -always-overwrite -verbose=2 -codesign="$APPLE_CODESIGN_IDENTITY"
+
+          echo "Verifying signed app bundle..."
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          codesign -dv --verbose=4 "$APP_PATH" 2>&1 | head -40 || true
+
+          if [ -d "$APP_PATH/Contents/Frameworks" ]; then
+            echo "Qt frameworks bundled:"
+            ls -lh "$APP_PATH/Contents/Frameworks" | head -10
+          fi
+
+          echo "Creating and signing DMG..."
           rm -f "$DMG_PATH"
           hdiutil create -volname "TypistPrison" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
           codesign --force --sign "$APPLE_CODESIGN_IDENTITY" "$DMG_PATH"
