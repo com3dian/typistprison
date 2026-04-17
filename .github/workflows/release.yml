@@ -176,16 +176,23 @@ jobs:
           macdeployqt "$APP_PATH" -always-overwrite -verbose=2
           macdeployqt "$APP_PATH" -dmg -always-overwrite
         else
-          echo "Deploying and signing app with macdeployqt identity: $APPLE_CODESIGN_IDENTITY"
-          macdeployqt "$APP_PATH" -always-overwrite -verbose=2 -codesign="$APPLE_CODESIGN_IDENTITY"
+          echo "Deploying Qt dependencies before manual signing..."
+          macdeployqt "$APP_PATH" -always-overwrite -verbose=2
 
-          echo "Verifying signed app bundle (non-fatal check)..."
-          # Qt/macdeployqt bundles can trigger a resource-envelope mismatch on strict verify,
-          # even when signing completed and the app launches correctly.
-          if ! codesign --verify --deep --verbose=2 "$APP_PATH"; then
-            echo "Warning: app bundle verification reported a non-fatal issue; continuing."
-          fi
-          codesign -dv --verbose=4 "$APP_PATH" 2>&1 | head -40 || true
+          echo "Signing nested Mach-O files..."
+          while IFS= read -r -d '' FILE_PATH; do
+            FILE_TYPE="$(file -b "$FILE_PATH")"
+            if [[ "$FILE_TYPE" == *"Mach-O"* ]]; then
+              codesign --force --timestamp --options runtime --sign "$APPLE_CODESIGN_IDENTITY" "$FILE_PATH"
+            fi
+          done < <(find "$APP_PATH/Contents" -type f -print0)
+
+          echo "Signing app bundle..."
+          codesign --force --timestamp --options runtime --sign "$APPLE_CODESIGN_IDENTITY" "$APP_PATH"
+
+          echo "Verifying app signature..."
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          spctl -a -vv "$APP_PATH" || true
 
           if [ -d "$APP_PATH/Contents/Frameworks" ]; then
             echo "Qt frameworks bundled:"
