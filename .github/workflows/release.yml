@@ -42,6 +42,13 @@ jobs:
         draft: false
         prerelease: false
 
+  # macOS signing (optional): GitHub repo secrets
+  #   MACOS_CERTIFICATE_BASE64 — base64 of exported .p12 ("Developer ID Application" + private key)
+  #   MACOS_CERTIFICATE_PASSWORD — password for that .p12
+  #   APPLE_CODESIGN_IDENTITY — full name from Keychain, e.g. "Developer ID Application: Your Name (TEAMID)"
+  # Notarization (optional, recommended for Gatekeeper):
+  #   APPLE_API_KEY_ID, APPLE_API_ISSUER_ID — from App Store Connect → Users and Access → Integrations → Keys
+  #   APPLE_API_KEY_BASE64 — base64 of the downloaded AuthKey_XXXXXX.p8 file
   build-macos:
     runs-on: macos-latest
     continue-on-error: false
@@ -139,17 +146,12 @@ jobs:
         echo "Found app at: $APP_PATH"
 
     - name: Deploy Qt dependencies and create DMG
+      env:
+        APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_CODESIGN_IDENTITY }}
       run: |
         APP_PATH="${{ steps.find_app.outputs.app_path }}"
-        # Deploy Qt dependencies into the app bundle
         macdeployqt "$APP_PATH" -always-overwrite -verbose=2
-        # Create DMG
-        macdeployqt "$APP_PATH" -dmg -always-overwrite
-        DMG_PATH="${APP_PATH%.app}.dmg"
-        echo "DMG created at: $DMG_PATH"
-        ls -lh "$(dirname $DMG_PATH)"
         
-        # Verify Qt libraries are bundled
         if [ -d "$APP_PATH/Contents/Frameworks" ]; then
           echo "Qt frameworks bundled:"
           ls -lh "$APP_PATH/Contents/Frameworks" | head -10

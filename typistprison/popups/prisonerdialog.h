@@ -264,10 +264,9 @@ public:
                     }
                 )");
             } else {
-                QString numericText = lineEdit->text().remove(QRegularExpression("[^0-9]"));
-                if (numericText.isEmpty()) {
-                    actionButton->setEnabled(false);
-                } else {
+                // When the goal is explicitly set to +∞, treat it as a valid
+                // word goal and allow launching, even though there are no digits.
+                if (lineEdit->text() == "+∞") {
                     actionButton->setEnabled(true);
                     actionButton->setIcons(QIcon(":/icons/right_arrow.png"), QIcon(":/icons/right_arrow_hover.png"));
                     actionButton->setSilentBehavior(R"(
@@ -288,6 +287,32 @@ public:
                             padding: 4px 8px;
                         }
                     )");
+                } else {
+                    QString numericText = lineEdit->text().remove(QRegularExpression("[^0-9]"));
+                    if (numericText.isEmpty()) {
+                        actionButton->setEnabled(false);
+                    } else {
+                        actionButton->setEnabled(true);
+                        actionButton->setIcons(QIcon(":/icons/right_arrow.png"), QIcon(":/icons/right_arrow_hover.png"));
+                        actionButton->setSilentBehavior(R"(
+                            QPushButton {
+                                background-color: transparent;
+                                border: 1px solid #5A5A5A;
+                                color: #BDBDBD;
+                                border-radius: 4px;
+                                padding: 4px 8px;
+                            }
+                        )");
+                        actionButton->setHoverBehavior(R"(
+                            QPushButton {
+                                background-color: transparent;
+                                border: 1px solid #999999;
+                                color: #DEDEDE;
+                                border-radius: 4px;
+                                padding: 4px 8px;
+                            }
+                        )");
+                    }
                 }
             }
             if (ratio == 1.0) {
@@ -373,9 +398,15 @@ public:
         actionButton->setLayoutDirection(Qt::RightToLeft);
 
         connect(actionButton, &QPushButton::clicked, this, [=]() {
+            int wordGoal;
             // Get word goal from lineEdit
-            QString numericText = lineEdit->text().remove(QRegularExpression("[^0-9]"));
-            int wordGoal = numericText.toInt();
+            if (lineEdit->text() == "+∞") {
+                wordGoal = -1;
+            } else {
+                QString numericText = lineEdit->text().remove(QRegularExpression("[^0-9]"));
+                wordGoal = numericText.toInt();
+            }
+
             
             // Get time limit from slider
             double ratio = slider->value() / 100.0;
@@ -659,21 +690,45 @@ private slots:
         int totalWidth = sizes[0] + sizes[1];  // Total width of splitter
 
         double spliterRatio = static_cast<double>(sizes[0] - minLeftWidth) / (totalWidth - minLeftWidth);
+        int numericValue = 0;
         if (spliterRatio == 1.0) {
+            // Infinite word goal: show "+∞" and keep the Launch button enabled.
             lineEdit->setText("+∞");
             slider->setValue(100);            // Set slider to maximum
             slider->setEnabled(false);        // Disable slider interaction
+
+            actionButton->setEnabled(true);
+            actionButton->setIcons(QIcon(":/icons/right_arrow.png"), QIcon(":/icons/right_arrow_hover.png"));
+            actionButton->setSilentBehavior(R"(
+                QPushButton {
+                    background-color: transparent;
+                    border: 1px solid #5A5A5A;
+                    color: #BDBDBD;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                }
+            )");
+            actionButton->setHoverBehavior(R"(
+                QPushButton {
+                    background-color: transparent;
+                    border: 1px solid #999999;
+                    color: #DEDEDE;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                }
+            )");
             return;
+        } else {
+            double sliderRatio = static_cast<double>(sizes[0]) / totalWidth;
+            slider->setValue(sliderRatio * 100);  // Set slider value
+            slider->setEnabled(true);             // Enable slider interaction
+    
+            // Reverse map to get the numeric value from width
+            numericValue = reverseMapFromRange(spliterRatio);
+    
+            // Update the QLineEdit content
+            lineEdit->setText(QString::number(numericValue));
         }
-        double sliderRatio = static_cast<double>(sizes[0]) / totalWidth;
-        slider->setValue(sliderRatio * 100);  // Set slider value
-        slider->setEnabled(true);             // Enable slider interaction
-
-        // Reverse map to get the numeric value from width
-        int numericValue = reverseMapFromRange(spliterRatio);
-
-        // Update the QLineEdit content
-        lineEdit->setText(QString::number(numericValue));
 
         // Change visibility of actionbutton ⏯️
         if (numericValue >= 100) {
